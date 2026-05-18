@@ -1,0 +1,8 @@
+{
+  "name": "Edugrade - AI Powered Education",
+  "description": "A premium AI-powered education platform for teachers to manage classrooms and generate level-appropriate assessments (SD/SMP/SMA/College) using deep AI insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

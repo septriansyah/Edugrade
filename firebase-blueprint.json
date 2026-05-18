@@ -1,0 +1,157 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Application user profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "photoURL": { "type": "string", "description": "User avatar URL" },
+        "role": { "type": "string", "enum": ["teacher", "student"], "description": "User role in the system" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Profile creation timestamp" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "Educational class or group",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Class name" },
+        "subject": { "type": "string", "description": "Subject taught" },
+        "teacherId": { "type": "string", "description": "UID of the teacher who owns the class" },
+        "joinCode": { "type": "string", "description": "Unique code students use to join" },
+        "studentIds": { "type": "array", "items": { "type": "string" }, "description": "List of student UIDs in the class" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Class creation timestamp" }
+      },
+      "required": ["name", "subject", "teacherId", "joinCode", "studentIds", "createdAt"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Educational question item",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "taxonomy": { "type": "string" },
+        "type": { "type": "string", "enum": ["Multiple Choice", "Essay"] },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "text": { "type": "string" },
+              "isCorrect": { "type": "boolean" }
+            }
+          }
+        },
+        "explanation": { "type": "string" },
+        "authorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["question", "taxonomy", "type", "authorId", "createdAt"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Student assignment submission",
+      "type": "object",
+      "properties": {
+        "assignmentId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "digitalAnswer": { "type": "string" },
+        "selectedOption": { "type": "string" },
+        "teacherFeedback": { "type": "string" },
+        "score": { "type": "number" },
+        "status": { "type": "string", "enum": ["submitted", "graded"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["assignmentId", "studentId", "status", "createdAt"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Task or project assigned to a class",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "dueDate": { "type": "string", "format": "date-time" },
+        "classId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "method": { "type": "string", "enum": ["manual", "ai"] },
+        "fileUrl": { "type": "string" },
+        "questions": { 
+          "type": "array", 
+          "items": { "type": "object" },
+          "description": "List of question objects if using AI or manual question input"
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "classId", "teacherId", "method", "createdAt"]
+    },
+    "Material": {
+      "title": "Material",
+      "description": "Learning materials shared with the class",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["file", "link"] },
+        "url": { "type": "string" },
+        "classId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "classId", "teacherId", "createdAt"]
+    },
+    "Meeting": {
+      "title": "Meeting",
+      "description": "Virtual classroom meetings",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "platform": { "type": "string", "enum": ["zoom", "gmeet"] },
+        "link": { "type": "string" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "classId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "link", "platform", "classId", "teacherId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "classes/{classId}": {
+      "schema": "Class",
+      "description": "Classes created by teachers"
+    },
+    "questionBank/{questionId}": {
+      "schema": "Question",
+      "description": "Bank of questions generated by teachers"
+    },
+    "submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Student work submissions"
+    },
+    "assignments/{assignmentId}": {
+      "schema": "Assignment",
+      "description": "Assignments created for classes"
+    },
+    "materials/{materialId}": {
+      "schema": "Material",
+      "description": "Learning materials"
+    },
+    "meetings/{meetingId}": {
+      "schema": "Meeting",
+      "description": "Virtual meetings"
+    }
+  }
+}

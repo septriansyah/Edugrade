@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() <= 128 &&
+             data.email is string && data.email.size() <= 256 &&
+             data.role in ['teacher', 'student'];
+    }
+
+    function isValidClass(data) {
+      return data.name is string && data.name.size() <= 200 &&
+             data.teacherId is string &&
+             data.joinCode is string && data.joinCode.size() <= 10;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL']);
+    }
+
+    // Classes Collection
+    match /classes/{classId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn(); // Queries must be secured by where clauses
+      allow create: if isSignedIn() && isValidClass(request.resource.data) && request.resource.data.teacherId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        // Teacher can update everything
+        (resource.data.teacherId == request.auth.uid && isValidClass(request.resource.data)) ||
+        // Student can join (update studentIds)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['studentIds']) &&
+         request.resource.data.studentIds.size() > resource.data.studentIds.size())
+      );
+    }
+
+    // Assignments Collection
+    match /assignments/{assignmentId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && 
+        get(/databases/$(database)/documents/classes/$(request.resource.data.classId)).data.teacherId == request.auth.uid;
+    }
+
+    // Submissions Collection
+    match /submissions/{submissionId} {
+      allow read: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid ||
+        get(/databases/$(database)/documents/assignments/$(resource.data.assignmentId)).data.teacherId == request.auth.uid
+      );
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
+    }
+  }
+}

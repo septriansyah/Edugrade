@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    
+    function isValidQuestion(data) {
+      return data.question is string && data.question.size() <= 2000 &&
+             data.taxonomy is string &&
+             data.type in ["Multiple Choice", "Essay"] &&
+             data.authorId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create, update: if isOwner(userId) && incoming().uid == userId;
+    }
+
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (incoming().teacherId == request.auth.uid);
+      allow update: if isSignedIn() && (
+        (existing().teacherId == request.auth.uid) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['studentIds']) &&
+         request.auth.uid in incoming().studentIds)
+      );
+    }
+
+    match /questionBank/{questionId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.authorId == request.auth.uid);
+      allow create: if isSignedIn() && isValidQuestion(incoming());
+      allow update, delete: if isSignedIn() && (existing().authorId == request.auth.uid);
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (incoming().studentId == request.auth.uid);
+      allow update: if isSignedIn() && (
+        existing().studentId == request.auth.uid || 
+        get(/databases/$(database)/documents/assignments/$(existing().assignmentId)).data.teacherId == request.auth.uid
+      );
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (incoming().teacherId == request.auth.uid);
+      allow update: if isSignedIn() && (existing().teacherId == request.auth.uid);
+      allow delete: if isSignedIn() && (existing().teacherId == request.auth.uid);
+    }
+
+    match /materials/{materialId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (incoming().teacherId == request.auth.uid);
+      allow update, delete: if isSignedIn() && (existing().teacherId == request.auth.uid);
+    }
+
+    match /meetings/{meetingId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (incoming().teacherId == request.auth.uid);
+      allow update, delete: if isSignedIn() && (existing().teacherId == request.auth.uid);
+    }
+
+    // Default deny catch-all at the bottom
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

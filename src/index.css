@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-surface: #fcfcfd;
+  --color-on-surface: #1a1c1e;
+  
+  /* Teacher Theme (Purplish) */
+  --color-teacher-primary: #7c4dff;
+  --color-teacher-secondary: #9c27b0;
+  --color-teacher-surface: #f3e5f5;
+  --color-teacher-surface-low: #f7f2fa;
+  --color-teacher-surface-high: #ece6f0;
+  
+  /* Student Theme (Yellowish) */
+  --color-student-primary: #ffc107;
+  --color-student-secondary: #ff9800;
+  --color-student-surface: #fff8e1;
+  --color-student-surface-low: #fffaf0;
+  --color-student-surface-high: #fff3e0;
+
+  --color-primary: var(--color-teacher-primary);
+  --color-secondary: var(--color-teacher-secondary);
+  --color-surface-container-low: var(--color-teacher-surface-low);
+  --color-surface-container: var(--color-teacher-surface);
+  --color-surface-container-high: var(--color-teacher-surface-high);
+  
+  --color-outline-variant: #e1e2e9;
+  --color-on-surface-variant: #44474e;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/40 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-md border border-white/10 shadow-lg;
+  }
+
+  .btn-glass {
+    @apply relative overflow-hidden bg-white/20 backdrop-blur-lg border border-white/30 px-6 py-3 rounded-2xl font-bold transition-all hover:bg-white/40 active:scale-95 shadow-sm;
+  }
+  
+  .btn-glass-primary {
+    @apply relative bg-primary/20 backdrop-blur-lg border border-primary/30 text-primary px-6 py-3 rounded-2xl font-bold transition-all hover:bg-primary/30 active:scale-95 shadow-sm;
+  }
+  
+  .theme-student {
+    --color-primary: var(--color-student-primary);
+    --color-secondary: var(--color-student-secondary);
+    --color-surface-container-low: var(--color-student-surface-low);
+    --color-surface-container: var(--color-student-surface);
+    --color-surface-container-high: var(--color-student-surface-high);
+  }
+  
+  .theme-teacher {
+    --color-primary: var(--color-teacher-primary);
+    --color-secondary: var(--color-teacher-secondary);
+    --color-surface-container-low: var(--color-teacher-surface-low);
+    --color-surface-container: var(--color-teacher-surface);
+    --color-surface-container-high: var(--color-teacher-surface-high);
+  }
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
