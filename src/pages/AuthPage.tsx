@@ -5,6 +5,7 @@ import { Loader2, GraduationCap } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import { signInWithGoogle, ensureUserProfile, auth } from "@/src/lib/firebase";
 import type { UserRole } from "@/src/lib/firebase";
+import Logo from "@/src/img/Logo.svg";
 
 const PENDING_ROLE_KEY = "edugrade:pending-login-role";
 
@@ -93,12 +94,9 @@ export default function AuthPage() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center gap-3 mb-6"
+          className="flex items-center justify-center gap-4 mb-6"
         >
-          <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center">
-             <GraduationCap className="text-primary" size={28} />
-          </div>
-          <span className="text-4xl font-black tracking-tighter text-on-surface">Edu<span className="text-primary">grade</span></span>
+          <img src={Logo} alt="Edugrade Logo" className="h-16 object-contain" />
           <span className="bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase border border-primary/20">AI POWERED</span>
         </motion.div>
         <motion.h1 

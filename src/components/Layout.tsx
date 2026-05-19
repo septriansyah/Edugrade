@@ -15,6 +15,7 @@ import {
   X
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
+import Logo from "@/src/img/Logo.svg";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, logOut } from "@/src/lib/firebase";
 import JoinClassModal from "./JoinClassModal";
@@ -67,10 +68,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
       )}>
         <div className={cn("transition-all duration-500", isInClass ? "mb-10 px-0 flex flex-col items-center" : "mb-16 px-2")}>
           <div className="flex items-center gap-3 mb-4">
-            <div className={cn("bg-primary/20 rounded-2xl flex items-center justify-center transition-all", isInClass ? "w-12 h-12" : "w-12 h-12")}>
-               <GraduationCap className="text-primary" size={24} />
-            </div>
-            {!isInClass && <span className="font-black text-3xl tracking-tighter text-on-surface">Edu<span className="text-primary underline decoration-4 underline-offset-4 decoration-primary/20">grade</span></span>}
+            <img src={Logo} alt="Edugrade Logo" className={cn("transition-all object-contain", isInClass ? "h-8" : "h-10")} />
           </div>
           {!isInClass && (
             <div className="flex items-center gap-2 ml-1">
@@ -149,10 +147,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
               <Menu size={24} />
             </button>
             <Link to={userType === "teacher" ? "/dashboard" : "/student/dashboard"} className="flex items-center gap-2 md:gap-3">
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                 <GraduationCap className="text-white" size={20} />
-              </div>
-              <span className="font-black text-xl md:text-2xl tracking-tighter text-on-surface">Edu<span className="text-primary italic">grade</span></span>
+              <img src={Logo} alt="Edugrade Logo" className="h-8 md:h-10 object-contain" />
             </Link>
             
             <div className="hidden lg:flex gap-10 ml-8">
@@ -196,8 +191,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
             <div className="flex flex-col items-center md:items-start gap-4">
               <div className="flex items-center gap-2 grayscale brightness-200 opacity-50">
-                <GraduationCap size={24} />
-                <span className="font-extrabold text-xl tracking-tighter">Edugrade AI</span>
+                <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
               </div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">© 2024 PRECISION ACADEMIC INTELLIGENCE</p>
             </div>
@@ -229,10 +223,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
             >
                <div className="flex justify-between items-center mb-12">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
-                       <GraduationCap className="text-primary" size={24} />
-                    </div>
-                    <span className="font-black text-2xl tracking-tighter">Edugrade</span>
+                    <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
                   </div>
                   <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-on-surface/5 rounded-xl transition-all">
                     <X size={20} />

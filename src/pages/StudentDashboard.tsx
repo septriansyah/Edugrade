@@ -302,7 +302,10 @@ export default function StudentDashboard() {
                 </div>
                 <div className="space-y-8">
                    {assignments.length > 0 ? (
-                      assignments.slice(0, 3).map(a => (
+                      assignments
+                        .filter(a => !a.title.toLowerCase().includes("meeting") && !a.title.toLowerCase().includes("materi"))
+                        .slice(0, 3)
+                        .map(a => (
                         <TimelineItem 
                           key={a.id}
                           time={a.dueDate?.toDate || a.dueDate ? "TENGGAT" : "TERBARU"}

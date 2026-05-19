@@ -28,7 +28,9 @@ export default function QuestionGenerator() {
   const initialTitle = searchParams.get("assignmentTitle") || "";
   const initialDesc = searchParams.get("description") || "";
   const initialDueDate = searchParams.get("dueDate") || "";
+  const initialViewMode = searchParams.get("viewMode") || "standard";
   
+  const [publishViewMode, setPublishViewMode] = useState(initialViewMode);
   const [activeTab, setActiveTab] = useState<"generate" | "bank" >("generate");
   const [questionConfigs, setQuestionConfigs] = useState<QuestionConfig[]>([
     { level: "C1", type: "Multiple Choice" },
@@ -267,6 +269,7 @@ export default function QuestionGenerator() {
         teacherId: auth.currentUser.uid,
         status: "active",
         method: "ai",
+        viewMode: publishViewMode,
         questions: questions.map(({ id, ...q }) => q), // Save question data directly in assignment
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -557,18 +560,29 @@ export default function QuestionGenerator() {
                   <p className="text-on-surface-variant font-medium">Lakukan pengeditan jika diperlukan sebelum disimpan ke Bank Soal.</p>
                 </div>
                 {questions.length > 0 && (
-                  <div className="flex gap-4 w-full md:w-auto">
+                  <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-center">
                      {classId && (
-                       <button 
-                         onClick={handlePublishAssignment} 
-                         disabled={isPublishing}
-                         className="flex-1 bg-on-surface text-white px-8 rounded-2xl font-black italic tracking-tight flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-all disabled:opacity-50"
-                       >
-                          {isPublishing ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-                          Terbitkan ke Kelas
-                       </button>
+                       <div className="flex flex-col md:flex-row gap-3 w-full">
+                         <select
+                           value={publishViewMode}
+                           onChange={(e) => setPublishViewMode(e.target.value)}
+                           className="bg-white/50 border-2 border-white/60 focus:border-on-surface outline-none px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest appearance-none shadow-sm"
+                         >
+                           <option value="standard">Mode Standar</option>
+                           <option value="form">Mode Form</option>
+                           <option value="paper">Mode Kertas</option>
+                         </select>
+                         <button 
+                           onClick={handlePublishAssignment} 
+                           disabled={isPublishing}
+                           className="flex-1 bg-on-surface text-white px-8 py-3 rounded-2xl font-black italic tracking-tight flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-all disabled:opacity-50 whitespace-nowrap"
+                         >
+                            {isPublishing ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                            Terbitkan ke Kelas
+                         </button>
+                       </div>
                      )}
-                     <button onClick={handleSaveAllToBank} className="flex-1 btn-glass-primary px-8 font-bold flex items-center justify-center gap-2">
+                     <button onClick={handleSaveAllToBank} className="w-full md:w-auto btn-glass-primary px-8 py-3 font-bold flex items-center justify-center gap-2 whitespace-nowrap">
                         <SaveIcon size={18} />
                         Simpan Semua ke Bank
                      </button>

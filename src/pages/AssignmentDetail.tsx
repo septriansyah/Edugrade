@@ -43,6 +43,8 @@ export default function AssignmentDetail() {
     return () => clearTimeout(timer);
   }, [retryCountdown]);
 
+  const hasSubmitted = submissionStatus === "submitted" || submissionStatus === "graded";
+
   useEffect(() => {
     const fetchUserRoleAndSubmission = async () => {
       const user = auth.currentUser;
@@ -62,6 +64,9 @@ export default function AssignmentDetail() {
           if (assignSnap.exists()) {
             fetchedAssignment = assignSnap.data();
             setAssignment(fetchedAssignment);
+            if (fetchedAssignment.viewMode) {
+              setViewMode(fetchedAssignment.viewMode);
+            }
           }
 
           // Fetch submission
@@ -243,7 +248,7 @@ export default function AssignmentDetail() {
                      <ArrowLeft size={24} />
                   </button>
                   <div>
-                    <h1 className="text-2xl font-black tracking-tight">{assignment?.title || "Ujian Unit 4"}</h1>
+                    <h1 className="text-2xl font-black tracking-tight">{assignment?.title || "Ujian"}</h1>
                     <p className="text-[10px] font-black uppercase text-primary tracking-widest">Mode Form Digital • Fokus Penuh</p>
                   </div>
                </div>
@@ -254,7 +259,7 @@ export default function AssignmentDetail() {
             </div>
 
             <div className="space-y-10">
-               {[1,2,3].map(i => (
+               {assignment?.questions?.map((q: any, i: number) => (
                   <motion.div 
                     key={i}
                     initial={{ opacity: 0, y: 20 }}
@@ -263,45 +268,54 @@ export default function AssignmentDetail() {
                     className="glass p-12 rounded-[56px] border-white/60 shadow-xl"
                   >
                      <div className="flex justify-between items-center mb-8">
-                        <span className="px-6 py-2 bg-on-surface text-surface rounded-full text-xs font-black uppercase tracking-widest">Soal {i}</span>
-                        <span className="text-xs font-black text-on-surface-variant/20 uppercase tracking-widest">Pilihan Ganda • 5 poin</span>
+                        <span className="px-6 py-2 bg-on-surface text-surface rounded-full text-xs font-black uppercase tracking-widest">Soal {i + 1}</span>
+                        <span className="text-xs font-black text-on-surface-variant/20 uppercase tracking-widest">{q.type === "Multiple Choice" ? "Pilihan Ganda" : "Esai"} • 10 poin</span>
                      </div>
                      <p className="text-2xl font-bold mb-10 leading-relaxed">
-                        Apa fungsi utama mitokondria pada sel eukariotik, dan bagaimana kaitannya dengan produksi ATP?
+                        {q.question}
                      </p>
-                     <div className="space-y-4">
-                        {['A', 'B', 'C', 'D'].map(opt => (
-                           <button 
-                             key={opt}
-                             onClick={() => setSelectedOption(opt)}
-                             className={cn(
-                               "w-full text-left p-6 rounded-[28px] border-2 transition-all flex items-center gap-6",
-                               selectedOption === opt ? "bg-primary border-primary text-white shadow-xl shadow-primary/20" : "bg-white/40 border-white/60 hover:border-primary/20"
-                             )}
-                           >
-                              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-black text-xs", selectedOption === opt ? "bg-white text-primary" : "bg-on-surface/5 text-on-surface-variant")}>
-                                 {opt}
-                              </div>
-                              <span className="font-bold">Contoh teks opsi untuk pilihan {opt} pada soal.</span>
-                           </button>
-                        ))}
-                     </div>
+                     
+                     {q.type === "Multiple Choice" ? (
+                       <div className="space-y-4">
+                          {q.options?.map((opt: any) => {
+                             const isStudentAnswer = (answers[i] || selectedOption) === opt.label;
+                             return (
+                             <button 
+                               key={opt.label}
+                               onClick={() => {
+                                  if (hasSubmitted && userRole === "student") return;
+                                  setAnswers(prev => ({ ...prev, [i]: opt.label }));
+                                  setSelectedOption(opt.label);
+                               }}
+                               disabled={hasSubmitted && userRole === "student"}
+                               className={cn(
+                                 "w-full text-left p-6 rounded-[28px] border-2 transition-all flex items-center gap-6",
+                                 isStudentAnswer ? "bg-primary border-primary text-white shadow-xl shadow-primary/20" : "bg-white/40 border-white/60 hover:border-primary/20",
+                                 hasSubmitted && userRole === "student" && "opacity-60 cursor-not-allowed"
+                               )}
+                             >
+                                <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-black text-xs shrink-0", isStudentAnswer ? "bg-white text-primary" : "bg-on-surface/5 text-on-surface-variant")}>
+                                   {opt.label}
+                                </div>
+                                <span className="font-bold">{opt.text}</span>
+                             </button>
+                             );
+                          })}
+                       </div>
+                     ) : (
+                       <textarea 
+                         className="w-full h-40 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-base leading-relaxed transition-all shadow-inner disabled:opacity-50"
+                         placeholder="Tuliskan jawaban lengkap Anda di sini..."
+                         value={answers[i] || digitalAnswer}
+                         onChange={(e) => {
+                           setAnswers(prev => ({ ...prev, [i]: e.target.value }));
+                           setDigitalAnswer(e.target.value);
+                         }}
+                         disabled={hasSubmitted && userRole === "student"}
+                       />
+                     )}
                   </motion.div>
                ))}
-               
-               <motion.div 
-                 initial={{ opacity: 0, y: 20 }}
-                 whileInView={{ opacity: 1, y: 0 }}
-                 className="glass p-12 rounded-[56px] border-white/60 shadow-xl"
-               >
-                  <p className="text-xl font-bold mb-6">Esai: Jelaskan proses sintesis protein secara rinci.</p>
-                  <textarea 
-                    className="w-full h-40 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-base leading-relaxed transition-all shadow-inner"
-                    placeholder="Tuliskan jawaban lengkap Anda di sini..."
-                    value={digitalAnswer}
-                    onChange={(e) => setDigitalAnswer(e.target.value)}
-                  />
-               </motion.div>
             </div>
 
             <div className="flex flex-col items-center gap-6 pt-12">
@@ -310,12 +324,14 @@ export default function AssignmentDetail() {
                </div>
                <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40">80% Selesai</p>
                
-               <button 
-                onClick={handleSubmit}
-                className="bg-primary text-white px-8 py-4 w-full sm:w-auto rounded-xl font-black text-base uppercase tracking-widest shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
-               >
-                  Kumpulkan Jawaban Akhir
-               </button>
+               {!(hasSubmitted && userRole === "student") && (
+                 <button 
+                  onClick={handleSubmit}
+                  className="bg-primary text-white px-8 py-4 w-full sm:w-auto rounded-xl font-black text-base uppercase tracking-widest shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+                 >
+                    Kumpulkan Jawaban Akhir
+                 </button>
+               )}
             </div>
          </div>
       </div>
@@ -346,28 +362,28 @@ export default function AssignmentDetail() {
 
             <div className="space-y-12 mb-20 text-on-surface">
                <div>
-                  <h2 className="text-xl font-black mb-4">Unit 4: Biologi Sintetis & Rekayasa Protein</h2>
+                  <h2 className="text-xl font-black mb-4">{assignment?.title || "Ujian"}</h2>
                   <p className="italic text-sm text-on-surface-variant/60">Petunjuk: Bacalah setiap soal dengan cermat. Untuk pilihan ganda, lingkari jawaban yang benar. Untuk esai, tulis jawaban dengan jelas pada ruang yang tersedia.</p>
                </div>
 
-               {[1,2,3].map(i => (
+               {assignment?.questions?.map((q: any, i: number) => (
                   <div key={i} className="space-y-6">
-                     <p className="font-bold text-lg"><span className="mr-4">S{i}.</span> Jelaskan fungsi asam amino dalam pembentukan protein.</p>
-                     <div className="grid grid-cols-1 gap-3 pl-10">
-                        {['A', 'B', 'C', 'D'].map(opt => (
-                           <div key={opt} className="flex gap-4 items-center">
-                              <div className="w-6 h-6 border-2 border-on-surface rounded-full flex items-center justify-center text-[10px] font-black">{opt}</div>
-                              <span className="text-sm font-medium">Contoh isi opsi untuk modul penilaian {opt}.</span>
-                           </div>
-                        ))}
-                     </div>
+                     <p className="font-bold text-lg"><span className="mr-4">S{i + 1}.</span> {q.question}</p>
+                     
+                     {q.type === "Multiple Choice" ? (
+                       <div className="grid grid-cols-1 gap-3 pl-10">
+                          {q.options?.map((opt: any) => (
+                             <div key={opt.label} className="flex gap-4 items-center break-inside-avoid">
+                                <div className="w-6 h-6 border-2 border-on-surface rounded-full flex items-center justify-center text-[10px] font-black shrink-0">{opt.label}</div>
+                                <span className="text-sm font-medium">{opt.text}</span>
+                             </div>
+                          ))}
+                       </div>
+                     ) : (
+                       <div className="w-full h-40 border-2 border-on-surface/10 rounded-2xl mt-4" />
+                     )}
                   </div>
                ))}
-
-               <div className="space-y-6">
-                  <p className="font-bold text-lg"><span className="mr-4">S4.</span> Esai: Bandingkan replikasi DNA dan transkripsi.</p>
-                  <div className="w-full h-80 border-2 border-on-surface/10 rounded-2xl" />
-               </div>
             </div>
 
             <div className="flex justify-center gap-6 print:hidden">
@@ -394,13 +410,6 @@ export default function AssignmentDetail() {
               Kembali ke {userRole === "student" ? "Dashboard" : "Kelas"}
            </Link>
            <div className="flex gap-4">
-              {userRole === "student" && (
-                <div className="flex bg-on-surface/5 p-1 rounded-2xl border border-on-surface/5 overflow-hidden">
-                   <button onClick={() => setViewMode("standard")} className={cn("px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", viewMode === "standard" ? "bg-white shadow-sm" : "text-on-surface-variant/40 hover:text-on-surface")}>Standar</button>
-                   <button onClick={() => setViewMode("form")} className={cn("px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", viewMode === "form" ? "bg-white shadow-sm" : "text-on-surface-variant/40 hover:text-on-surface")}>Mode Form</button>
-                   <button onClick={() => setViewMode("paper")} className={cn("px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", viewMode === "paper" ? "bg-white shadow-sm" : "text-on-surface-variant/40 hover:text-on-surface")}>Mode Kertas</button>
-                </div>
-              )}
            </div>
         </div>
 
@@ -511,6 +520,7 @@ export default function AssignmentDetail() {
                             isCorrect={isCorrect}
                             isWrong={isWrong}
                             onClick={() => {
+                              if (hasSubmitted && userRole === "student") return;
                               setAnswers(prev => ({ ...prev, [currentQuestionIndex]: opt.label }));
                               setSelectedOption(opt.label);
                             }} 
@@ -520,9 +530,10 @@ export default function AssignmentDetail() {
                       </div>
                     ) : (
                        <textarea 
-                         className="w-full h-32 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-base leading-relaxed shadow-inner"
+                         className="w-full h-32 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-base leading-relaxed shadow-inner disabled:opacity-50"
                          placeholder="Tuliskan jawaban Anda di sini..."
                          value={answers[currentQuestionIndex] || digitalAnswer}
+                         disabled={hasSubmitted && userRole === "student"}
                          onChange={(e) => {
                            setAnswers(prev => ({ ...prev, [currentQuestionIndex]: e.target.value }));
                            setDigitalAnswer(e.target.value);
@@ -681,9 +692,9 @@ export default function AssignmentDetail() {
                 placeholder={userRole === "teacher" ? "Siswa belum menuliskan jawaban digital." : "Tuliskan catatan atau jawaban esai tambahan..."}
                 value={digitalAnswer}
                 onChange={(e) => setDigitalAnswer(e.target.value)}
-                readOnly={userRole === "teacher"}
+                readOnly={userRole === "teacher" || (hasSubmitted && userRole === "student")}
               />
-              {userRole === "student" && (
+              {userRole === "student" && !hasSubmitted && (
                 <button 
                   className="btn-glass-primary w-full py-5 rounded-[24px] font-black tracking-widest text-xs uppercase"
                 >
@@ -698,7 +709,7 @@ export default function AssignmentDetail() {
               )}
             </div>
 
-            {userRole === "student" && (
+            {userRole === "student" && !hasSubmitted && (
               <button 
                   onClick={handleSubmit}
                   disabled={isSubmitting}

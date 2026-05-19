@@ -21,6 +21,7 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
   const [dueDate, setDueDate] = useState("");
   const [fileUrl, setFileUrl] = useState("");
   const [method, setMethod] = useState<"manual" | "ai">("manual");
+  const [viewMode, setViewMode] = useState<"standard" | "form" | "paper">("standard");
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreateAssignment = async (e: React.FormEvent) => {
@@ -35,6 +36,7 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
         classId,
         assignmentTitle: title,
         description,
+        viewMode,
       });
       if (dueDate) params.set("dueDate", dueDate);
       navigate(`/generator?${params.toString()}`);
@@ -53,6 +55,7 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         status: "active",
         method,
+        viewMode,
         fileUrl: method === "manual" ? fileUrl : "",
         createdAt: serverTimestamp(),
       });
@@ -128,6 +131,19 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
               
               {method === "manual" && (
                 <>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest ml-1">Mode Tampilan Siswa</label>
+                    <select 
+                      value={viewMode}
+                      onChange={(e: any) => setViewMode(e.target.value)}
+                      className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary outline-none px-6 py-4 rounded-[20px] font-bold text-lg appearance-none"
+                    >
+                      <option value="standard">Mode Standar (Digital)</option>
+                      <option value="form">Mode Form (Pilihan Ganda Saja)</option>
+                      <option value="paper">Mode Kertas (Kertas Kosong)</option>
+                    </select>
+                  </div>
+
                   <div className="space-y-3">
                     <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest ml-1">Instruksi / Deskripsi</label>
                     <textarea 

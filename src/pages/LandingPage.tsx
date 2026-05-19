@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Users, Sparkles, Database, FileText, CheckCircle, GraduationCap } from "lucide-react";
 import { motion } from "motion/react";
+import Logo from "/src/img/Logo.svg";
 
 export default function LandingPage() {
   return (
@@ -9,10 +10,7 @@ export default function LandingPage() {
       <header className="glass sticky top-0 z-50 h-24 border-b">
         <div className="max-w-7xl mx-auto px-8 lg:px-12 h-full flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
-               <GraduationCap className="text-primary" size={24} />
-            </div>
-            <span className="text-2xl font-black text-on-surface tracking-tighter">Edu<span className="text-primary underline decoration-4 underline-offset-4 decoration-primary/20">grade</span></span>
+            <img src={Logo} alt="Edugrade Logo" className="h-10 object-contain" />
           </div>
           <nav className="hidden md:flex items-center gap-10">
             <Link to="/" className="font-extrabold text-primary border-b-4 border-primary pb-1">Beranda</Link>
@@ -21,8 +19,8 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-6">
             <Link to="/auth" className="font-black text-on-surface-variant hover:text-primary transition-colors text-sm uppercase tracking-[0.2em]">Login</Link>
-            <Link 
-              to="/auth" 
+            <Link
+              to="/auth"
               className="bg-primary text-white px-8 py-3.5 rounded-[20px] font-bold hover:brightness-110 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 text-sm uppercase tracking-widest"
             >
               Get Started
@@ -34,14 +32,14 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-32 overflow-hidden flex items-center">
         <div className="max-w-7xl mx-auto px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center relative z-10">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/5 border border-primary/10 rounded-full mb-8">
-               <Sparkles size={16} className="text-primary" />
-               <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">AI-CORE ENGINE V3.0</span>
+              <Sparkles size={16} className="text-primary" />
+              <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">AI-CORE ENGINE V3.0</span>
             </div>
             <h1 className="text-7xl lg:text-8xl font-black text-on-surface leading-[0.95] mb-10 tracking-tighter">
               Revolusi <span className="text-primary italic">Evaluasi</span> Akademik.
@@ -50,15 +48,15 @@ export default function LandingPage() {
               Otomasi pembuatan soal Taksonomi Bloom, analisis butir soal cerdas, dan manajemen kelas terintegrasi.
             </p>
             <div className="flex flex-wrap gap-6 font-black tracking-widest uppercase text-xs">
-              <Link 
-                to="/auth" 
+              <Link
+                to="/auth"
                 className="bg-primary text-white py-5 px-10 rounded-[28px] shadow-2xl shadow-primary/25 hover:scale-105 transition-all flex items-center gap-4"
               >
                 Mulai Sebagai Guru
                 <ArrowRight size={20} />
               </Link>
-              <Link 
-                to="/auth" 
+              <Link
+                to="/auth"
                 className="btn-glass py-5 px-10 rounded-[28px] flex items-center gap-4"
               >
                 Gabung Kelas
@@ -67,7 +65,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             transition={{ duration: 1, delay: 0.2 }}
@@ -75,37 +73,37 @@ export default function LandingPage() {
           >
             <div className="glass p-5 rounded-[64px] border-white/40 shadow-2xl relative z-10">
               <div className="rounded-[48px] overflow-hidden aspect-video shadow-inner">
-                <img 
-                  src="https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop" 
-                  alt="Dashboard Preview" 
+                <img
+                  src="https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop"
+                  alt="Dashboard Preview"
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               {/* Floating Mini Cards */}
-              <motion.div 
+              <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute -top-10 -right-10 glass p-6 rounded-[32px] shadow-2xl border-white/40 z-20"
               >
-                 <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 text-center">VALIDITY RATE</p>
-                 <p className="text-3xl font-black text-on-surface tracking-tighter">98.4%</p>
+                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 text-center">VALIDITY RATE</p>
+                <p className="text-3xl font-black text-on-surface tracking-tighter">98.4%</p>
               </motion.div>
-              
-              <motion.div 
+
+              <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute -bottom-10 -left-10 glass p-6 rounded-[32px] shadow-2xl border-white/40 z-20"
               >
-                 <div className="flex gap-1.5 mb-2">
-                    <div className="w-1.5 h-6 bg-primary/20 rounded-full" />
-                    <div className="w-1.5 h-10 bg-primary/40 rounded-full" />
-                    <div className="w-1.5 h-8 bg-primary rounded-full" />
-                 </div>
-                 <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">ANALYTICS</p>
+                <div className="flex gap-1.5 mb-2">
+                  <div className="w-1.5 h-6 bg-primary/20 rounded-full" />
+                  <div className="w-1.5 h-10 bg-primary/40 rounded-full" />
+                  <div className="w-1.5 h-8 bg-primary rounded-full" />
+                </div>
+                <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">ANALYTICS</p>
               </motion.div>
             </div>
-            
+
             {/* Background blobs */}
             <div className="absolute -top-24 -right-24 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -z-10" />
             <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] bg-student-primary/10 rounded-full blur-[100px] -z-10" />
@@ -123,7 +121,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-12 gap-6">
             {/* AI Generator */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -5 }}
               className="col-span-12 lg:col-span-8 bg-white p-10 rounded-[32px] border border-outline-variant border-b-4 border-b-primary shadow-sm flex flex-col md:flex-row gap-8 items-center"
             >
@@ -137,21 +135,21 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex-1 w-full p-6 bg-surface rounded-2xl border border-outline-variant">
-                 <div className="flex gap-2 mb-4">
-                    <div className="w-3 h-3 rounded-full bg-error" />
-                    <div className="w-3 h-3 rounded-full bg-tertiary" />
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
-                 </div>
-                 <div className="space-y-3 opacity-40">
-                    <div className="h-4 bg-primary/20 rounded w-3/4" />
-                    <div className="h-4 bg-primary/10 rounded w-1/2" />
-                    <div className="h-4 bg-primary/15 rounded w-5/6" />
-                 </div>
+                <div className="flex gap-2 mb-4">
+                  <div className="w-3 h-3 rounded-full bg-error" />
+                  <div className="w-3 h-3 rounded-full bg-tertiary" />
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                </div>
+                <div className="space-y-3 opacity-40">
+                  <div className="h-4 bg-primary/20 rounded w-3/4" />
+                  <div className="h-4 bg-primary/10 rounded w-1/2" />
+                  <div className="h-4 bg-primary/15 rounded w-5/6" />
+                </div>
               </div>
             </motion.div>
 
             {/* Bank Soal */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -5 }}
               className="col-span-12 lg:col-span-4 bg-primary text-white p-10 rounded-[32px] shadow-xl relative overflow-hidden group"
             >
@@ -166,7 +164,7 @@ export default function LandingPage() {
             </motion.div>
 
             {/* Analysis Pro */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -5 }}
               className="col-span-12 lg:col-span-5 bg-white p-10 rounded-[32px] border border-outline-variant shadow-sm"
             >
@@ -188,7 +186,7 @@ export default function LandingPage() {
             </motion.div>
 
             {/* Question Generator */}
-            <motion.div 
+            <motion.div
               whileHover={{ y: -5 }}
               className="col-span-12 lg:col-span-7 bg-white p-10 rounded-[32px] border border-outline-variant shadow-sm overflow-hidden"
             >
@@ -225,8 +223,8 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold mb-2">Daftar sekarang sebagai Guru</h3>
               <p className="text-on-surface-variant">Dapatkan akses gratis selama 30 hari penuh.</p>
             </div>
-            <Link 
-              to="/auth" 
+            <Link
+              to="/auth"
               className="bg-primary text-white py-4 px-10 rounded-2xl font-bold shadow-xl shadow-primary/25 hover:scale-105 transition-all text-lg"
             >
               Daftar Gratis
@@ -239,27 +237,27 @@ export default function LandingPage() {
       <footer className="bg-surface-container-low py-12 px-6 lg:px-12 border-t border-outline-variant/30">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-primary">Edugrade</h2>
+            <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
             <p className="text-on-surface-variant max-w-sm">
               Empowering educators with AI-driven assessments and precision analytics.
             </p>
           </div>
           <div className="flex flex-wrap gap-12">
-             <div className="space-y-4">
-                <h4 className="font-bold">Product</h4>
-                <ul className="space-y-2 text-on-surface-variant">
-                  <li><Link to="/">Home</Link></li>
-                  <li><Link to="/">Features</Link></li>
-                  <li><Link to="/">Pricing</Link></li>
-                </ul>
-             </div>
-             <div className="space-y-4">
-                <h4 className="font-bold">Legal</h4>
-                <ul className="space-y-2 text-on-surface-variant">
-                  <li><Link to="/">Privacy Policy</Link></li>
-                  <li><Link to="/">Terms of Service</Link></li>
-                </ul>
-             </div>
+            <div className="space-y-4">
+              <h4 className="font-bold">Product</h4>
+              <ul className="space-y-2 text-on-surface-variant">
+                <li><Link to="/">Home</Link></li>
+                <li><Link to="/">Features</Link></li>
+                <li><Link to="/">Pricing</Link></li>
+              </ul>
+            </div>
+            <div className="space-y-4">
+              <h4 className="font-bold">Legal</h4>
+              <ul className="space-y-2 text-on-surface-variant">
+                <li><Link to="/">Privacy Policy</Link></li>
+                <li><Link to="/">Terms of Service</Link></li>
+              </ul>
+            </div>
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-outline-variant/30 text-sm text-on-surface-variant text-center">
