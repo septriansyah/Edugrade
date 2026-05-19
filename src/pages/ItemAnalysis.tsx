@@ -58,7 +58,28 @@ export default function ItemAnalysis() {
 
       const subsQuery = query(collection(db, "submissions"), where("assignmentId", "==", id));
       const subsSnap = await getDocs(subsQuery);
-      setSubmissions(subsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const subsData = subsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      const studentIds = [...new Set(subsData.map((s: any) => s.studentId))];
+      const usersMap: Record<string, any> = {};
+      
+      if (studentIds.length > 0) {
+          const userPromises = studentIds.map(sid => getDoc(doc(db, "users", sid)));
+          const userDocs = await Promise.all(userPromises);
+          userDocs.forEach(d => {
+              if (d.exists()) {
+                  usersMap[d.id] = d.data();
+              }
+          });
+      }
+
+      const submissionsWithUser = subsData.map((sub: any) => ({
+          ...sub,
+          studentName: usersMap[sub.studentId]?.displayName || usersMap[sub.studentId]?.email || sub.studentId.substring(0, 8),
+          studentPhoto: usersMap[sub.studentId]?.photoURL
+      }));
+
+      setSubmissions(submissionsWithUser);
     } catch (error) {
       console.error("Error fetching analytics data:", error);
       // We don't want to throw and crash the entire UI, but maybe show an error state
@@ -76,7 +97,10 @@ export default function ItemAnalysis() {
       const answers = submissions.map(s => s.answers?.[qIdx]);
       
       if (q.type === "Multiple Choice") {
-        const correctAnswers = answers.filter(a => a?.isCorrect).length;
+        const correctOptionLabel = q.options?.find((opt: any) => opt.isCorrect)?.label;
+        const isAnsCorrect = (a: any) => typeof a === 'string' ? a === correctOptionLabel : a?.isCorrect;
+        
+        const correctAnswers = answers.filter(a => isAnsCorrect(a)).length;
         const tk = analysisUtils.calculateTK(correctAnswers, totalStudents);
         
         // Sorting for DP calculation
@@ -89,14 +113,15 @@ export default function ItemAnalysis() {
         const upperGroup = sortedSubs.slice(0, groupSize);
         const lowerGroup = sortedSubs.slice(-groupSize);
         
-        const upperCorrect = upperGroup.filter(s => s.answers?.[qIdx]?.isCorrect).length;
-        const lowerCorrect = lowerGroup.filter(s => s.answers?.[qIdx]?.isCorrect).length;
+        const upperCorrect = upperGroup.filter(s => isAnsCorrect(s.answers?.[qIdx])).length;
+        const lowerCorrect = lowerGroup.filter(s => isAnsCorrect(s.answers?.[qIdx])).length;
         const dp = analysisUtils.calculateDP(upperCorrect, lowerCorrect, groupSize);
 
         const distractors: { [key: string]: number } = {};
         answers.forEach(a => {
-            if (a && !a.isCorrect && a.label) {
-                distractors[a.label] = (distractors[a.label] || 0) + 1;
+            let label = typeof a === 'string' ? a : a?.label;
+            if (label && !isAnsCorrect(a)) {
+                distractors[label] = (distractors[label] || 0) + 1;
             }
         });
 
@@ -455,15 +480,25 @@ export default function ItemAnalysis() {
                         <tr key={sub.id} className="border-t border-white/20 hover:bg-white/40 transition-colors">
                             <td className="px-8 py-4 font-bold text-sm text-on-surface whitespace-nowrap">
                                 <div className="flex items-center gap-3">
-                                   <div className="w-8 h-8 rounded-lg bg-surface border border-white/80 overflow-hidden">
-                                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${sub.studentId}`} alt="avatar" />
+                                   <div className="w-8 h-8 rounded-lg bg-surface border border-white/80 overflow-hidden flex items-center justify-center">
+                                      {sub.studentPhoto ? (
+                                          <img src={sub.studentPhoto} alt="avatar" className="w-full h-full object-cover" />
+                                      ) : (
+                                          <span className="text-[10px] font-black uppercase text-primary bg-primary/10 w-full h-full flex items-center justify-center">{sub.studentName?.charAt(0) || "U"}</span>
+                                      )}
                                    </div>
-                                   {sub.studentId.substring(0, 8)}...
+                                   {sub.studentName || sub.studentId.substring(0, 8)}
                                 </div>
                             </td>
-                            {assignment.questions?.map((_: any, qIdx: number) => {
+                            {assignment.questions?.map((q: any, qIdx: number) => {
                                 const ans = sub.answers?.[qIdx];
-                                const isCorrect = ans?.isCorrect || (ans?.score !== undefined && ans.score >= 70);
+                                let isCorrect = false;
+                                if (q.type === "Multiple Choice") {
+                                    const correctOptionLabel = q.options?.find((opt: any) => opt.isCorrect)?.label;
+                                    isCorrect = typeof ans === 'string' ? ans === correctOptionLabel : ans?.isCorrect;
+                                } else {
+                                    isCorrect = ans?.isCorrect || (ans?.score !== undefined && ans.score >= 70);
+                                }
                                 return (
                                     <td key={qIdx} className="px-4 py-4 text-center">
                                        <div className={cn("w-6 h-6 mx-auto rounded-lg flex items-center justify-center", isCorrect ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600")}>

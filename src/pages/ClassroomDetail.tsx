@@ -292,6 +292,7 @@ function OverviewSection({ classroom, setActiveTab, assignments, materials, meet
                 ...sub,
                 studentName: student?.displayName || "Siswa tidak dikenal",
                 studentEmail: student?.email,
+                studentPhoto: student?.photoURL,
                 assignmentTitle: assignment?.title || "Tugas tidak dikenal"
             };
         })
@@ -343,8 +344,12 @@ function OverviewSection({ classroom, setActiveTab, assignments, materials, meet
                     className="flex items-center justify-between p-4 bg-on-surface/5 rounded-2xl hover:bg-on-surface/10 transition-all group"
                  >
                     <div className="flex items-center gap-4">
-                       <div className="w-10 h-10 rounded-xl bg-white border border-on-surface/10 overflow-hidden">
-                          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${sub.studentId}`} alt="avatar" />
+                       <div className="w-10 h-10 rounded-xl bg-white border border-on-surface/10 overflow-hidden flex items-center justify-center">
+                          {sub.studentPhoto ? (
+                              <img src={sub.studentPhoto} alt="avatar" className="w-full h-full object-cover" />
+                          ) : (
+                              <span className="text-sm font-black uppercase text-primary bg-primary/10 w-full h-full flex items-center justify-center">{sub.studentName?.charAt(0) || "U"}</span>
+                          )}
                        </div>
                        <div>
                           <p className="text-sm font-bold">{sub.studentName}</p>
@@ -561,6 +566,7 @@ function ReviewSection({ classroom, assignments, submissions, students, isLoadin
             ...sub,
             studentName: student?.displayName || "Siswa tidak dikenal",
             studentEmail: student?.email,
+            studentPhoto: student?.photoURL,
             assignmentTitle: assignment?.title || "Tugas tidak dikenal"
         };
     }).filter((sub: any) => {
@@ -591,8 +597,12 @@ function ReviewSection({ classroom, assignments, submissions, students, isLoadin
             enrichedSubmissions.map((sub: any) => (
                 <div key={sub.id} className="glass rounded-[40px] p-6 md:p-8 border-white/60 flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-2xl transition-all group">
                    <div className="flex items-center gap-6">
-                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-on-surface/5 overflow-hidden border-2 border-white">
-                         <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${sub.studentId}`} alt="avatar" className="w-full h-full object-cover" />
+                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-on-surface/5 overflow-hidden border-2 border-white flex items-center justify-center">
+                         {sub.studentPhoto ? (
+                             <img src={sub.studentPhoto} alt="avatar" className="w-full h-full object-cover" />
+                         ) : (
+                             <span className="text-lg md:text-2xl font-black uppercase text-primary bg-primary/10 w-full h-full flex items-center justify-center">{sub.studentName?.charAt(0) || "U"}</span>
+                         )}
                       </div>
                       <div>
                         <h4 className="text-lg font-bold">{sub.studentName}</h4>
@@ -698,8 +708,12 @@ function StudentsSection({ students, assignments, submissions, onRefresh, isLoad
               return (
                 <div key={s.id} className="glass p-6 md:p-8 rounded-[40px] border-white/60 hover:shadow-2xl transition-all group relative overflow-hidden">
                    <div className="flex items-center gap-5 relative z-10">
-                      <div className="w-16 h-16 rounded-2xl bg-on-surface/5 border-2 border-white overflow-hidden shadow-sm">
-                         <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${s.id}`} alt="avatar" className="w-full h-full object-cover" />
+                      <div className="w-16 h-16 rounded-2xl bg-on-surface/5 border-2 border-white overflow-hidden shadow-sm flex items-center justify-center">
+                         {s.photoURL ? (
+                             <img src={s.photoURL} alt="avatar" className="w-full h-full object-cover" />
+                         ) : (
+                             <span className="text-2xl font-black uppercase text-primary bg-primary/10 w-full h-full flex items-center justify-center">{s.displayName?.charAt(0) || s.email?.charAt(0) || "U"}</span>
+                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                          <p className="font-black text-lg truncate group-hover:text-primary transition-colors">{s.displayName}</p>

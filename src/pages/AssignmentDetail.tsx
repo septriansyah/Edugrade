@@ -22,6 +22,7 @@ export default function AssignmentDetail() {
   const [studentData, setStudentData] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [submissionStatus, setSubmissionStatus] = useState("pending");
   const [isAIGrading, setIsAIGrading] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<{
     score: number;
@@ -83,6 +84,7 @@ export default function AssignmentDetail() {
             setSelectedOption(data.selectedOption || null);
             setTeacherFeedback(data.teacherFeedback || "");
             if (data.answers) setAnswers(data.answers);
+            setSubmissionStatus(data.status || "pending");
           }
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -117,9 +119,8 @@ export default function AssignmentDetail() {
             selectedOption,
             answers,
             status: "submitted",
-            createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
         alert("Tugas berhasil dikumpulkan!");
     } catch (error) {
         handleFirestoreError(error, OperationType.WRITE, path);
@@ -154,6 +155,42 @@ export default function AssignmentDetail() {
         alert("Feedback berhasil disimpan dan akan terlihat oleh siswa.");
     } catch (error) {
         handleFirestoreError(error, OperationType.UPDATE, path);
+    } finally {
+        setIsSavingFeedback(false);
+    }
+  };
+
+  const handleFinalizeScore = async () => {
+    const studentId = studentIdParam;
+    if (!studentId || !id || !assignment) return;
+    
+    setIsSavingFeedback(true);
+    const submissionId = `${id}_${studentId}`;
+    
+    // Calculate MC score
+    let correctCount = 0;
+    let totalMc = 0;
+    assignment.questions?.forEach((q: any, index: number) => {
+        if (q.type === "Multiple Choice") {
+            totalMc++;
+            const correctOpt = q.options?.find((o: any) => o.isCorrect)?.label;
+            if (answers[index] === correctOpt) correctCount++;
+        }
+    });
+    
+    const mcScore = totalMc > 0 ? Math.round((correctCount / totalMc) * 100) : 0;
+    
+    try {
+        await updateDoc(doc(db, "submissions", submissionId), {
+            status: "graded",
+            mcScore,
+            updatedAt: serverTimestamp()
+        });
+        setSubmissionStatus("graded");
+        alert(`Nilai berhasil difinalisasi! Skor Pilihan Ganda: ${correctCount}/${totalMc} (${mcScore})`);
+    } catch (error) {
+        console.error(error);
+        alert("Gagal memfinalisasi nilai.");
     } finally {
         setIsSavingFeedback(false);
     }
@@ -257,9 +294,9 @@ export default function AssignmentDetail() {
                  whileInView={{ opacity: 1, y: 0 }}
                  className="glass p-12 rounded-[56px] border-white/60 shadow-xl"
                >
-                  <p className="text-2xl font-bold mb-10">Esai: Jelaskan proses sintesis protein secara rinci.</p>
+                  <p className="text-xl font-bold mb-6">Esai: Jelaskan proses sintesis protein secara rinci.</p>
                   <textarea 
-                    className="w-full h-80 p-10 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-[40px] font-medium text-xl leading-relaxed transition-all shadow-inner"
+                    className="w-full h-40 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-base leading-relaxed transition-all shadow-inner"
                     placeholder="Tuliskan jawaban lengkap Anda di sini..."
                     value={digitalAnswer}
                     onChange={(e) => setDigitalAnswer(e.target.value)}
@@ -275,7 +312,7 @@ export default function AssignmentDetail() {
                
                <button 
                 onClick={handleSubmit}
-                className="bg-primary text-white px-20 py-8 rounded-[40px] font-black text-xl uppercase tracking-widest shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+                className="bg-primary text-white px-8 py-4 w-full sm:w-auto rounded-xl font-black text-base uppercase tracking-widest shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
                >
                   Kumpulkan Jawaban Akhir
                </button>
@@ -459,23 +496,31 @@ export default function AssignmentDetail() {
                     </p>
 
                     {currentQuestion?.type === "Multiple Choice" ? (
-                      <div className="space-y-4 md:space-y-6">
-                        {currentQuestion.options?.map((opt: any) => (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {currentQuestion.options?.map((opt: any) => {
+                          const isStudentAnswer = (answers[currentQuestionIndex] || selectedOption) === opt.label;
+                          const showFeedback = userRole === "teacher" || submissionStatus === "graded";
+                          const isCorrect = showFeedback && opt.isCorrect;
+                          const isWrong = showFeedback && isStudentAnswer && !opt.isCorrect;
+                          return (
                           <OptionItem 
                             key={opt.label} 
                             letter={opt.label} 
                             text={opt.text} 
-                            isActive={(answers[currentQuestionIndex] || selectedOption) === opt.label} 
+                            isActive={isStudentAnswer} 
+                            isCorrect={isCorrect}
+                            isWrong={isWrong}
                             onClick={() => {
                               setAnswers(prev => ({ ...prev, [currentQuestionIndex]: opt.label }));
                               setSelectedOption(opt.label);
                             }} 
                           />
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
                        <textarea 
-                         className="w-full h-64 p-8 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-[32px] font-medium text-lg leading-relaxed shadow-inner"
+                         className="w-full h-32 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-base leading-relaxed shadow-inner"
                          placeholder="Tuliskan jawaban Anda di sini..."
                          value={answers[currentQuestionIndex] || digitalAnswer}
                          onChange={(e) => {
@@ -630,7 +675,7 @@ export default function AssignmentDetail() {
                </div>
                <textarea 
                 className={cn(
-                    "w-full h-44 p-8 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-[32px] font-medium text-lg leading-relaxed placeholder:text-on-surface-variant/20 transition-all mb-8 shadow-inner",
+                    "w-full h-28 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-sm leading-relaxed placeholder:text-on-surface-variant/20 transition-all mb-8 shadow-inner",
                     userRole === "teacher" && "cursor-not-allowed opacity-80"
                 )}
                 placeholder={userRole === "teacher" ? "Siswa belum menuliskan jawaban digital." : "Tuliskan catatan atau jawaban esai tambahan..."}
@@ -658,7 +703,7 @@ export default function AssignmentDetail() {
                   onClick={handleSubmit}
                   disabled={isSubmitting}
                   className={cn(
-                      "mt-auto w-full glass-submit py-6 rounded-[32px] font-black text-2xl tracking-tighter flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl",
+                      "mt-auto w-full glass-submit py-4 rounded-xl font-black text-lg tracking-tight flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl",
                       isSubmitting && "opacity-50 cursor-wait"
                   )}
               >
@@ -689,8 +734,14 @@ export default function AssignmentDetail() {
                             <span className="font-black text-on-surface">Menunggu</span>
                         </div>
                         <button 
-                            className="w-full bg-secondary text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest mt-4 hover:scale-105 active:scale-95 transition-all"
+                            onClick={handleFinalizeScore}
+                            disabled={isSavingFeedback}
+                            className={cn(
+                                "w-full bg-secondary text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest mt-4 transition-all flex items-center justify-center gap-2",
+                                isSavingFeedback ? "opacity-50 cursor-wait" : "hover:scale-105 active:scale-95"
+                            )}
                         >
+                            {isSavingFeedback ? <Loader2 className="animate-spin" size={16} /> : null}
                             Finalisasi Nilai
                         </button>
                     </div>
@@ -703,25 +754,33 @@ export default function AssignmentDetail() {
   );
 }
 
-const OptionItem: React.FC<{ letter: string, text: string, isActive?: boolean, onClick?: () => void }> = ({ letter, text, isActive, onClick }) => {
+const OptionItem: React.FC<{ letter: string, text: string, isActive?: boolean, isCorrect?: boolean, isWrong?: boolean, onClick?: () => void }> = ({ letter, text, isActive, isCorrect, isWrong, onClick }) => {
     return (
         <motion.div 
-            whileHover={{ x: 10 }}
+            whileHover={{ x: 5 }}
             onClick={onClick}
             className={cn(
-                "p-5 md:p-6 rounded-[24px] md:rounded-[28px] border-2 flex items-center gap-4 md:gap-6 transition-all cursor-pointer group",
-                isActive ? "bg-primary border-primary shadow-2xl shadow-primary/20 scale-[1.02] md:scale-105" : "glass border-white/60 hover:border-primary/40 hover:bg-white/60"
+                "p-3 md:p-4 rounded-xl border-2 flex items-center gap-3 transition-all cursor-pointer group min-h-[60px]",
+                isActive && !isCorrect && !isWrong ? "bg-primary border-primary shadow-xl shadow-primary/20 scale-[1.02]" : "",
+                isCorrect ? "bg-green-500 border-green-500 shadow-xl shadow-green-500/20 scale-[1.02]" : "",
+                isWrong ? "bg-red-500 border-red-500 shadow-xl shadow-red-500/20 scale-[1.02]" : "",
+                !isActive && !isCorrect && !isWrong ? "glass border-white/60 hover:border-primary/40 hover:bg-white/60" : ""
             )}
         >
             <div className={cn(
-                "w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-black text-xs md:text-sm transition-all shrink-0",
-                isActive ? "bg-white text-primary" : "bg-white/40 text-on-surface-variant border border-white/60"
+                "w-8 h-8 rounded-full flex items-center justify-center font-black text-xs transition-all shrink-0",
+                (isActive || isCorrect || isWrong) ? "bg-white" : "bg-white/40 text-on-surface-variant border border-white/60",
+                isCorrect ? "text-green-600" : "",
+                isWrong ? "text-red-600" : "",
+                isActive && !isCorrect && !isWrong ? "text-primary" : ""
             )}>
-                {isActive ? <Check size={18} strokeWidth={4} /> : letter}
+                {isCorrect ? <Check size={14} strokeWidth={4} /> : 
+                 isWrong ? <span className="text-red-600">X</span> :
+                 isActive ? <Check size={14} strokeWidth={4} /> : letter}
             </div>
             <span className={cn(
-                "text-base md:text-xl font-bold transition-all line-clamp-2 md:line-clamp-none",
-                isActive ? "text-white" : "text-on-surface-variant group-hover:text-on-surface"
+                "text-xs md:text-sm font-bold transition-all line-clamp-2 md:line-clamp-none",
+                (isActive || isCorrect || isWrong) ? "text-white" : "text-on-surface-variant group-hover:text-on-surface"
             )}>
                 {text}
             </span>
