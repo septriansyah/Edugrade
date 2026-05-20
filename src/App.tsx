@@ -8,6 +8,8 @@ import ItemAnalysis from './pages/ItemAnalysis';
 import ItemAnalysisList from './pages/ItemAnalysisList';
 import StudentDashboard from './pages/StudentDashboard';
 import AssignmentDetail from './pages/AssignmentDetail';
+import LegalPage from './pages/LegalPage';
+import PricingPage from './pages/PricingPage';
 
 export default function App() {
   return (
@@ -15,6 +17,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/terms" element={<LegalPage />} />
+        <Route path="/privacy" element={<LegalPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         
         {/* Teacher Routes */}
         <Route path="/dashboard" element={<TeacherDashboard />} />

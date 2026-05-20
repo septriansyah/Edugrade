@@ -30,6 +30,9 @@ export default function AssignmentDetail() {
     analysis: { contentScore: number; structureScore: number; relevanceScore: number };
   } | null>(null);
   const [retryCountdown, setRetryCountdown] = useState<number | null>(null);
+  const [essayScore, setEssayScore] = useState<number | "">("");
+  const [mcScore, setMcScore] = useState<number | null>(null);
+  const [totalScore, setTotalScore] = useState<number | null>(null);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -90,6 +93,9 @@ export default function AssignmentDetail() {
             setTeacherFeedback(data.teacherFeedback || "");
             if (data.answers) setAnswers(data.answers);
             setSubmissionStatus(data.status || "pending");
+            if (data.essayScore !== undefined) setEssayScore(data.essayScore);
+            if (data.mcScore !== undefined) setMcScore(data.mcScore);
+            if (data.totalScore !== undefined) setTotalScore(data.totalScore);
           }
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -185,14 +191,35 @@ export default function AssignmentDetail() {
     
     const mcScore = totalMc > 0 ? Math.round((correctCount / totalMc) * 100) : 0;
     
+    // Check if there are essays
+    let totalEssay = 0;
+    assignment.questions?.forEach((q: any) => {
+        if (q.type === "Essay") totalEssay++;
+    });
+
+    const parsedEssayScore = essayScore === "" ? 0 : Number(essayScore);
+
+    let calculatedTotalScore = 0;
+    if (totalMc > 0 && totalEssay > 0) {
+        calculatedTotalScore = Math.round((mcScore + parsedEssayScore) / 2);
+    } else if (totalMc > 0) {
+        calculatedTotalScore = mcScore;
+    } else if (totalEssay > 0) {
+        calculatedTotalScore = parsedEssayScore;
+    }
+
     try {
         await updateDoc(doc(db, "submissions", submissionId), {
             status: "graded",
             mcScore,
+            essayScore: parsedEssayScore,
+            totalScore: calculatedTotalScore,
             updatedAt: serverTimestamp()
         });
         setSubmissionStatus("graded");
-        alert(`Nilai berhasil difinalisasi! Skor Pilihan Ganda: ${correctCount}/${totalMc} (${mcScore})`);
+        setMcScore(mcScore);
+        setTotalScore(calculatedTotalScore);
+        alert(`Nilai berhasil difinalisasi! Skor Akhir: ${calculatedTotalScore}`);
     } catch (error) {
         console.error(error);
         alert("Gagal memfinalisasi nilai.");
@@ -208,13 +235,19 @@ export default function AssignmentDetail() {
     }
 
     setIsAIGrading(true);
+    
+    // Find the current essay question to get the answer key
+    const currentEssayQuestion = assignment?.questions?.[currentQuestionIndex];
+    const answerKey = currentEssayQuestion?.type === "Essay" ? currentEssayQuestion.explanation : assignment?.questions?.find((q: any) => q.type === "Essay")?.explanation;
+
     try {
         const response = await fetch("/api/grade-essay", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                question: assignment?.title || "Soal Esai",
-                studentAnswer: digitalAnswer
+                question: currentEssayQuestion?.question || assignment?.title || "Soal Esai",
+                studentAnswer: answers[currentQuestionIndex] || digitalAnswer,
+                answerKey: answerKey || ""
             }),
         });
 
@@ -638,6 +671,13 @@ export default function AssignmentDetail() {
                                 </motion.div>
                             )}
     
+                            {currentQuestion?.type === "Essay" && currentQuestion?.explanation && (
+                                <div className="bg-primary/5 border border-primary/10 p-6 rounded-[32px] space-y-2 mb-6">
+                                    <h5 className="text-sm font-black text-primary uppercase tracking-widest flex items-center gap-2"><Check size={16} /> Kunci Jawaban / Panduan</h5>
+                                    <p className="text-sm text-on-surface font-medium leading-relaxed">{currentQuestion.explanation}</p>
+                                </div>
+                            )}
+
                             <textarea 
                                 className="w-full h-32 p-6 bg-white/40 border-2 border-white/40 focus:border-secondary outline-none rounded-[28px] font-medium text-lg leading-relaxed placeholder:text-on-surface-variant/20 transition-all shadow-inner"
                                 placeholder="Berikan masukan konstruktif untuk tugas ini..."
@@ -736,13 +776,27 @@ export default function AssignmentDetail() {
                 <div className="glass p-10 rounded-[48px] border-white/60 shadow-xl bg-secondary/5 mt-auto">
                     <h4 className="text-xl font-black tracking-tight mb-4">Ringkasan Penilaian</h4>
                     <div className="space-y-4">
-                        <div className="flex justify-between py-2 border-b border-white/20">
+                        <div className="flex justify-between py-2 border-b border-white/20 items-center">
                             <span className="text-xs font-bold text-on-surface-variant/40 uppercase">Pilihan Ganda</span>
-                            <span className="font-black text-primary">10/10</span>
+                            <span className="font-black text-primary">{mcScore !== null ? `${mcScore}/100` : "Otomatis"}</span>
                         </div>
-                        <div className="flex justify-between py-2 border-b border-white/20">
+                        <div className="flex justify-between py-2 border-b border-white/20 items-center">
                             <span className="text-xs font-bold text-on-surface-variant/40 uppercase">Esai</span>
-                            <span className="font-black text-on-surface">Menunggu</span>
+                            {submissionStatus === "graded" ? (
+                                <span className="font-black text-on-surface">{essayScore !== "" ? `${essayScore}/100` : "0/100"}</span>
+                            ) : (
+                                <input 
+                                    type="number" 
+                                    placeholder="0-100"
+                                    value={essayScore}
+                                    onChange={(e) => setEssayScore(e.target.value === "" ? "" : Number(e.target.value))}
+                                    className="w-20 bg-white/50 border border-white focus:border-secondary outline-none px-3 py-1 rounded-xl text-right font-black"
+                                />
+                            )}
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-white/20 items-center">
+                            <span className="text-xs font-bold text-on-surface-variant/40 uppercase">Total Akhir</span>
+                            <span className="font-black text-secondary">{totalScore !== null ? `${totalScore}/100` : "Menunggu"}</span>
                         </div>
                         <button 
                             onClick={handleFinalizeScore}

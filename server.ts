@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
+import midtransClient from "midtrans-client";
 
 dotenv.config();
 
@@ -211,10 +212,11 @@ app.post("/api/generate-followup", async (req, res) => {
 // API: Grade Essay
 app.post("/api/grade-essay", async (req, res) => {
   try {
-    const { question, studentAnswer, context } = req.body;
+    const { question, studentAnswer, context, answerKey } = req.body;
     
     const prompt = `You are a professional teacher grading an essay. 
     Question: "${question}"
+    ${answerKey ? `Expected Answer / Grading Key: "${answerKey}"\n` : ""}
     Student Answer: "${studentAnswer}"
     ${context ? `Additional context: ${context}` : ""}
     
@@ -295,6 +297,53 @@ app.post("/api/refine-question", async (req, res) => {
   }
 });
 
+// API: Midtrans Create Transaction
+app.post("/api/create-transaction", async (req, res) => {
+  try {
+    const { userId, userEmail, userName } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+
+    const serverKey = process.env.MIDTRANS_SERVER_KEY;
+    if (!serverKey) {
+       return res.status(500).json({ error: "MIDTRANS_SERVER_KEY is not configured on the server." });
+    }
+
+    // Create Snap API instance
+    let snap = new midtransClient.Snap({
+        isProduction : false,
+        serverKey : serverKey
+    });
+
+    let parameter = {
+        "transaction_details": {
+            "order_id": `EDUPRM-${userId}-${Date.now()}`,
+            "gross_amount": 500000
+        },
+        "credit_card": {
+            "secure" : true
+        },
+        "customer_details": {
+            "first_name": userName || "Teacher",
+            "email": userEmail || "teacher@edugrade.app",
+        },
+        "item_details": [{
+            "id": "ITEM-PREMIUM-PRO",
+            "price": 500000,
+            "quantity": 1,
+            "name": "Edugrade Premium Pro"
+        }]
+    };
+
+    const transaction = await snap.createTransaction(parameter);
+    res.json({ token: transaction.token, redirect_url: transaction.redirect_url });
+  } catch (error: any) {
+    console.error("Midtrans Transaction Error:", error);
+    res.status(500).json({ error: error.message || "Gagal membuat transaksi" });
+  }
+});
+
 // Serve frontend
 async function bootstrap() {
   if (process.env.NODE_ENV !== "production") {
@@ -306,6 +355,7 @@ async function bootstrap() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
+    
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });

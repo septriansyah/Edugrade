@@ -231,7 +231,7 @@ export default function ClassroomManagement() {
                 {activeTab === "students" && <StudentsSection classroom={classroom} students={students} assignments={assignments} submissions={submissions} onRefresh={() => fetchAllClassData(true)} isLoading={isDataLoading} />}
                 {activeTab === "generator" && <GeneratorSection classroom={classroom} />}
                 {activeTab === "reviews" && <ReviewSection classroom={classroom} assignments={assignments} submissions={submissions} students={students} isLoading={isDataLoading} />}
-                {activeTab === "grading" && <GradingSection classroom={classroom} students={students} assignments={assignments} />}
+                {activeTab === "grading" && <GradingSection classroom={classroom} students={students} assignments={assignments} submissions={submissions} />}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -762,7 +762,7 @@ function StudentsSection({ students, assignments, submissions, onRefresh, isLoad
   )
 }
 
-function GradingSection({ classroom, students, assignments }: any) {
+function GradingSection({ classroom, students, assignments, submissions }: any) {
   return (
     <div className="space-y-10">
        <div className="flex justify-between items-center">
@@ -774,16 +774,31 @@ function GradingSection({ classroom, students, assignments }: any) {
              <thead>
                 <tr className="bg-on-surface/5">
                    <th className="px-8 py-6 font-black text-[10px] uppercase tracking-widest text-on-surface-variant/60">Siswa</th>
-                   <th className="px-8 py-6 font-black text-[10px] uppercase tracking-widest text-on-surface-variant/60">Nilai Akhir</th>
+                   <th className="px-8 py-6 font-black text-[10px] uppercase tracking-widest text-on-surface-variant/60">Rata-rata Nilai</th>
                 </tr>
              </thead>
              <tbody>
-                {students.map((s: any) => (
+                {students.map((s: any) => {
+                  const studentSubmissions = submissions?.filter((sub: any) => sub.studentId === s.id && sub.status === "graded") || [];
+                  let totalScore = 0;
+                  studentSubmissions.forEach((sub: any) => {
+                      totalScore += sub.totalScore !== undefined ? sub.totalScore : (sub.mcScore !== undefined ? sub.mcScore : 0);
+                  });
+                  const avgScore = studentSubmissions.length > 0 ? Math.round(totalScore / studentSubmissions.length) : null;
+                  
+                  return (
                   <tr key={s.id} className="border-t border-on-surface/5">
                      <td className="px-8 py-6 font-bold">{s.displayName}</td>
-                     <td className="px-8 py-6"><span className="px-3 py-1 bg-green-500/10 text-green-600 rounded font-black text-xs">Belum Ada</span></td>
+                     <td className="px-8 py-6">
+                        {avgScore !== null ? (
+                            <span className="px-3 py-1 bg-green-500/10 text-green-600 rounded font-black text-xs">{avgScore}/100</span>
+                        ) : (
+                            <span className="px-3 py-1 bg-on-surface/10 text-on-surface-variant rounded font-black text-xs">Belum Ada</span>
+                        )}
+                     </td>
                   </tr>
-                ))}
+                  );
+                })}
              </tbody>
           </table>
        </div>

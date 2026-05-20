@@ -20,6 +20,7 @@ interface AssignmentData {
   dueDate: any;
   classId: string;
   status?: string;
+  score?: number | null;
 }
 
 interface SubmissionData {
@@ -34,6 +35,7 @@ export default function StudentDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [joinCode, setJoinCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
+  const [averageScore, setAverageScore] = useState<number>(0);
   const hasAutoJoined = useRef(false);
 
   useEffect(() => {
@@ -125,17 +127,35 @@ export default function StudentDashboard() {
         // 3. Fetch Submissions for this student
         const qSubmissions = query(collection(db, submissionsPath), where("studentId", "==", auth.currentUser.uid));
         const querySnapshotSubmissions = await getDocs(qSubmissions);
-        const submissionsMap: Record<string, string> = {};
+        const submissionsMap: Record<string, any> = {};
+        let totalScoreSum = 0;
+        let gradedCount = 0;
+        
         querySnapshotSubmissions.docs.forEach(doc => {
             const data = doc.data();
-            submissionsMap[data.assignmentId] = data.status;
+            submissionsMap[data.assignmentId] = data;
+            if (data.status === 'graded') {
+                const score = data.totalScore !== undefined ? data.totalScore : (data.mcScore !== undefined ? data.mcScore : 0);
+                totalScoreSum += score;
+                gradedCount++;
+            }
         });
 
+        if (gradedCount > 0) {
+            setAverageScore(Math.round(totalScoreSum / gradedCount));
+        } else {
+            setAverageScore(0);
+        }
+
         // 4. Map status to assignments
-        const assignmentsWithStatus = assignmentsList.map(assignment => ({
-            ...assignment,
-            status: submissionsMap[assignment.id] || "belum_dikumpulkan"
-        })) as AssignmentData[];
+        const assignmentsWithStatus = assignmentsList.map(assignment => {
+            const sub = submissionsMap[assignment.id];
+            return {
+                ...assignment,
+                status: sub?.status || "belum_dikumpulkan",
+                score: sub?.totalScore !== undefined ? sub.totalScore : (sub?.mcScore !== undefined ? sub.mcScore : null)
+            };
+        }) as AssignmentData[];
 
         setAssignments(assignmentsWithStatus);
       } else {
@@ -195,7 +215,7 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <QuickStat label="Pelajaran" value={classes.length.toString()} icon={<Calculator size={24} />} delay={0.1} />
           <QuickStat label="Tugas Selesai" value={assignments.filter(a => a.status === 'graded').length.toString()} icon={<History size={24} />} delay={0.2} />
-          <QuickStat label="Rata-rata Nilai" value="0.0" icon={<Sparkles size={24} />} delay={0.3} color="bg-primary/20 text-primary" />
+          <QuickStat label="Rata-rata Nilai" value={averageScore.toString()} icon={<Sparkles size={24} />} delay={0.3} color="bg-primary/20 text-primary" />
           <QuickStat label="Tugas" value={assignments.length.toString()} icon={<Users size={24} />} delay={0.4} />
         </div>
 
@@ -241,6 +261,11 @@ export default function StudentDashboard() {
 
                       <div className="flex items-center gap-6 w-full md:w-auto">
                         <StatusBadge status={assignment.status || "belum_dikumpulkan"} />
+                        {assignment.status === 'graded' && assignment.score !== null && assignment.score !== undefined && (
+                            <div className="px-4 py-2 bg-secondary/10 text-secondary border border-secondary/20 rounded-xl font-black text-sm whitespace-nowrap">
+                                Nilai: {assignment.score}/100
+                            </div>
+                        )}
                         <Link 
                           to={`/assignment/${assignment.id}`}
                           className="px-8 py-4 bg-on-surface text-surface rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-on-surface-variant transition-all whitespace-nowrap"

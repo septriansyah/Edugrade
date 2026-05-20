@@ -97,6 +97,24 @@ export default function QuestionGenerator() {
   const [retryCountdown, setRetryCountdown] = useState<number | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<{index: number, type: "generated" | "bank"} | null>(null);
   const [previewQuestion, setPreviewQuestion] = useState<Question | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setUserProfile(docSnap.data());
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -153,6 +171,13 @@ export default function QuestionGenerator() {
 
   const handleGenerate = async () => {
     if (!topic && !referenceMaterial) return;
+    
+    if (userProfile && (userProfile.aiTokens || 0) <= 0) {
+      if (confirm("Token AI Generator Anda habis. Beralih ke Premium untuk mendapatkan 1000 Token AI Generator?")) {
+          navigate("/pricing");
+      }
+      return;
+    }
 
     setIsGenerating(true);
     setGenerationError(null);
@@ -180,6 +205,14 @@ export default function QuestionGenerator() {
       }
       const data = await response.json();
       setQuestions(data);
+      
+      if (auth.currentUser) {
+          const userRef = doc(db, "users", auth.currentUser.uid);
+          await updateDoc(userRef, {
+              aiTokens: Math.max(0, (userProfile?.aiTokens || 0) - 1)
+          });
+          setUserProfile((prev: any) => ({ ...prev, aiTokens: Math.max(0, (prev?.aiTokens || 0) - 1) }));
+      }
     } catch (error: any) {
       console.error(error);
       setGenerationError(error.message);
@@ -362,6 +395,11 @@ export default function QuestionGenerator() {
                 
                 <p className="text-2xl text-on-surface-variant/80 font-medium max-w-3xl mb-12 leading-relaxed">
                   Konfigurasi parameter atau unggah materi untuk menghasilkan paket soal yang seimbang sesuai standar <span className="font-bold text-on-surface underline decoration-primary/20">Taksonomi Bloom</span>.
+                  {userProfile && (
+                    <span className="block mt-4 text-sm font-bold text-primary bg-primary/10 w-fit px-4 py-2 rounded-full">
+                      Sisa Token AI: {userProfile.aiTokens || 0}
+                    </span>
+                  )}
                 </p>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">

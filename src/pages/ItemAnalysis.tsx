@@ -35,6 +35,7 @@ export default function ItemAnalysis() {
   const [isFixing, setIsFixing] = useState<number | null>(null);
   const [refinedQuestion, setRefinedQuestion] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -54,6 +55,11 @@ export default function ItemAnalysis() {
       const assignmentDoc = await getDoc(doc(db, "assignments", id));
       if (assignmentDoc.exists()) {
         setAssignment({ id: assignmentDoc.id, ...assignmentDoc.data() });
+      }
+
+      const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+      if (userDoc.exists()) {
+          setUserProfile(userDoc.data());
       }
 
       const subsQuery = query(collection(db, "submissions"), where("assignmentId", "==", id));
@@ -227,42 +233,248 @@ export default function ItemAnalysis() {
   }, [analytics]);
 
   const handleExportTxt = () => {
-    if (!analytics || !assignment) return;
+    if (!analytics || !assignment || !submissions.length) return;
     
-    let content = `HASIL ANALISIS ITEM - ${assignment.title}\n`;
-    content += `==========================================\n\n`;
-    content += `RINGKASAN:\n`;
-    content += `- Rata-rata Nilai: ${analytics.mean.toFixed(2)}\n`;
-    content += `- Reliabilitas: ${analytics.reliability.toFixed(2)}\n`;
-    content += `- Persentase Ketuntasan: ${analytics.completionRate.toFixed(2)}%\n\n`;
-    
-    content += `DETAIL PER BUTIR SOAL:\n`;
-    analytics.items.forEach((item: any) => {
-      content += `Soal No. ${item.questionIndex + 1} (${item.type})\n`;
-      content += `- Tingkat Kesukaran (TK): ${item.tk.toFixed(2)} (${analysisUtils.interpretTK(item.tk)})\n`;
-      content += `- Daya Beda (DP): ${item.dp.toFixed(2)} (${analysisUtils.interpretDP(item.dp)})\n`;
-      if (item.distractors) {
-          content += `- Efektivitas Pengecoh: ${JSON.stringify(item.distractors)}\n`;
-      }
-      content += `- Status: ${item.status}\n`;
-      content += `- Rekomendasi: ${item.recommendation}\n`;
-      content += `------------------------------------------\n`;
+    const totalStudents = submissions.length;
+    const questions = assignment.questions || [];
+    const totalItems = questions.length;
+    const fileNameText = `ANABUTIRSOAL_${assignment.title.replace(/\\s+/g, '_').toUpperCase().substring(0, 20)}.ANA`;
+    const fileName = `ANABUTIRSOAL_${assignment.title.replace(/\\s+/g, '_').toUpperCase().substring(0, 20)}.txt`;
+
+    // 1. Calculate Scores per Student
+    const studentScores = submissions.map((sub: any, idx: number) => {
+        let correctCount = 0;
+        let wrongCount = 0;
+        let emptyCount = 0;
+        let oddScore = 0;
+        let evenScore = 0;
+        const answersList: string[] = [];
+        
+        questions.forEach((q: any, qIdx: number) => {
+            const ans = sub.answers?.[qIdx];
+            let isCorrect = false;
+            let isEmpty = ans === undefined || ans === null || ans === "";
+            
+            if (q.type === "Multiple Choice") {
+                const correctOptionLabel = q.options?.find((opt: any) => opt.isCorrect)?.label;
+                isCorrect = typeof ans === 'string' ? ans === correctOptionLabel : ans?.isCorrect;
+            } else {
+                isCorrect = ans?.isCorrect || (ans?.score !== undefined && ans.score >= 70);
+            }
+            
+            if (isEmpty) {
+                emptyCount++;
+                answersList.push('-');
+            } else if (isCorrect) {
+                correctCount++;
+                answersList.push('1');
+                if ((qIdx + 1) % 2 !== 0) oddScore++;
+                else evenScore++;
+            } else {
+                wrongCount++;
+                answersList.push('0');
+            }
+        });
+        
+        return {
+            noUrut: idx + 1,
+            name: sub.studentName || sub.studentId.substring(0, 8),
+            correct: correctCount,
+            wrong: wrongCount,
+            empty: emptyCount,
+            score: correctCount, // Bobot = 1
+            oddScore,
+            evenScore,
+            answersList
+        };
     });
 
-    content += `\nRUMUS YANG DIGUNAKAN:\n`;
-    content += `1. Tingkat Kesukaran (TK) = B / N\n`;
-    content += `2. Daya Beda (DP) = (BA - BB) / (0.5 * N)\n`;
-    content += `3. Reliabilitas (KR-20/Alpha Cronbach) = (k / (k-1)) * (1 - Σpq / σ²)\n`;
+    const sortedStudents = [...studentScores].sort((a, b) => b.score - a.score);
+    const groupSize = Math.max(1, Math.floor(totalStudents * 0.27));
+    const upperGroup = sortedStudents.slice(0, groupSize);
+    const lowerGroup = sortedStudents.slice(-groupSize);
+
+    const scoresList = studentScores.map(s => s.score);
+    const mean = scoresList.reduce((a, b) => a + b, 0) / totalStudents;
+    const stdDev = Math.sqrt(analysisUtils.calculateVariance(scoresList) || 0);
+
+    let content = `SKOR DATA DIBOBOT\n=================\n\n`;
+    content += `Jumlah Subyek   = ${totalStudents}\n`;
+    content += `Jumlah butir    = ${totalItems}\n`;
+    content += `Bobot jwb benar = 1\n`;
+    content += `Bobot jwb salah = 0\n`;
+    content += `Nama berkas: ${fileNameText}\n\n`;
+    
+    content += ` No       Kode/Nama  Benar  Salah   Kosong  Skr Asli  Skr Bobot \n`;
+    studentScores.forEach(s => {
+        content += ` ${s.noUrut.toString().padStart(3)} ${s.name.padStart(15).substring(0,15)} ${s.correct.toString().padStart(6)} ${s.wrong.toString().padStart(6)} ${s.empty.toString().padStart(8)} ${s.score.toString().padStart(9)} ${s.score.toString().padStart(10)} \n`;
+    });
+
+    content += `\n\nRELIABILITAS TES\n================\n\n`;
+    content += `Rata2= ${mean.toFixed(2).replace('.', ',')}\n`;
+    content += `Simpang Baku= ${stdDev.toFixed(2).replace('.', ',')}\n`;
+    
+    // Split half correlation
+    const oddScores = studentScores.map(s => s.oddScore);
+    const evenScores = studentScores.map(s => s.evenScore);
+    const meanOdd = oddScores.reduce((a,b)=>a+b,0)/totalStudents;
+    const meanEven = evenScores.reduce((a,b)=>a+b,0)/totalStudents;
+    let num = 0, den1 = 0, den2 = 0;
+    for(let i=0; i<totalStudents; i++){
+        num += (oddScores[i] - meanOdd) * (evenScores[i] - meanEven);
+        den1 += Math.pow(oddScores[i] - meanOdd, 2);
+        den2 += Math.pow(evenScores[i] - meanEven, 2);
+    }
+    const rXY = den1 * den2 === 0 ? 0 : num / Math.sqrt(den1 * den2);
+    const rel = (2 * rXY) / (1 + rXY);
+    
+    content += `KorelasiXY= ${rXY.toFixed(2).replace('.', ',')}\n`;
+    content += `Reliabilitas Tes= ${rel.toFixed(2).replace('.', ',')}\n`;
+    content += `Nama berkas: ${fileNameText}\n\n`;
+    content += ` No.Urut  Kode/Nama Subyek  Skor Ganjil   Skor Genap   Skor Total \n`;
+    studentScores.forEach(s => {
+        content += ` ${s.noUrut.toString().padStart(7)} ${s.name.padStart(17).substring(0,17)} ${s.oddScore.toString().padStart(12)} ${s.evenScore.toString().padStart(12)} ${s.score.toString().padStart(12)} \n`;
+    });
+
+    content += `\n\nKel Unggul & Asor\n=================\n\nKelompok Unggul\nNama berkas: ${fileNameText}\n\n`;
+    const formatAnswers = (group: any[]) => {
+        let str = "";
+        let chunks = Math.ceil(totalItems / 10);
+        for(let c=0; c<chunks; c++){
+            const start = c*10;
+            const end = Math.min(start+10, totalItems);
+            let header = ` No.Urut  Kode/Nama Subyek  Skor `;
+            for(let i=start; i<end; i++) header += `${(i+1).toString().padStart(3)} `;
+            str += header + `\n`;
+            
+            group.forEach(s => {
+                let row = ` ${s.noUrut.toString().padStart(7)} ${s.name.padStart(17).substring(0,17)} ${s.score.toString().padStart(5)} `;
+                for(let i=start; i<end; i++) row += `  ${s.answersList[i] === '0' ? '-' : s.answersList[i]} `;
+                str += row + `\n`;
+            });
+            let sumRow = `             Jml Jwb Benar       `;
+            for(let i=start; i<end; i++){
+                const correctInGroup = group.filter(s => s.answersList[i] === '1').length;
+                sumRow += `  ${correctInGroup} `;
+            }
+            str += sumRow + `\n\n\n`;
+        }
+        return str;
+    };
+    content += formatAnswers(upperGroup);
+    
+    content += `Kelompok Asor\nNama berkas: ${fileNameText}\n\n`;
+    content += formatAnswers(lowerGroup);
+
+    content += `DAYA PEMBEDA\n============\n\n`;
+    content += `Jumlah Subyek= ${totalStudents}\n`;
+    content += `Klp atas/bawah(n)= ${groupSize}\n`;
+    content += `Butir Soal= ${totalItems}\n`;
+    content += `Nama berkas: ${fileNameText}\n\n`;
+    content += ` No Butir  Kel. Atas  Kel. Bawah   Beda   Indeks DP (%) \n`;
+    
+    questions.forEach((q: any, i: number) => {
+        const upperCorrect = upperGroup.filter(s => s.answersList[i] === '1').length;
+        const lowerCorrect = lowerGroup.filter(s => s.answersList[i] === '1').length;
+        const beda = upperCorrect - lowerCorrect;
+        const dp = groupSize > 0 ? (beda / groupSize) * 100 : 0;
+        content += ` ${((i+1).toString()).padStart(8)} ${upperCorrect.toString().padStart(10)} ${lowerCorrect.toString().padStart(11)} ${beda.toString().padStart(6)} ${dp.toFixed(2).replace('.', ',').padStart(15)} \n`;
+    });
+
+    content += `\n\nTINGKAT KESUKARAN\n=================\n\n`;
+    content += `Jumlah Subyek= ${totalStudents}\n`;
+    content += `Butir Soal= ${totalItems}\n`;
+    content += `Nama berkas: ${fileNameText}\n\n`;
+    content += ` No Butir  Jml Betul  Tkt. Kesukaran(%)      Tafsiran \n`;
+    questions.forEach((q: any, i: number) => {
+        const correctCount = studentScores.filter(s => s.answersList[i] === '1').length;
+        const tkPct = totalStudents > 0 ? (correctCount / totalStudents) * 100 : 0;
+        let tafsiran = "Sedang";
+        if (tkPct >= 75) tafsiran = "Mudah";
+        if (tkPct >= 90) tafsiran = "Sangat Mudah";
+        if (tkPct <= 25) tafsiran = "Sukar";
+        if (tkPct <= 10) tafsiran = "Sangat Sukar";
+        content += ` ${((i+1).toString()).padStart(8)} ${correctCount.toString().padStart(10)} ${tkPct.toFixed(2).replace('.', ',').padStart(18)}  ${tafsiran.padStart(12)} \n`;
+    });
+
+    content += `\n\nKORELASI SKOR BUTIR DG SKOR TOTAL\n=================================\n\n`;
+    content += `Jumlah Subyek= ${totalStudents}\n`;
+    content += `Butir Soal= ${totalItems}\n`;
+    content += `Nama berkas: ${fileNameText}\n\n`;
+    content += `             No Butir              Korelasi          Signifikansi \n`;
+    
+    questions.forEach((q: any, i: number) => {
+        const p = studentScores.filter(s => s.answersList[i] === '1').length / totalStudents;
+        let rPbisStr = "NAN";
+        let sig = "NAN";
+        if (p > 0 && p < 1 && stdDev > 0) {
+            const meanCorrect = studentScores.filter(s => s.answersList[i] === '1').reduce((a,b)=>a+b.score, 0) / (p * totalStudents);
+            const rPbis = ((meanCorrect - mean) / stdDev) * Math.sqrt(p / (1-p));
+            rPbisStr = rPbis.toFixed(3).replace('.', ',');
+            sig = rPbis > 0.3 ? "Signifikan" : "-";
+            if (rPbis > 0.5) sig = "Sangat Signifikan";
+        }
+        content += ` ${(i+1).toString().padStart(20)} ${rPbisStr.padStart(21)} ${sig.padStart(21)} \n`;
+    });
+
+    content += `\n\nKUALITAS PENGECOH\n=================\n\n`;
+    content += `Jumlah Subyek= ${totalStudents}\n`;
+    content += `Butir Soal= ${totalItems}\n`;
+    content += `Nama berkas: ${fileNameText}\n\n`;
+    content += ` No Butir      A      B      C      D      E  * \n`;
+    
+    questions.forEach((q: any, i: number) => {
+        if (q.type === "Multiple Choice") {
+            const getCount = (label: string) => submissions.filter(s => {
+                const ans = s.answers?.[i];
+                return (typeof ans === 'string' ? ans : ans?.label) === label;
+            }).length;
+            
+            const correctOpt = q.options?.find((o: any) => o.isCorrect)?.label;
+            
+            let row = ` ${(i+1).toString().padStart(8)}`;
+            ['A', 'B', 'C', 'D', 'E'].forEach(opt => {
+                let countStr = "0";
+                if (q.options?.some((o: any) => o.label === opt)) {
+                    const count = getCount(opt);
+                    if (opt === correctOpt) countStr = count + "**";
+                    else if (count === 0) countStr = count + "--";
+                    else if (count > 0 && count < totalStudents * 0.05) countStr = count + "-";
+                    else countStr = count.toString();
+                }
+                row += ` ${countStr.padStart(6)}`;
+            });
+            row += `  0 \n`;
+            content += row;
+        } else {
+            content += ` ${(i+1).toString().padStart(8)}    (Esai)\n`;
+        }
+    });
+    
+    content += `\n\nKeterangan: 
+** : Kunci Jawaban
+++ : Sangat Baik
++  : Baik
+-  : Kurang Baik
+-- : Buruk
+---: Sangat Buruk\n`;
 
     const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Item-Analysis-${assignment.title.replace(/\s+/g, '-')}.txt`;
+    a.download = fileName;
     a.click();
   };
 
   const handleAiFix = async (item: any) => {
+    if (!userProfile?.isPremium) {
+      if (confirm("Fitur AI Fix hanya tersedia untuk akun Premium Pro. Beralih ke Premium sekarang seharga Rp 500K?")) {
+          window.location.href = "/pricing";
+      }
+      return;
+    }
+    
     setIsFixing(item.questionIndex);
     try {
       const response = await fetch("/api/refine-question", {

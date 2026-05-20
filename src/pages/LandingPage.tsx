@@ -15,7 +15,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-10">
             <Link to="/" className="font-extrabold text-primary border-b-4 border-primary pb-1">Beranda</Link>
             <Link to="#" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Fitur AI</Link>
-            <Link to="#" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Pricing</Link>
+            <Link to="/pricing" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Pricing</Link>
           </nav>
           <div className="flex items-center gap-6">
             <Link to="/auth" className="font-black text-on-surface-variant hover:text-primary transition-colors text-sm uppercase tracking-[0.2em]">Login</Link>
@@ -248,14 +248,14 @@ export default function LandingPage() {
               <ul className="space-y-2 text-on-surface-variant">
                 <li><Link to="/">Home</Link></li>
                 <li><Link to="/">Features</Link></li>
-                <li><Link to="/">Pricing</Link></li>
+                <li><Link to="/pricing">Pricing</Link></li>
               </ul>
             </div>
             <div className="space-y-4">
               <h4 className="font-bold">Legal</h4>
               <ul className="space-y-2 text-on-surface-variant">
-                <li><Link to="/">Privacy Policy</Link></li>
-                <li><Link to="/">Terms of Service</Link></li>
+                <li><Link to="/privacy">Privacy Policy</Link></li>
+                <li><Link to="/terms">Terms of Service</Link></li>
               </ul>
             </div>
           </div>

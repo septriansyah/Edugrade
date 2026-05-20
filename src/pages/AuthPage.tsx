@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Loader2, GraduationCap } from "lucide-react";
+import { Loader2, GraduationCap, BookOpen } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import { signInWithGoogle, ensureUserProfile, auth } from "@/src/lib/firebase";
 import type { UserRole } from "@/src/lib/firebase";
@@ -119,7 +119,7 @@ export default function AuthPage() {
           className="glass rounded-[48px] p-12 flex flex-col h-full border-white/40 shadow-2xl shadow-primary/5 group theme-teacher"
         >
           <div className="w-20 h-20 bg-primary/10 rounded-[28px] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl shadow-primary/10">
-            <span className="text-4xl">👩‍🏫</span>
+            <BookOpen className="text-primary w-10 h-10" />
           </div>
           <h2 className="text-4xl font-black mb-6 tracking-tight">Saya Seorang Guru</h2>
           <p className="text-on-surface-variant/80 text-xl mb-10 flex-grow leading-relaxed font-medium">
@@ -147,7 +147,7 @@ export default function AuthPage() {
           className="glass rounded-[48px] p-12 flex flex-col h-full border-white/40 shadow-2xl shadow-student-primary/5 group theme-student"
         >
           <div className="w-20 h-20 bg-primary/10 rounded-[28px] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 shadow-xl shadow-primary/10">
-            <span className="text-4xl">👨‍🎓</span>
+            <GraduationCap className="text-primary w-10 h-10" />
           </div>
           <h2 className="text-4xl font-black mb-6 tracking-tight">Saya Seorang Siswa</h2>
           <p className="text-on-surface-variant/80 text-xl mb-10 flex-grow leading-relaxed font-medium">
@@ -174,7 +174,7 @@ export default function AuthPage() {
       )}
 
       <footer className="mt-20 text-center text-on-surface-variant/60 text-sm max-w-sm font-medium z-10">
-        Dengan masuk, Anda menyetujui <Link to="#" className="text-primary hover:underline font-bold">Terms</Link> & <Link to="#" className="text-primary hover:underline font-bold">Privacy</Link> Edugrade.
+        Dengan masuk, Anda menyetujui <Link to="/terms" className="text-primary hover:underline font-bold">Terms</Link> & <Link to="/privacy" className="text-primary hover:underline font-bold">Privacy</Link> Edugrade.
         <p className="mt-4 opacity-40 uppercase tracking-[0.2em] text-[10px] font-black">© 2024 Edugrade AI Technology</p>
       </footer>
     </div>
