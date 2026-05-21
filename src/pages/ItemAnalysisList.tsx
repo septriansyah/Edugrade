@@ -56,6 +56,8 @@ export default function ItemAnalysisList() {
     a.subject?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   return (
     <Layout userType="teacher">
       <div className="p-8 lg:p-12 max-w-7xl mx-auto space-y-12">
@@ -73,6 +75,43 @@ export default function ItemAnalysisList() {
               Pilih paket soal untuk melihat analisis Tingkat Kesukaran (TK), Daya Beda (DP), dan efektivitas pengecoh.
             </p>
           </motion.div>
+
+          <div className="flex gap-4 w-full md:w-auto relative shrink-0">
+            <button 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="btn-glass-primary bg-primary text-white px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-bold shadow-primary/20 hover:scale-105 transition-all w-full md:w-auto"
+            >
+              <span>+ Analisis Mandiri</span>
+            </button>
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white/90 backdrop-blur-md border border-white/60 shadow-2xl rounded-3xl p-4 z-50 flex flex-col gap-2">
+                <Link 
+                  to="/analytics/blank/pg"
+                  className="flex items-center gap-3 p-3 hover:bg-primary/5 rounded-2xl transition-all group/item"
+                >
+                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center group-hover/item:bg-primary group-hover/item:text-white transition-all">
+                    <BarChart3 size={16} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-black text-on-surface">Pilihan Ganda (PG)</p>
+                    <p className="text-[10px] text-on-surface-variant/60 font-semibold">Gunakan kunci jawaban & opsi</p>
+                  </div>
+                </Link>
+                <Link 
+                  to="/analytics/blank/essay"
+                  className="flex items-center gap-3 p-3 hover:bg-secondary/5 rounded-2xl transition-all group/item"
+                >
+                  <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center group-hover/item:bg-secondary group-hover/item:text-white transition-all">
+                    <ClipboardList size={16} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-black text-on-surface">Soal Esai</p>
+                    <p className="text-[10px] text-on-surface-variant/60 font-semibold">Analisis berdasarkan skor esai</p>
+                  </div>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Search & Stats */}
@@ -112,31 +151,83 @@ export default function ItemAnalysisList() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
               >
-                <Link 
-                  to={`/analytics/${a.id}`}
-                  className="glass group block rounded-[44px] border-white/60 shadow-xl hover:shadow-2xl transition-all relative overflow-hidden"
-                >
+                <div className="glass group block rounded-[44px] border-white/60 shadow-xl hover:shadow-2xl transition-all relative overflow-hidden bg-white/30">
                   <div className="p-10">
                     <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
                       <FileText className="text-primary" size={28} />
                     </div>
                     <h3 className="text-2xl font-black mb-2 tracking-tight group-hover:text-primary transition-colors leading-tight">{a.title}</h3>
-                    <p className="text-sm font-bold text-on-surface-variant/60 mb-8">{a.subject}</p>
+                    <p className="text-sm font-bold text-on-surface-variant/60 mb-6">{a.subject}</p>
                     
-                    <div className="flex items-center justify-between pt-8 border-t border-on-surface/5">
-                       <div className="flex items-center gap-2">
-                          <Users size={16} className="text-on-surface-variant/40" />
-                          <span className="text-xs font-black text-on-surface-variant">Active Exam</span>
-                       </div>
-                       <div className="w-10 h-10 bg-on-surface/5 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                          <ChevronRight size={20} />
-                       </div>
+                    {/* Question counts */}
+                    <div className="flex gap-2 mb-8 flex-wrap">
+                      {(() => {
+                        const qs = a.questions || [];
+                        const pg = qs.filter((q: any) => q.type === "Multiple Choice").length;
+                        const essay = qs.filter((q: any) => q.type === "Essay").length;
+                        return (
+                          <>
+                            {pg > 0 && (
+                              <span className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider">
+                                {pg} PG
+                              </span>
+                            )}
+                            {essay > 0 && (
+                              <span className="px-3 py-1.5 rounded-lg bg-secondary/10 text-secondary text-[10px] font-black uppercase tracking-wider">
+                                {essay} ESAI
+                              </span>
+                            )}
+                            {pg === 0 && essay === 0 && (
+                              <span className="text-xs text-on-surface-variant/60 font-bold">Belum ada soal</span>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                    
+                    {/* Direct Links */}
+                    <div className="flex flex-col gap-3 pt-6 border-t border-on-surface/5">
+                      {(() => {
+                        const qs = a.questions || [];
+                        const pg = qs.filter((q: any) => q.type === "Multiple Choice").length;
+                        const essay = qs.filter((q: any) => q.type === "Essay").length;
+                        return (
+                          <>
+                            {pg > 0 && (
+                              <Link 
+                                to={`/analytics/pg/${a.id}`}
+                                className="w-full bg-primary text-white py-3 px-5 rounded-xl font-black tracking-wider text-[10px] uppercase flex items-center justify-between hover:brightness-110 transition-all shadow-md shadow-primary/10"
+                              >
+                                <span>Analisis PG</span>
+                                <ChevronRight size={14} />
+                              </Link>
+                            )}
+                            {essay > 0 && (
+                              <Link 
+                                to={`/analytics/essay/${a.id}`}
+                                className="w-full bg-secondary text-white py-3 px-5 rounded-xl font-black tracking-wider text-[10px] uppercase flex items-center justify-between hover:brightness-110 transition-all shadow-md shadow-secondary/10"
+                              >
+                                <span>Analisis Esai</span>
+                                <ChevronRight size={14} />
+                              </Link>
+                            )}
+                            {pg > 0 && essay > 0 && (
+                              <Link 
+                                to={`/analytics/${a.id}`}
+                                className="text-center text-[10px] font-black uppercase tracking-wider text-on-surface-variant/60 hover:text-primary transition-colors py-1"
+                              >
+                                Lihat Opsi Gateway
+                              </Link>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
-                  <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:scale-150 transition-transform">
+                  <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none group-hover:scale-150 transition-transform">
                     <BarChart3 size={100} />
                   </div>
-                </Link>
+                </div>
               </motion.div>
             ))}
           </div>

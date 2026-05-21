@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Send, Link as LinkIcon, FileText, Loader2, MessageSquare } from "lucide-react";
 import { auth, db, handleFirestoreError, OperationType } from "@/src/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { cn } from "@/src/lib/utils";
 
 interface CreateMaterialModalProps {
@@ -9,14 +9,29 @@ interface CreateMaterialModalProps {
   onClose: () => void;
   onCreated?: () => void;
   classId: string;
+  editMaterial?: any;
 }
 
-export default function CreateMaterialModal({ isOpen, onClose, onCreated, classId }: CreateMaterialModalProps) {
+export default function CreateMaterialModal({ isOpen, onClose, onCreated, classId, editMaterial }: CreateMaterialModalProps) {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [type, setType] = useState<"file" | "link">("link");
   const [url, setUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (editMaterial) {
+      setTitle(editMaterial.title || "");
+      setMessage(editMaterial.message || "");
+      setType(editMaterial.type || "link");
+      setUrl(editMaterial.url || "");
+    } else {
+      setTitle("");
+      setMessage("");
+      setType("link");
+      setUrl("");
+    }
+  }, [editMaterial, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,15 +40,24 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
     setIsSubmitting(true);
     const path = "materials";
     try {
-      await addDoc(collection(db, path), {
-        title,
-        message,
-        type,
-        url,
-        classId,
-        teacherId: auth.currentUser.uid,
-        createdAt: serverTimestamp(),
-      });
+      if (editMaterial) {
+        await updateDoc(doc(db, "materials", editMaterial.id), {
+          title,
+          message,
+          type,
+          url,
+        });
+      } else {
+        await addDoc(collection(db, path), {
+          title,
+          message,
+          type,
+          url,
+          classId,
+          teacherId: auth.currentUser.uid,
+          createdAt: serverTimestamp(),
+        });
+      }
       if (onCreated) onCreated();
       onClose();
       // Reset form
@@ -41,7 +65,7 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
       setMessage("");
       setUrl("");
     } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, path);
+      handleFirestoreError(error, editMaterial ? OperationType.UPDATE : OperationType.CREATE, path);
     } finally {
       setIsSubmitting(false);
     }
@@ -57,7 +81,9 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
                 <FileText className="text-primary" size={20} />
              </div>
-             <h3 className="text-2xl font-black italic tracking-tight text-primary">Kirim Materi</h3>
+             <h3 className="text-2xl font-black italic tracking-tight text-primary">
+               {editMaterial ? "Ubah Materi" : "Kirim Materi"}
+             </h3>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-full hover:bg-on-surface/5 flex items-center justify-center transition-all">
             <X size={24} />
@@ -133,7 +159,7 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
                 className="bg-primary text-white px-12 py-4 rounded-2xl font-black italic tracking-tight flex items-center gap-3 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
              >
                 {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
-                Kirim Materi
+                {editMaterial ? "Simpan Perubahan" : "Kirim Materi"}
              </button>
           </div>
         </form>

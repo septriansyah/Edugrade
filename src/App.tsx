@@ -5,6 +5,10 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import ClassroomDetail from './pages/ClassroomDetail';
 import QuestionGenerator from './pages/QuestionGenerator';
 import ItemAnalysis from './pages/ItemAnalysis';
+import ItemAnalysisPG from './pages/ItemAnalysisPG';
+import ItemAnalysisEssay from './pages/ItemAnalysisEssay';
+import BlankAnalysisPG from './pages/BlankAnalysisPG';
+import BlankAnalysisEssay from './pages/BlankAnalysisEssay';
 import ItemAnalysisList from './pages/ItemAnalysisList';
 import StudentDashboard from './pages/StudentDashboard';
 import AssignmentDetail from './pages/AssignmentDetail';
@@ -27,6 +31,10 @@ export default function App() {
         <Route path="/generator" element={<QuestionGenerator />} />
         <Route path="/analytics" element={<ItemAnalysisList />} />
         <Route path="/analytics/:id" element={<ItemAnalysis />} />
+        <Route path="/analytics/pg/:id" element={<ItemAnalysisPG />} />
+        <Route path="/analytics/essay/:id" element={<ItemAnalysisEssay />} />
+        <Route path="/analytics/blank/pg" element={<BlankAnalysisPG />} />
+        <Route path="/analytics/blank/essay" element={<BlankAnalysisEssay />} />
         
         {/* Student Routes */}
         <Route path="/student/dashboard" element={<StudentDashboard />} />

@@ -214,6 +214,58 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* AI Capabilities Showcase Section */}
+      <section className="py-24 bg-surface relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10 space-y-16">
+          <div className="text-center space-y-4">
+            <span className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-black uppercase tracking-[0.2em]">Kekuatan AI Edugrade</span>
+            <h2 className="text-5xl lg:text-6xl font-black tracking-tight text-on-surface">Solusi AI <span className="text-primary italic">End-to-End</span> Penilaian Kelas</h2>
+            <p className="text-lg text-on-surface-variant max-w-2xl mx-auto font-medium">
+              Dari pembuatan naskah soal hingga analisis butir instrumen, asisten AI kami siap mengotomatisasi pekerjaan administratif Anda.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="glass p-10 rounded-[44px] border-white/60 shadow-xl flex flex-col justify-between hover:scale-[1.02] transition-all bg-white/40">
+              <div className="space-y-6">
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                  <Sparkles size={24} />
+                </div>
+                <h3 className="text-2xl font-black tracking-tight">Generator Soal Cerdas</h3>
+                <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
+                  Hasilkan paket soal Pilihan Ganda (PG) dan Esai berkualitas tinggi yang disesuaikan dengan level kognitif Taksonomi Bloom (C1-C6) secara otomatis berdasarkan topik atau materi rujukan Anda.
+                </p>
+              </div>
+            </div>
+
+            <div className="glass p-10 rounded-[44px] border-white/60 shadow-xl flex flex-col justify-between hover:scale-[1.02] transition-all bg-white/40">
+              <div className="space-y-6">
+                <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
+                  <GraduationCap size={24} />
+                </div>
+                <h3 className="text-2xl font-black tracking-tight">Koreksi & Rekomendasi Nilai AI</h3>
+                <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
+                  Asisten AI mengevaluasi respon lembar jawaban esai siswa secara objektif, memberikan analisis kata kunci, serta menyajikan rekomendasi nilai instan sebelum divalidasi oleh guru.
+                </p>
+              </div>
+            </div>
+
+            <div className="glass p-10 rounded-[44px] border-white/60 shadow-xl flex flex-col justify-between hover:scale-[1.02] transition-all bg-white/40">
+              <div className="space-y-6">
+                <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-600">
+                  <CheckCircle size={24} />
+                </div>
+                <h3 className="text-2xl font-black tracking-tight">Analisis Butir & Pengecoh</h3>
+                <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
+                  Menghitung tingkat kesukaran soal, daya pembeda kelompok unggul-asor, efektivitas pengecoh jawaban, serta validitas & reliabilitas tes otomatis untuk memastikan standar kualitas penilaian.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse" />
+      </section>
+
       {/* CTA Section */}
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-6 text-center">

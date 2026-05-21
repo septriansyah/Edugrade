@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Clock, ArrowRight, Dna, History, Calculator, Search, Bell, Sparkles, Users, Loader2, Key, Plus, FileText, ClipboardList } from "lucide-react";
+import { Clock, ArrowRight, Dna, History, Calculator, Search, Bell, Sparkles, Users, Loader2, Key, Plus, FileText, ClipboardList, Video, BookOpen, Link2 } from "lucide-react";
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
@@ -36,6 +36,8 @@ export default function StudentDashboard() {
   const [joinCode, setJoinCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
   const [averageScore, setAverageScore] = useState<number>(0);
+  const [materials, setMaterials] = useState<any[]>([]);
+  const [meetings, setMeetings] = useState<any[]>([]);
   const hasAutoJoined = useRef(false);
 
   useEffect(() => {
@@ -158,8 +160,38 @@ export default function StudentDashboard() {
         }) as AssignmentData[];
 
         setAssignments(assignmentsWithStatus);
+
+        // Fetch Materials
+        const qMaterials = query(collection(db, "materials"), where("classId", "in", classIds));
+        const querySnapshotMaterials = await getDocs(qMaterials);
+        const materialsList = querySnapshotMaterials.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        materialsList.sort((a: any, b: any) => {
+          const tA = a.createdAt?.toDate?.() ? a.createdAt.toDate().getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+          const tB = b.createdAt?.toDate?.() ? b.createdAt.toDate().getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+          return tB - tA;
+        });
+        setMaterials(materialsList);
+
+        // Fetch Meetings
+        const qMeetings = query(collection(db, "meetings"), where("classId", "in", classIds));
+        const querySnapshotMeetings = await getDocs(qMeetings);
+        const meetingsList = querySnapshotMeetings.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        meetingsList.sort((a: any, b: any) => {
+          const tA = a.startTime ? new Date(a.startTime).getTime() : 0;
+          const tB = b.startTime ? new Date(b.startTime).getTime() : 0;
+          return tB - tA;
+        });
+        setMeetings(meetingsList);
       } else {
         setAssignments([]);
+        setMaterials([]);
+        setMeetings([]);
       }
     } catch (error) {
       console.error("Error fetching student data:", error);
@@ -344,7 +376,88 @@ export default function StudentDashboard() {
                    )}
                 </div>
              </div>
-          </div>
+
+             {/* GMeet/Meetings Section */}
+             <div className="glass rounded-[48px] p-10 border-white/60">
+                <div className="flex justify-between items-center mb-8">
+                   <h3 className="text-2xl font-black tracking-tight">Link Meeting Kelas</h3>
+                   <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
+                      <Video size={16} className="text-red-500" />
+                   </div>
+                </div>
+                <div className="space-y-6">
+                   {meetings.length > 0 ? (
+                      meetings.slice(0, 3).map(m => (
+                        <div key={m.id} className="p-5 bg-white/40 border border-white/60 rounded-3xl hover:shadow-lg transition-all space-y-4">
+                          <div className="flex justify-between items-center">
+                            <span className="px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20">
+                              {m.platform || "GMeet"}
+                            </span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 flex items-center gap-1">
+                              <Clock size={10} />
+                              {m.startTime ? new Date(m.startTime).toLocaleDateString() : "Setiap Saat"}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-primary uppercase tracking-widest">
+                              {classes.find(c => c.id === m.classId)?.name || 'Kelas'}
+                            </p>
+                            <h4 className="font-bold text-on-surface line-clamp-1">{m.title}</h4>
+                          </div>
+                          <a 
+                            href={m.link} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="w-full block py-3 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest text-center shadow-lg shadow-red-500/20 hover:scale-[1.02] transition-all"
+                          >
+                            Gabung Meeting
+                          </a>
+                        </div>
+                      ))
+                   ) : (
+                      <p className="text-center text-on-surface-variant/40 text-xs py-8">Belum ada meeting terjadwal.</p>
+                   )}
+                </div>
+             </div>
+
+             {/* Materials Section */}
+             <div className="glass rounded-[48px] p-10 border-white/60">
+                <div className="flex justify-between items-center mb-8">
+                   <h3 className="text-2xl font-black tracking-tight">Materi Terbaru</h3>
+                   <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                      <BookOpen size={16} className="text-secondary" />
+                    </div>
+                 </div>
+                 <div className="space-y-6">
+                    {materials.length > 0 ? (
+                       materials.slice(0, 3).map(m => (
+                         <div key={m.id} className="p-5 bg-white/40 border border-white/60 rounded-3xl hover:shadow-lg transition-all flex items-start gap-4">
+                           <div className="w-10 h-10 bg-secondary/10 rounded-2xl flex items-center justify-center shrink-0">
+                             {m.type === "file" ? <FileText className="text-secondary" size={20} /> : <Link2 className="text-secondary" size={20} />}
+                           </div>
+                           <div className="flex-1 min-w-0">
+                             <p className="text-[10px] font-black text-secondary uppercase tracking-widest">
+                               {classes.find(c => c.id === m.classId)?.name || 'Kelas'}
+                             </p>
+                             <h4 className="font-bold text-on-surface truncate">{m.title}</h4>
+                             {m.message && <p className="text-xs text-on-surface-variant/70 mt-1 line-clamp-1">{m.message}</p>}
+                             <a 
+                               href={m.url} 
+                               target="_blank" 
+                               rel="noreferrer"
+                               className="mt-3 inline-flex items-center gap-1 text-[10px] font-black text-secondary uppercase tracking-widest hover:underline"
+                             >
+                               Buka Materi <ArrowRight size={10} />
+                             </a>
+                           </div>
+                         </div>
+                       ))
+                    ) : (
+                       <p className="text-center text-on-surface-variant/40 text-xs py-8">Belum ada materi dibagikan.</p>
+                    )}
+                 </div>
+              </div>
+           </div>
         </div>
       </div>
     </Layout>

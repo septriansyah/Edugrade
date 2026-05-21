@@ -25,7 +25,9 @@ import {
   BookOpen,
   Video,
   Link as LinkIcon,
-  File
+  File,
+  Pencil,
+  Trash2
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import Layout from "@/src/components/Layout";
@@ -33,7 +35,7 @@ import CreateAssignmentModal from "@/src/components/CreateAssignmentModal";
 import CreateMaterialModal from "@/src/components/CreateMaterialModal";
 import CreateMeetingModal from "@/src/components/CreateMeetingModal";
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
-import { doc, onSnapshot, collection, query, where, getDocs, documentId } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, where, getDocs, documentId, deleteDoc } from "firebase/firestore";
 
 type Tab = "overview" | "assignments" | "materials" | "meetings" | "students" | "generator" | "reviews" | "grading";
 
@@ -54,6 +56,9 @@ export default function ClassroomManagement() {
   const [isCreateAssignmentModalOpen, setIsCreateAssignmentModalOpen] = useState(false);
   const [isCreateMaterialModalOpen, setIsCreateMaterialModalOpen] = useState(false);
   const [isCreateMeetingModalOpen, setIsCreateMeetingModalOpen] = useState(false);
+  const [editAssignment, setEditAssignment] = useState<any>(null);
+  const [editMaterial, setEditMaterial] = useState<any>(null);
+  const [editMeeting, setEditMeeting] = useState<any>(null);
 
   const sortByNewest = (items: any[]) => {
     return [...items].sort((a, b) => {
@@ -179,7 +184,7 @@ export default function ClassroomManagement() {
 
   return (
     <Layout userType="teacher">
-      <div className="flex h-full min-h-[calc(100vh-6rem)]">
+      <div className="flex h-full min-h-[calc(100vh-6rem)] lg:min-h-screen">
         {/* Internal Classroom Sidebar */}
         <aside className="w-72 glass border-r flex flex-col p-6 space-y-2 hidden lg:flex">
           <div className="px-4 py-6 mb-4">
@@ -224,10 +229,79 @@ export default function ClassroomManagement() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                {activeTab === "overview" && <OverviewSection classroom={classroom} setActiveTab={setActiveTab} assignments={assignments} materials={materials} meetings={meetings} submissions={submissions} students={students} onCreateAssignment={() => setIsCreateAssignmentModalOpen(true)} />}
-                {activeTab === "assignments" && <AssignmentsSection classroom={classroom} assignments={assignments} onCreate={() => setIsCreateAssignmentModalOpen(true)} />}
-                {activeTab === "materials" && <MaterialsSection classroom={classroom} materials={materials} onCreate={() => setIsCreateMaterialModalOpen(true)} />}
-                {activeTab === "meetings" && <MeetingsSection classroom={classroom} meetings={meetings} onCreate={() => setIsCreateMeetingModalOpen(true)} />}
+                {activeTab === "overview" && <OverviewSection classroom={classroom} setActiveTab={setActiveTab} assignments={assignments} materials={materials} meetings={meetings} submissions={submissions} students={students} onCreateAssignment={() => { setEditAssignment(null); setIsCreateAssignmentModalOpen(true); }} />}
+                {activeTab === "assignments" && (
+                  <AssignmentsSection 
+                    classroom={classroom} 
+                    assignments={assignments} 
+                    onCreate={() => {
+                      setEditAssignment(null);
+                      setIsCreateAssignmentModalOpen(true);
+                    }}
+                    onEdit={(a: any) => {
+                      setEditAssignment(a);
+                      setIsCreateAssignmentModalOpen(true);
+                    }}
+                    onDelete={async (id: string) => {
+                      if (confirm("Apakah Anda yakin ingin menghapus tugas ini? Semua data jawaban siswa juga akan terhapus.")) {
+                        try {
+                          await deleteDoc(doc(db, "assignments", id));
+                          fetchAllClassData();
+                        } catch (e) {
+                          alert("Gagal menghapus: " + e);
+                        }
+                      }
+                    }}
+                  />
+                )}
+                {activeTab === "materials" && (
+                  <MaterialsSection 
+                    classroom={classroom} 
+                    materials={materials} 
+                    onCreate={() => {
+                      setEditMaterial(null);
+                      setIsCreateMaterialModalOpen(true);
+                    }}
+                    onEdit={(m: any) => {
+                      setEditMaterial(m);
+                      setIsCreateMaterialModalOpen(true);
+                    }}
+                    onDelete={async (id: string) => {
+                      if (confirm("Apakah Anda yakin ingin menghapus materi ini?")) {
+                        try {
+                          await deleteDoc(doc(db, "materials", id));
+                          fetchAllClassData();
+                        } catch (e) {
+                          alert("Gagal menghapus: " + e);
+                        }
+                      }
+                    }}
+                  />
+                )}
+                {activeTab === "meetings" && (
+                  <MeetingsSection 
+                    classroom={classroom} 
+                    meetings={meetings} 
+                    onCreate={() => {
+                      setEditMeeting(null);
+                      setIsCreateMeetingModalOpen(true);
+                    }}
+                    onEdit={(m: any) => {
+                      setEditMeeting(m);
+                      setIsCreateMeetingModalOpen(true);
+                    }}
+                    onDelete={async (id: string) => {
+                      if (confirm("Apakah Anda yakin ingin menghapus jadwal meeting ini?")) {
+                        try {
+                          await deleteDoc(doc(db, "meetings", id));
+                          fetchAllClassData();
+                        } catch (e) {
+                          alert("Gagal menghapus: " + e);
+                        }
+                      }
+                    }}
+                  />
+                )}
                 {activeTab === "students" && <StudentsSection classroom={classroom} students={students} assignments={assignments} submissions={submissions} onRefresh={() => fetchAllClassData(true)} isLoading={isDataLoading} />}
                 {activeTab === "generator" && <GeneratorSection classroom={classroom} />}
                 {activeTab === "reviews" && <ReviewSection classroom={classroom} assignments={assignments} submissions={submissions} students={students} isLoading={isDataLoading} />}
@@ -240,24 +314,36 @@ export default function ClassroomManagement() {
 
       <CreateAssignmentModal 
         isOpen={isCreateAssignmentModalOpen}
-        onClose={() => setIsCreateAssignmentModalOpen(false)}
+        onClose={() => {
+          setIsCreateAssignmentModalOpen(false);
+          setEditAssignment(null);
+        }}
         onCreated={fetchAllClassData}
         classId={classId!}
         subject={classroom?.subject || "Umum"}
+        editAssignment={editAssignment}
       />
 
       <CreateMaterialModal 
         isOpen={isCreateMaterialModalOpen}
-        onClose={() => setIsCreateMaterialModalOpen(false)}
+        onClose={() => {
+          setIsCreateMaterialModalOpen(false);
+          setEditMaterial(null);
+        }}
         onCreated={fetchAllClassData}
         classId={classId!}
+        editMaterial={editMaterial}
       />
 
       <CreateMeetingModal 
         isOpen={isCreateMeetingModalOpen}
-        onClose={() => setIsCreateMeetingModalOpen(false)}
+        onClose={() => {
+          setIsCreateMeetingModalOpen(false);
+          setEditMeeting(null);
+        }}
         onCreated={fetchAllClassData}
         classId={classId!}
+        editMeeting={editMeeting}
       />
     </Layout>
   );
@@ -398,7 +484,7 @@ function OverviewSection({ classroom, setActiveTab, assignments, materials, meet
   );
 }
 
-function MaterialsSection({ classroom, materials, onCreate }: any) {
+function MaterialsSection({ classroom, materials, onCreate, onEdit, onDelete }: any) {
   return (
     <div className="space-y-10">
        <div className="flex justify-between items-center">
@@ -419,7 +505,25 @@ function MaterialsSection({ classroom, materials, onCreate }: any) {
                 <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center">
                   {m.type === "file" ? <File className="text-secondary" size={24} /> : <LinkIcon className="text-secondary" size={24} />}
                 </div>
-                <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">{m.createdAt?.toDate?.() ? m.createdAt.toDate().toLocaleDateString() : "Baru saja"}</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 p-0.5 shadow-sm">
+                    <button 
+                      onClick={() => onEdit(m)}
+                      className="p-2 hover:bg-secondary/10 text-secondary rounded-lg transition-colors"
+                      title="Ubah"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button 
+                      onClick={() => onDelete(m.id)}
+                      className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
+                      title="Hapus"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">{m.createdAt?.toDate?.() ? m.createdAt.toDate().toLocaleDateString() : "Baru saja"}</p>
+                </div>
               </div>
               <h3 className="text-xl font-black mb-2 group-hover:text-secondary transition-colors">{m.title}</h3>
               {m.message && <p className="text-sm text-on-surface-variant/70 mb-6 line-clamp-2">{m.message}</p>}
@@ -445,7 +549,7 @@ function MaterialsSection({ classroom, materials, onCreate }: any) {
   )
 }
 
-function MeetingsSection({ classroom, meetings, onCreate }: any) {
+function MeetingsSection({ classroom, meetings, onCreate, onEdit, onDelete }: any) {
   return (
     <div className="space-y-10">
        <div className="flex justify-between items-center">
@@ -465,15 +569,33 @@ function MeetingsSection({ classroom, meetings, onCreate }: any) {
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Video size={100} />
               </div>
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start mb-6 relative z-10">
                 <div className="px-4 py-1.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20">
                   {m.platform}
                 </div>
-                <div className="flex items-center gap-2 text-on-surface-variant/40">
-                  <Clock size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">
-                    {m.startTime ? new Date(m.startTime).toLocaleString() : "Setiap Saat"}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 p-0.5 shadow-sm">
+                    <button 
+                      onClick={() => onEdit(m)}
+                      className="p-2 hover:bg-secondary/10 text-secondary rounded-lg transition-colors"
+                      title="Ubah"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button 
+                      onClick={() => onDelete(m.id)}
+                      className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
+                      title="Hapus"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 text-on-surface-variant/40">
+                    <Clock size={14} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      {m.startTime ? new Date(m.startTime).toLocaleString() : "Setiap Saat"}
+                    </span>
+                  </div>
                 </div>
               </div>
               <h3 className="text-2xl font-black mb-6">{m.title}</h3>
@@ -507,7 +629,7 @@ function MeetingsSection({ classroom, meetings, onCreate }: any) {
   )
 }
 
-function AssignmentsSection({ classroom, assignments, onCreate }: any) {
+function AssignmentsSection({ classroom, assignments, onCreate, onEdit, onDelete }: any) {
   return (
     <div className="space-y-10">
        <div className="flex justify-between items-center">
@@ -528,9 +650,22 @@ function AssignmentsSection({ classroom, assignments, onCreate }: any) {
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
                   <FileText className="text-primary" size={24} />
                 </div>
-                <button className="p-2 text-on-surface-variant/40 hover:text-on-surface transition-colors">
-                  <MoreVertical size={20} />
-                </button>
+                <div className="flex items-center bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 p-0.5 shadow-sm">
+                  <button 
+                    onClick={() => onEdit(a)}
+                    className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors"
+                    title="Ubah"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button 
+                    onClick={() => onDelete(a.id)}
+                    className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
+                    title="Hapus"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
               <h3 className="text-xl font-black mb-1 group-hover:text-primary transition-colors">{a.title}</h3>
               <p className="text-xs font-medium text-on-surface-variant/60 mb-4">{a.subject}</p>

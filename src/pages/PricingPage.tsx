@@ -60,34 +60,38 @@ export default function PricingPage() {
       }
 
       // Buka popup Midtrans Snap
-      window.snap.pay(data.token, {
-        onSuccess: async function(result: any) {
-          try {
-            // Update status premium di Firebase
-            if (auth.currentUser) {
-               const userRef = doc(db, "users", auth.currentUser.uid);
-               await updateDoc(userRef, {
-                 isPremium: true,
-                 aiTokens: (userProfile?.aiTokens || 0) + 1000
-               });
-               setUserProfile((prev: any) => ({ ...prev, isPremium: true, aiTokens: (prev?.aiTokens || 0) + 1000 }));
-               setShowSuccessModal(true);
+      if (typeof (window as any).snap !== "undefined") {
+        (window as any).snap.pay(data.token, {
+          onSuccess: async function(result: any) {
+            try {
+              // Update status premium di Firebase
+              if (auth.currentUser) {
+                 const userRef = doc(db, "users", auth.currentUser.uid);
+                 await updateDoc(userRef, {
+                   isPremium: true,
+                   aiTokens: (userProfile?.aiTokens || 0) + 1000
+                 });
+                 setUserProfile((prev: any) => ({ ...prev, isPremium: true, aiTokens: (prev?.aiTokens || 0) + 1000 }));
+                 setShowSuccessModal(true);
+              }
+            } catch (e) {
+               console.error("Gagal update Firestore:", e);
+               alert("Pembayaran berhasil namun gagal memperbarui status. Silakan hubungi admin.");
             }
-          } catch (e) {
-             console.error("Gagal update Firestore:", e);
-             alert("Pembayaran berhasil namun gagal memperbarui status. Silakan hubungi admin.");
+          },
+          onPending: function(result: any) {
+            alert("Menunggu pembayaran Anda!");
+          },
+          onError: function(result: any) {
+            alert("Pembayaran gagal!");
+          },
+          onClose: function () {
+            // User menutup popup
           }
-        },
-        onPending: function(result: any) {
-          alert("Menunggu pembayaran Anda!");
-        },
-        onError: function(result: any) {
-          alert("Pembayaran gagal!");
-        },
-        onClose: function () {
-          // User menutup popup
-        }
-      });
+        });
+      } else {
+        alert("Sistem pembayaran Midtrans Snap tidak terdeteksi. Silakan coba sesaat lagi.");
+      }
     } catch (error: any) {
       alert(error.message || "Gagal memproses pembayaran");
     } finally {
