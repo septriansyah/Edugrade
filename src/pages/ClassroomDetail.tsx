@@ -37,7 +37,7 @@ import CreateMeetingModal from "@/src/components/CreateMeetingModal";
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { doc, onSnapshot, collection, query, where, getDocs, documentId, deleteDoc } from "firebase/firestore";
 
-type Tab = "overview" | "assignments" | "materials" | "meetings" | "students" | "generator" | "reviews" | "grading";
+type Tab = "overview" | "assignments" | "exams" | "materials" | "meetings" | "students" | "generator" | "reviews" | "grading";
 
 export default function ClassroomManagement() {
   const { classId } = useParams();
@@ -86,7 +86,7 @@ export default function ClassroomManagement() {
 
   useEffect(() => {
     setSearchParams({ tab: activeTab }, { replace: true });
-    if (classroom && (activeTab === "reviews" || activeTab === "grading" || activeTab === "assignments" || activeTab === "overview" || activeTab === "students" || activeTab === "materials" || activeTab === "meetings")) {
+    if (classroom && (activeTab === "reviews" || activeTab === "grading" || activeTab === "assignments" || activeTab === "exams" || activeTab === "overview" || activeTab === "students" || activeTab === "materials" || activeTab === "meetings")) {
         fetchAllClassData();
     }
   }, [classroom?.studentIds?.length, activeTab, setSearchParams]);
@@ -195,6 +195,7 @@ export default function ClassroomManagement() {
           <nav className="space-y-1">
             <ClassNavButton active={activeTab === "overview"} onClick={() => setActiveTab("overview")} icon={<LayoutDashboard size={20} />} label="Ringkasan" />
             <ClassNavButton active={activeTab === "assignments"} onClick={() => setActiveTab("assignments")} icon={<ClipboardList size={20} />} label="Tugas" />
+            <ClassNavButton active={activeTab === "exams"} onClick={() => setActiveTab("exams")} icon={<FileText size={20} />} label="Ujian (Paper Mode)" />
             <ClassNavButton active={activeTab === "materials"} onClick={() => setActiveTab("materials")} icon={<BookOpen size={20} />} label="Materi" />
             <ClassNavButton active={activeTab === "meetings"} onClick={() => setActiveTab("meetings")} icon={<Video size={20} />} label="Pertemuan Virtual" />
             <ClassNavButton active={activeTab === "students"} onClick={() => setActiveTab("students")} icon={<Users size={20} />} label="Siswa" />
@@ -233,7 +234,7 @@ export default function ClassroomManagement() {
                 {activeTab === "assignments" && (
                   <AssignmentsSection 
                     classroom={classroom} 
-                    assignments={assignments} 
+                    assignments={assignments.filter((a: any) => a.type !== "exam")} 
                     onCreate={() => {
                       setEditAssignment(null);
                       setIsCreateAssignmentModalOpen(true);
@@ -244,6 +245,30 @@ export default function ClassroomManagement() {
                     }}
                     onDelete={async (id: string) => {
                       if (confirm("Apakah Anda yakin ingin menghapus tugas ini? Semua data jawaban siswa juga akan terhapus.")) {
+                        try {
+                          await deleteDoc(doc(db, "assignments", id));
+                          fetchAllClassData();
+                        } catch (e) {
+                          alert("Gagal menghapus: " + e);
+                        }
+                      }
+                    }}
+                  />
+                )}
+                {activeTab === "exams" && (
+                  <ExamsSection 
+                    classroom={classroom} 
+                    exams={assignments.filter((a: any) => a.type === "exam")} 
+                    onCreate={() => {
+                      setEditAssignment(null);
+                      setIsCreateAssignmentModalOpen(true);
+                    }}
+                    onEdit={(a: any) => {
+                      setEditAssignment(a);
+                      setIsCreateAssignmentModalOpen(true);
+                    }}
+                    onDelete={async (id: string) => {
+                      if (confirm("Apakah Anda yakin ingin menghapus ujian ini? Semua data nilai siswa juga akan terhapus.")) {
                         try {
                           await deleteDoc(doc(db, "assignments", id));
                           fetchAllClassData();
@@ -322,6 +347,7 @@ export default function ClassroomManagement() {
         classId={classId!}
         subject={classroom?.subject || "Umum"}
         editAssignment={editAssignment}
+        isExam={activeTab === "exams" || editAssignment?.type === "exam"}
       />
 
       <CreateMaterialModal 
@@ -686,6 +712,81 @@ function AssignmentsSection({ classroom, assignments, onCreate, onEdit, onDelete
             </div>
           ))}
        </div>
+    </div>
+  )
+}
+
+function ExamsSection({ classroom, exams, onCreate, onEdit, onDelete }: any) {
+  return (
+    <div className="space-y-10">
+       <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-black tracking-tight">Ujian (Paper Mode)</h2>
+            <p className="text-sm font-medium text-on-surface-variant/60 mt-1">Ujian offline berbasis cetak kertas dengan koreksi otomatis menggunakan OCR.</p>
+          </div>
+          <button 
+            onClick={onCreate}
+            className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2"
+          >
+             <Plus size={18} />
+             Ujian Baru
+          </button>
+       </div>
+       
+       {exams.length === 0 ? (
+          <div className="glass rounded-[40px] p-20 flex flex-col items-center text-center">
+             <div className="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center mb-6">
+                <FileText className="text-primary/40" size={32} />
+             </div>
+             <h3 className="text-xl font-bold mb-2">Belum ada ujian</h3>
+             <p className="text-on-surface-variant/60 max-w-sm mb-6">Buat ujian baru secara manual atau gunakan bantuan AI Generator.</p>
+             <button onClick={onCreate} className="btn-glass-primary px-6">Buat Ujian</button>
+          </div>
+       ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+             {exams.map((a: any) => (
+               <div key={a.id} className="glass rounded-[40px] p-8 border-white/60 hover:shadow-2xl transition-all group">
+                 <div className="flex justify-between items-start mb-6">
+                   <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center">
+                     <FileText className="text-secondary" size={24} />
+                   </div>
+                   <div className="flex items-center bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 p-0.5 shadow-sm">
+                     <button 
+                       onClick={() => onEdit(a)}
+                       className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors"
+                       title="Ubah"
+                     >
+                       <Pencil size={14} />
+                     </button>
+                     <button 
+                       onClick={() => onDelete(a.id)}
+                       className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
+                       title="Hapus"
+                     >
+                       <Trash2 size={14} />
+                     </button>
+                   </div>
+                 </div>
+                 <h3 className="text-xl font-black mb-1 group-hover:text-secondary transition-colors">{a.title}</h3>
+                 <p className="text-xs font-medium text-on-surface-variant/60 mb-4">{a.subject}</p>
+                 
+                 {a.dueDate && (
+                   <div className="flex items-center gap-2 mb-6 text-on-surface-variant/40">
+                     <Clock size={14} />
+                     <span className="text-[10px] font-black uppercase tracking-widest">
+                       Tenggat: {a.dueDate?.toDate?.() ? a.dueDate.toDate().toLocaleString() : new Date(a.dueDate).toLocaleString()}
+                     </span>
+                   </div>
+                 )}
+                 
+                 <div className="flex gap-4">
+                    <Link to={`/assignment/${a.id}`} className="flex-1 py-3 bg-on-surface/5 hover:bg-on-surface/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-center">Mulai Scan LJK</Link>
+                    <Link to={`/analytics/${a.id}`} className="flex-1 py-3 bg-secondary/5 hover:bg-secondary/10 text-secondary rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-center">Analitik Soal</Link>
+                 </div>
+               </div>
+             ))}
+          </div>
+       )}
     </div>
   )
 }

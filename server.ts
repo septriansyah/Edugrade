@@ -61,6 +61,7 @@ async function callAIJson<T>(messages: ChatMessage[], defaultMsg: string): Promi
       model: aiModel,
       messages,
       temperature: 0.4,
+      max_tokens: 1500,
       response_format: { type: "json_object" }
     })
   });
@@ -341,6 +342,128 @@ app.post("/api/create-transaction", async (req, res) => {
   } catch (error: any) {
     console.error("Midtrans Transaction Error:", error);
     res.status(500).json({ error: error.message || "Gagal membuat transaksi" });
+  }
+});
+// Helper function to call OCR Space API
+async function performOcrSpace(base64Image: string): Promise<string> {
+  const ocrSpaceKey = "K87944641388957";
+  
+  const formData = new URLSearchParams();
+  formData.append("apikey", ocrSpaceKey);
+  formData.append("base64Image", base64Image);
+  formData.append("language", "eng");
+  formData.append("scale", "true");
+  formData.append("OCREngine", "1");
+
+  const response = await fetch("https://api.ocr.space/parse/image", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  });
+
+  if (!response.ok) {
+    throw new Error(`OCR Space API returned status ${response.status}`);
+  }
+
+  const data = await response.json();
+  if (data.IsErroredOnProcessing) {
+    throw new Error(data.ErrorMessage?.[0] || "OCR Space processing error");
+  }
+
+  const parsedText = data.ParsedResults?.[0]?.ParsedText || "";
+  return parsedText;
+}
+
+// API: Real OCR scan via hybrid OCR Space + AI
+app.post("/api/ocr-scan", async (req, res) => {
+  try {
+    const { fileData, questions, isPdf } = req.body;
+    
+    if (!deepSeekApiKey) {
+      return res.status(400).json({ error: "API Key belum diatur di file .env." });
+    }
+
+    if (!fileData) {
+      return res.status(400).json({ error: "Tidak ada data file yang dikirim." });
+    }
+
+    // 1. Run real OCR via OCR Space API
+    const rawOcrText = await performOcrSpace(fileData);
+
+    // 2. Prepare questions metadata
+    const questionsMeta = questions.map((q: any, idx: number) => ({
+      index: idx,
+      type: q.type,
+      question: q.question,
+      options: q.type === "Multiple Choice" ? q.options?.map((o: any) => o.label) : null
+    }));
+
+    const prompt = `Anda adalah asisten AI parser OCR untuk platform Edugrade.
+Di bawah ini adalah teks mentah hasil scan LJK menggunakan OCR Space API:
+---
+${rawOcrText}
+---
+
+Daftar pertanyaan ujian yang ada di lembar jawaban tersebut:
+${JSON.stringify(questionsMeta, null, 2)}
+
+Tugas Anda:
+Cocokkan teks hasil OCR di atas dengan daftar soal di atas untuk mengekstrak jawaban siswa.
+Ketentuan:
+1. Untuk Pilihan Ganda (Multiple Choice), temukan huruf pilihan jawaban siswa (misal: A, B, C, D, atau E) yang terpilih untuk nomor soal tersebut. Jika tidak diisi atau tidak jelas, kosongkan ("").
+2. Untuk Esai (Essay), temukan transkripsi jawaban tertulis siswa untuk soal esai tersebut dan rapikan teksnya dalam Bahasa Indonesia yang baik.
+3. Kembalikan HASIL dalam format JSON objek dengan key "answers" yang berisi pasangan index soal (string angka) dan jawaban siswa.
+
+Contoh format respon JSON:
+{
+  "answers": {
+    "0": "A",
+    "1": "Sel prokariotik tidak memiliki membran inti..."
+  }
+}
+Kembalikan JSON saja tanpa penjelasan apapun.`;
+
+    // 3. Call OpenRouter using cheap text-only model to parse raw OCR text into JSON
+    const ocrModel = isOpenRouterKey ? "google/gemini-2.5-flash" : "deepseek-chat";
+
+    const response = await fetch(`${aiBaseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${deepSeekApiKey}`,
+        ...(isOpenRouterKey ? {
+          "HTTP-Referer": process.env.APP_URL || "http://localhost:3000",
+          "X-Title": "Edugrade AI"
+        } : {})
+      },
+      body: JSON.stringify({
+        model: ocrModel,
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 1500,
+        response_format: { type: "json_object" }
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data?.error?.message || "Gagal mengolah teks OCR via AI.");
+    }
+
+    const rawContent = data?.choices?.[0]?.message?.content || "{}";
+    const parsed = extractJson(rawContent);
+    res.json(parsed);
+  } catch (error: any) {
+    console.error("Error OCR Scan Route:", error);
+    res.status(500).json({ error: error.message || "Gagal memproses LJK OCR" });
   }
 });
 

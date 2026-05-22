@@ -29,6 +29,7 @@ export default function QuestionGenerator() {
   const initialDesc = searchParams.get("description") || "";
   const initialDueDate = searchParams.get("dueDate") || "";
   const initialViewMode = searchParams.get("viewMode") || "standard";
+  const typeParam = searchParams.get("type") || "assignment";
   
   const [publishViewMode, setPublishViewMode] = useState(initialViewMode);
   const [activeTab, setActiveTab] = useState<"generate" | "bank" >("generate");
@@ -294,7 +295,7 @@ export default function QuestionGenerator() {
     const path = "assignments";
     try {
       await addDoc(collection(db, path), {
-        title: initialTitle || topic || "Tugas dari Generator AI",
+        title: initialTitle || topic || (typeParam === "exam" ? "Ujian dari Generator AI" : "Tugas dari Generator AI"),
         description: assignmentDescription,
         subject: assignmentSubject || topic || "Umum",
         dueDate: initialDueDate ? new Date(initialDueDate).toISOString() : null,
@@ -302,13 +303,14 @@ export default function QuestionGenerator() {
         teacherId: auth.currentUser.uid,
         status: "active",
         method: "ai",
-        viewMode: publishViewMode,
+        viewMode: typeParam === "exam" ? "paper" : publishViewMode,
+        type: typeParam,
         questions: questions.map(({ id, ...q }) => q), // Save question data directly in assignment
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-      alert("Tugas berhasil diterbitkan ke kelas!");
-      navigate(`/class/${classId}?tab=assignments`);
+      alert(typeParam === "exam" ? "Ujian berhasil diterbitkan ke kelas!" : "Tugas berhasil diterbitkan ke kelas!");
+      navigate(`/class/${classId}?tab=${typeParam === "exam" ? "exams" : "assignments"}`);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, path);
     } finally {
@@ -390,11 +392,13 @@ export default function QuestionGenerator() {
                    <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center">
                       <Sparkles className="text-primary" size={28} />
                    </div>
-                   <h1 className="text-5xl font-black tracking-tight text-primary italic">AI Generator</h1>
+                   <h1 className="text-5xl font-black tracking-tight text-primary italic">{typeParam === "exam" ? "AI Exam Generator" : "AI Generator"}</h1>
                 </div>
                 
                 <p className="text-2xl text-on-surface-variant/80 font-medium max-w-3xl mb-12 leading-relaxed">
-                  Konfigurasi parameter atau unggah materi untuk menghasilkan paket soal yang seimbang sesuai standar <span className="font-bold text-on-surface underline decoration-primary/20">Taksonomi Bloom</span>.
+                  {typeParam === "exam"
+                    ? "Konfigurasi parameter atau unggah materi untuk menghasilkan paket ujian yang seimbang sesuai standar Taksonomi Bloom."
+                    : "Konfigurasi parameter atau unggah materi untuk menghasilkan paket soal yang seimbang sesuai standar Taksonomi Bloom."}
                   {userProfile && (
                     <span className="block mt-4 text-sm font-bold text-primary bg-primary/10 w-fit px-4 py-2 rounded-full">
                       Sisa Token AI: {userProfile.aiTokens || 0}
@@ -601,22 +605,28 @@ export default function QuestionGenerator() {
                   <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-center">
                      {classId && (
                        <div className="flex flex-col md:flex-row gap-3 w-full">
-                         <select
-                           value={publishViewMode}
-                           onChange={(e) => setPublishViewMode(e.target.value)}
-                           className="bg-white/50 border-2 border-white/60 focus:border-on-surface outline-none px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest appearance-none shadow-sm"
-                         >
-                           <option value="standard">Mode Standar</option>
-                           <option value="form">Mode Form</option>
-                           <option value="paper">Mode Kertas</option>
-                         </select>
+                         {typeParam === "exam" ? (
+                           <div className="bg-white/50 border-2 border-white/60 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-sm text-on-surface-variant flex items-center justify-center">
+                             Mode Kertas (Paper Mode)
+                           </div>
+                         ) : (
+                           <select
+                             value={publishViewMode}
+                             onChange={(e) => setPublishViewMode(e.target.value)}
+                             className="bg-white/50 border-2 border-white/60 focus:border-on-surface outline-none px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest appearance-none shadow-sm"
+                           >
+                             <option value="standard">Mode Standar</option>
+                             <option value="form">Mode Form</option>
+                             <option value="paper">Mode Kertas</option>
+                           </select>
+                         )}
                          <button 
                            onClick={handlePublishAssignment} 
                            disabled={isPublishing}
                            className="flex-1 bg-on-surface text-white px-8 py-3 rounded-2xl font-black italic tracking-tight flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-all disabled:opacity-50 whitespace-nowrap"
                          >
                             {isPublishing ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-                            Terbitkan ke Kelas
+                            {typeParam === "exam" ? "Terbitkan Ujian" : "Terbitkan ke Kelas"}
                          </button>
                        </div>
                      )}

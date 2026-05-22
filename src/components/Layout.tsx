@@ -469,7 +469,7 @@ function HeaderLink({ to, label, active }: { to: string, label: string, active?:
     )
 }
 
-function MobileNavItem({ to, icon, label, active }: { to: string, icon: React.ReactNode, label: string, active: boolean }) {
+function MobileNavItem({ to, icon, label, active }: { to: string, icon: ReactNode, label: string, active: boolean }) {
   return (
     <Link 
       to={to} 

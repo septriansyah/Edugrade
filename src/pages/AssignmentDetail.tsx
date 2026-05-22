@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { Dna, FileQuestion, FileText, Save, Zap, Send, Info, Bell, Loader2, ArrowLeft, ArrowRight, Check, MessageSquare, ShieldCheck, User, Plus, GraduationCap, Upload, Cpu, AlertCircle } from "lucide-react";
+import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { Dna, FileQuestion, FileText, Save, Zap, Send, Info, Bell, Loader2, ArrowLeft, ArrowRight, Check, MessageSquare, ShieldCheck, User, Plus, GraduationCap, Upload, Cpu, AlertCircle, Users, RefreshCw } from "lucide-react";
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { auth, db, OperationType, handleFirestoreError } from "@/src/lib/firebase";
-import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
 
 export default function AssignmentDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const studentIdParam = searchParams.get("studentId");
   const [digitalAnswer, setDigitalAnswer] = useState("");
@@ -18,6 +19,7 @@ export default function AssignmentDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingFeedback, setIsSavingFeedback] = useState(false);
   const [userRole, setUserRole] = useState<"teacher" | "student">("student");
+  const [isLoading, setIsLoading] = useState(true);
   const [assignment, setAssignment] = useState<any>(null);
   const [studentData, setStudentData] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -35,10 +37,48 @@ export default function AssignmentDetail() {
   const [totalScore, setTotalScore] = useState<number | null>(null);
   const [aiEssayGrading, setAiEssayGrading] = useState<Record<number, any>>({});
   const [isAutoGradingEssays, setIsAutoGradingEssays] = useState(false);
+  const [classStudents, setClassStudents] = useState<any[]>([]);
+  const [submissions, setSubmissions] = useState<Record<string, any>>({});
+  const [classroom, setClassroom] = useState<any>(null);
+
+  // Fetch class students and their submissions
+  useEffect(() => {
+    const fetchClassStudentsAndSubmissions = async () => {
+      if (!classroom || !classroom.studentIds || classroom.studentIds.length === 0) return;
+      try {
+        const studentsList: any[] = [];
+        for (const sId of classroom.studentIds) {
+          const studentSnap = await getDoc(doc(db, "users", sId));
+          if (studentSnap.exists()) {
+            studentsList.push({ id: sId, ...studentSnap.data() });
+          }
+        }
+        setClassStudents(studentsList);
+
+        const submissionsMap: Record<string, any> = {};
+        for (const sId of classroom.studentIds) {
+          const submissionId = `${id}_${sId}`;
+          const subSnap = await getDoc(doc(db, "submissions", submissionId));
+          if (subSnap.exists()) {
+            submissionsMap[sId] = subSnap.data();
+          }
+        }
+        setSubmissions(submissionsMap);
+      } catch (error) {
+        console.error("Error fetching class students/submissions:", error);
+      }
+    };
+
+    if (classroom && id) {
+      fetchClassStudentsAndSubmissions();
+    }
+  }, [classroom, id, submissionStatus]);
 
   // OCR state variables for Paper Mode grading
   const [isOcrMode, setIsOcrMode] = useState(false);
   const [ocrImage, setOcrImage] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [isPdf, setIsPdf] = useState(false);
   const [isOcrScanning, setIsOcrScanning] = useState(false);
   const [isOcrCompleted, setIsOcrCompleted] = useState(false);
   const [ocrDetectedAnswers, setOcrDetectedAnswers] = useState<Record<number, string>>({});
@@ -58,12 +98,14 @@ export default function AssignmentDetail() {
 
   const hasSubmitted = submissionStatus === "submitted" || submissionStatus === "graded";
 
-  const [classroom, setClassroom] = useState<any>(null);
+
 
   useEffect(() => {
-    const fetchUserRoleAndSubmission = async () => {
-      const user = auth.currentUser;
+    let unsubscribeSubmission: () => void = () => {};
+
+    const unsubscribeAuth = auth.onAuthStateChanged(async (user) => {
       if (user && id) {
+        setIsLoading(true);
         try {
           // Fetch role
           const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -79,8 +121,11 @@ export default function AssignmentDetail() {
           if (assignSnap.exists()) {
             fetchedAssignment = assignSnap.data();
             setAssignment(fetchedAssignment);
-            if (fetchedAssignment.viewMode) {
+            if (fetchedAssignment.viewMode && role !== "teacher") {
               setViewMode(fetchedAssignment.viewMode);
+            }
+            if (fetchedAssignment.type === "exam" && role === "teacher") {
+              setIsOcrMode(true);
             }
             if (fetchedAssignment.classId) {
               const classSnap = await getDoc(doc(db, "classes", fetchedAssignment.classId));
@@ -98,31 +143,62 @@ export default function AssignmentDetail() {
             if (studentSnap.exists()) {
               setStudentData(studentSnap.data());
             }
+          } else {
+            setStudentData(null);
           }
 
           const submissionId = `${id}_${studentId}`;
           const subRef = doc(db, "submissions", submissionId);
-          const subSnap = await getDoc(subRef);
           
-          if (subSnap.exists()) {
-            const data = subSnap.data();
-            setDigitalAnswer(data.digitalAnswer || "");
-            setSelectedOption(data.selectedOption || null);
-            setTeacherFeedback(data.teacherFeedback || "");
-            if (data.answers) setAnswers(data.answers);
-            setSubmissionStatus(data.status || "pending");
-            if (data.essayScore !== undefined) setEssayScore(data.essayScore);
-            if (data.mcScore !== undefined) setMcScore(data.mcScore);
-            if (data.totalScore !== undefined) setTotalScore(data.totalScore);
-            if (data.aiEssayGrading) setAiEssayGrading(data.aiEssayGrading);
-          }
+          unsubscribeSubmission = onSnapshot(subRef, (subSnap) => {
+            if (subSnap.exists()) {
+              const data = subSnap.data();
+              setDigitalAnswer(data.digitalAnswer || "");
+              setSelectedOption(data.selectedOption || null);
+              setTeacherFeedback(data.teacherFeedback || "");
+              setAnswers(data.answers || {});
+              setSubmissionStatus(data.status || "pending");
+              setEssayScore(data.essayScore !== undefined ? data.essayScore : "");
+              setMcScore(data.mcScore !== undefined ? data.mcScore : null);
+              setTotalScore(data.totalScore !== undefined ? data.totalScore : null);
+              setAiEssayGrading(data.aiEssayGrading || {});
+              setOcrImage(data.scannedImage || null);
+              setUploadedFileName(data.scannedFileName || null);
+              setIsPdf(!!data.isPdf);
+            } else {
+              setDigitalAnswer("");
+              setSelectedOption(null);
+              setTeacherFeedback("");
+              setAnswers({});
+              setSubmissionStatus("pending");
+              setEssayScore("");
+              setMcScore(null);
+              setTotalScore(null);
+              setAiEssayGrading({});
+              setOcrImage(null);
+              setUploadedFileName(null);
+              setIsPdf(false);
+            }
+            setIsLoading(false);
+          }, (error) => {
+            console.error("Error listening to submission:", error);
+            setIsLoading(false);
+          });
+
         } catch (error) {
           console.error("Error fetching data:", error);
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
+    });
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeSubmission();
     };
-    fetchUserRoleAndSubmission();
-  }, [id]);
+  }, [id, studentIdParam]);
 
   const handleSelectOption = (letter: string) => {
     if (userRole === "teacher") return; // Teachers don't answer
@@ -177,11 +253,14 @@ export default function AssignmentDetail() {
     const submissionId = `${id}_${studentId}`;
     const path = `submissions/${submissionId}`;
     try {
-        await updateDoc(doc(db, "submissions", submissionId), {
+        await setDoc(doc(db, "submissions", submissionId), {
+            assignmentId: id,
+            studentId,
+            studentName: studentData?.displayName || "Siswa",
             teacherFeedback,
             status: "graded",
             updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
         alert("Feedback berhasil disimpan dan akan terlihat oleh siswa.");
     } catch (error) {
         handleFirestoreError(error, OperationType.UPDATE, path);
@@ -228,13 +307,17 @@ export default function AssignmentDetail() {
     }
 
     try {
-        await updateDoc(doc(db, "submissions", submissionId), {
+        await setDoc(doc(db, "submissions", submissionId), {
+            assignmentId: id,
+            studentId,
+            studentName: studentData?.displayName || "Siswa",
             status: "graded",
             mcScore,
             essayScore: parsedEssayScore,
             totalScore: calculatedTotalScore,
+            answers: answers,
             updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
         setSubmissionStatus("graded");
         setMcScore(mcScore);
         setTotalScore(calculatedTotalScore);
@@ -250,6 +333,10 @@ export default function AssignmentDetail() {
   const handleOcrImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setUploadedFileName(file.name);
+      const isFilePdf = file.type === "application/pdf" || file.name.endsWith(".pdf");
+      setIsPdf(isFilePdf);
+
       const reader = new FileReader();
       reader.onload = () => {
         setOcrImage(reader.result as string);
@@ -261,13 +348,82 @@ export default function AssignmentDetail() {
   };
 
   const selectMockSheet = () => {
+    setUploadedFileName("mock_ljk_sheet.svg");
+    setIsPdf(false);
     // Generate a simple dummy image data url mimicking a scanned LJK sheet
     setOcrImage("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'><rect width='100%' height='100%' fill='%23f9fafb'/><text x='20' y='40' font-family='sans-serif' font-weight='bold' font-size='16' fill='%23111827'>LEMBAR JAWABAN SISWA (LJK)</text><line x1='20' y1='60' x2='380' y2='60' stroke='%23e5e7eb' stroke-width='2'/><circle cx='40' cy='100' r='10' fill='%23111827'/><text x='60' y='104' font-family='sans-serif' font-size='12'>1. A B C D E</text><circle cx='40' cy='140' r='10' fill='%23111827'/><text x='60' y='144' font-family='sans-serif' font-size='12'>2. A B C D E</text></svg>");
     setIsOcrCompleted(false);
     setOcrDetectedAnswers({});
   };
 
-  const simulateOcr = () => {
+  const resetOcr = () => {
+    setOcrImage(null);
+    setUploadedFileName(null);
+    setIsPdf(false);
+    setIsOcrCompleted(false);
+    setOcrDetectedAnswers({});
+  };
+
+  const handleUpdateEssayScore = (index: number, newScore: number) => {
+    const updatedGrading = {
+      ...aiEssayGrading,
+      [index]: {
+        ...(aiEssayGrading[index] || {}),
+        score: newScore
+      }
+    };
+    setAiEssayGrading(updatedGrading);
+
+    const gradedEssayKeys = Object.keys(updatedGrading);
+    if (gradedEssayKeys.length > 0) {
+      const sum = gradedEssayKeys.reduce((acc, idx) => acc + (updatedGrading[Number(idx)].score || 0), 0);
+      const avg = Math.round(sum / gradedEssayKeys.length);
+      setEssayScore(avg);
+    }
+  };
+
+  const handleUpdateOcrText = (index: number, newText: string) => {
+    const updatedAnswers = {
+      ...ocrDetectedAnswers,
+      [index]: newText
+    };
+    setOcrDetectedAnswers(updatedAnswers);
+    setAnswers(updatedAnswers);
+  };
+
+  const handleReevaluateEssay = async (index: number, question: any) => {
+    const studentAnswer = ocrDetectedAnswers[index] || "";
+    setIsAutoGradingEssays(true);
+    try {
+      const response = await fetch("/api/grade-essay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: question.question,
+          keyAnswer: question.keyAnswer,
+          studentAnswer: studentAnswer
+        })
+      });
+      const data = await response.json();
+      if (data.score !== undefined) {
+        const updatedGrading = {
+          ...aiEssayGrading,
+          [index]: data
+        };
+        setAiEssayGrading(updatedGrading);
+        const gradedEssayKeys = Object.keys(updatedGrading);
+        const sum = gradedEssayKeys.reduce((acc, idx) => acc + (updatedGrading[Number(idx)].score || 0), 0);
+        const avg = Math.round(sum / gradedEssayKeys.length);
+        setEssayScore(avg);
+      }
+    } catch (error) {
+      console.error("Error re-evaluating essay:", error);
+    } finally {
+      setIsAutoGradingEssays(false);
+    }
+  };
+
+  const simulateOcr = async () => {
     if (!ocrImage) return;
     setIsOcrScanning(true);
     setOcrProgressStep(0);
@@ -282,28 +438,143 @@ export default function AssignmentDetail() {
       });
     }, 800);
 
-    setTimeout(() => {
-        const detected: Record<number, string> = {};
-        assignment?.questions?.forEach((q: any, idx: number) => {
-            if (q.type === "Multiple Choice") {
-                const correctOpt = q.options?.find((o: any) => o.isCorrect)?.label || "A";
-                const isCorrect = Math.random() > 0.15; // 85% correct rate
-                if (isCorrect) {
-                    detected[idx] = correctOpt;
-                } else {
-                    const options = q.options?.map((o: any) => o.label) || ["A", "B", "C", "D"];
-                    const wrongOpts = options.filter((l: string) => l !== correctOpt);
-                    detected[idx] = wrongOpts[Math.floor(Math.random() * wrongOpts.length)] || "A";
-                }
-            } else {
-                detected[idx] = "Jawaban esai terdeteksi";
-            }
+    try {
+      const response = await fetch("/api/ocr-scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileData: ocrImage,
+          questions: assignment?.questions || [],
+          isPdf: isPdf
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal melakukan scan OCR");
+      }
+
+      const ocrResult = await response.json();
+      const detected: Record<number, string> = {};
+      
+      if (ocrResult.answers) {
+        Object.keys(ocrResult.answers).forEach(key => {
+          detected[Number(key)] = ocrResult.answers[key];
         });
-        setOcrDetectedAnswers(detected);
-        setAnswers(detected);
-        setIsOcrScanning(false);
-        setIsOcrCompleted(true);
-    }, 3200);
+      }
+
+      setOcrDetectedAnswers(detected);
+      setAnswers(detected);
+      clearInterval(interval);
+      setOcrProgressStep(3);
+      setIsOcrScanning(false);
+      setIsOcrCompleted(true);
+
+      const essayQuestions = assignment.questions?.map((q: any, index: number) => ({ q, index }))
+        .filter((item: any) => item.q.type === "Essay") || [];
+      
+      if (essayQuestions.length > 0) {
+        setIsAutoGradingEssays(true);
+        const newGrading: Record<number, any> = { ...aiEssayGrading };
+        for (const item of essayQuestions) {
+          const studentAnswer = detected[item.index] || "";
+          try {
+            const resGrade = await fetch("/api/grade-essay", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                question: item.q.question,
+                keyAnswer: item.q.keyAnswer,
+                studentAnswer: studentAnswer
+              })
+            });
+            const data = await resGrade.json();
+            if (data.score !== undefined) {
+              newGrading[item.index] = data;
+            }
+          } catch (error) {
+            console.error(`Error auto grading scanned essay at index ${item.index}:`, error);
+          }
+        }
+        setAiEssayGrading(newGrading);
+        const gradedEssayKeys = Object.keys(newGrading);
+        if (gradedEssayKeys.length > 0) {
+          const sum = gradedEssayKeys.reduce((acc, idx) => acc + (newGrading[Number(idx)].score || 0), 0);
+          const avg = Math.round(sum / gradedEssayKeys.length);
+          setEssayScore(avg);
+        }
+        setIsAutoGradingEssays(false);
+      }
+    } catch (error) {
+      console.error("Error executing real OCR:", error);
+      alert("Peringatan: Gagal memproses LJK secara online. Menggunakan hasil simulasi berdasarkan materi ujian.");
+      
+      const detected: Record<number, string> = {};
+      assignment?.questions?.forEach((q: any, idx: number) => {
+          if (q.type === "Multiple Choice") {
+              const correctOpt = q.options?.find((o: any) => o.isCorrect)?.label || "A";
+              const isCorrect = Math.random() > 0.15;
+              if (isCorrect) {
+                  detected[idx] = correctOpt;
+              } else {
+                  const options = q.options?.map((o: any) => o.label) || ["A", "B", "C", "D"];
+                  const wrongOpts = options.filter((l: string) => l !== correctOpt);
+                  detected[idx] = wrongOpts[Math.floor(Math.random() * wrongOpts.length)] || "A";
+              }
+          } else {
+              const defaultAnswers = [
+                "Fotosintesis terjadi pada kloroplas menggunakan energi cahaya matahari.",
+                "Mitosis menghasilkan sel diploid identik untuk pertumbuhan.",
+                "Eukariot memiliki organel bermembran, sedangkan prokariot tidak.",
+                "Respirasi seluler memecah glukosa untuk menghasilkan energi ATP.",
+                "Rantai makanan menunjukkan aliran energi antar trofik organisme."
+              ];
+              detected[idx] = q.keyAnswer || defaultAnswers[idx % defaultAnswers.length];
+          }
+      });
+      
+      setOcrDetectedAnswers(detected);
+      setAnswers(detected);
+      clearInterval(interval);
+      setOcrProgressStep(3);
+      setIsOcrScanning(false);
+      setIsOcrCompleted(true);
+      
+      const essayQuestions = assignment.questions?.map((q: any, index: number) => ({ q, index }))
+        .filter((item: any) => item.q.type === "Essay") || [];
+      
+      if (essayQuestions.length > 0) {
+        setIsAutoGradingEssays(true);
+        const newGrading: Record<number, any> = { ...aiEssayGrading };
+        for (const item of essayQuestions) {
+          const studentAnswer = detected[item.index] || "";
+          try {
+            const resGrade = await fetch("/api/grade-essay", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                question: item.q.question,
+                keyAnswer: item.q.keyAnswer,
+                studentAnswer: studentAnswer
+              })
+            });
+            const data = await resGrade.json();
+            if (data.score !== undefined) {
+              newGrading[item.index] = data;
+            }
+          } catch (error) {
+            console.error(`Error auto grading scanned essay fallback:`, error);
+          }
+        }
+        setAiEssayGrading(newGrading);
+        const gradedEssayKeys = Object.keys(newGrading);
+        if (gradedEssayKeys.length > 0) {
+          const sum = gradedEssayKeys.reduce((acc, idx) => acc + (newGrading[Number(idx)].score || 0), 0);
+          const avg = Math.round(sum / gradedEssayKeys.length);
+          setEssayScore(avg);
+        }
+        setIsAutoGradingEssays(false);
+      }
+    }
   };
 
   const handleSaveOcrGrades = async () => {
@@ -354,6 +625,10 @@ export default function AssignmentDetail() {
             essayScore: parsedEssayScore,
             totalScore: calculatedTotalScore,
             teacherFeedback: "Koreksi otomatis via scan OCR Paper Mode.",
+            aiEssayGrading,
+            scannedImage: ocrImage,
+            scannedFileName: uploadedFileName,
+            isPdf: isPdf,
             updatedAt: serverTimestamp()
         }, { merge: true });
         
@@ -361,7 +636,11 @@ export default function AssignmentDetail() {
         setMcScore(mcScoreVal);
         setTotalScore(calculatedTotalScore);
         alert(`Skor Lembar Jawaban OCR berhasil disimpan! Skor: ${calculatedTotalScore}`);
-        setIsOcrMode(false);
+        if (assignment?.type === "exam") {
+          navigate(`/assignment/${id}`);
+        } else {
+          setIsOcrMode(false);
+        }
     } catch (error) {
         console.error("Error saving OCR grade:", error);
         alert("Gagal menyimpan nilai OCR.");
@@ -409,10 +688,13 @@ export default function AssignmentDetail() {
         setAiEssayGrading(newGrading);
         if (studentIdParam && id) {
           const submissionId = `${id}_${studentIdParam}`;
-          await updateDoc(doc(db, "submissions", submissionId), {
+          await setDoc(doc(db, "submissions", submissionId), {
+            assignmentId: id,
+            studentId: studentIdParam,
+            studentName: studentData?.displayName || "Siswa",
             aiEssayGrading: newGrading,
             updatedAt: serverTimestamp()
-          });
+          }, { merge: true });
         }
         
         // Pre-fill teacher feedback with AI feedback for easy overriding
@@ -475,10 +757,13 @@ export default function AssignmentDetail() {
         setAiEssayGrading(newGrading);
         const submissionId = `${id}_${studentIdParam}`;
         try {
-          await updateDoc(doc(db, "submissions", submissionId), {
+          await setDoc(doc(db, "submissions", submissionId), {
+            assignmentId: id,
+            studentId: studentIdParam,
+            studentName: studentData?.displayName || "Siswa",
             aiEssayGrading: newGrading,
             updatedAt: serverTimestamp()
-          });
+          }, { merge: true });
         } catch (error) {
           console.error("Error saving auto essay grading to Firestore:", error);
         }
@@ -512,6 +797,36 @@ export default function AssignmentDetail() {
       }
     }
   }, [aiEssayGrading, assignment, userRole, essayScore]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-surface">
+         <Loader2 className="animate-spin text-primary" size={48} />
+         <p className="font-bold text-on-surface-variant">Memuat data...</p>
+      </div>
+    );
+  }
+
+  if (userRole === "student" && assignment?.type === "exam" && submissionStatus !== "graded") {
+    return (
+      <Layout userType="student">
+        <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center space-y-6">
+          <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center shadow-lg">
+            <ShieldCheck size={40} />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-black text-on-surface">Akses Ditolak</h1>
+            <p className="text-on-surface-variant max-w-md mx-auto font-medium">
+              Ujian ini hanya dapat dikerjakan secara offline (Paper Mode) dan dinilai oleh guru Anda. Siswa tidak diperkenankan mengakses halaman ujian ini.
+            </p>
+          </div>
+          <Link to="/student/dashboard" className="btn-primary px-8 py-3 rounded-xl font-bold">
+            Kembali ke Dashboard
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   if (viewMode === "form") {
     return (
@@ -674,13 +989,14 @@ export default function AssignmentDetail() {
   }
 
   const currentQuestion = assignment?.questions?.[currentQuestionIndex];
+  const showDashboard = userRole === "teacher" && assignment?.type === "exam" && !studentIdParam;
 
   return (
     <Layout userType={userRole}>
       <div className="p-8 lg:p-12 max-w-7xl mx-auto space-y-12 pb-32">
         {/* Breadcrumb & Navigation */}
         <div className="flex justify-between items-center px-4">
-           <Link to={userRole === "student" ? "/student/dashboard" : (assignment?.classId ? `/class/${assignment.classId}?tab=reviews` : "/dashboard")} className="flex items-center gap-2 text-primary font-black uppercase text-xs tracking-widest hover:translate-x-[-10px] transition-all">
+           <Link to={userRole === "student" ? "/student/dashboard" : (assignment?.classId ? `/class/${assignment.classId}?tab=${assignment?.type === "exam" ? "exams" : "reviews"}` : "/dashboard")} className="flex items-center gap-2 text-primary font-black uppercase text-xs tracking-widest hover:translate-x-[-10px] transition-all">
               <ArrowLeft size={16} />
               Kembali ke {userRole === "student" ? "Dashboard" : "Kelas"}
            </Link>
@@ -745,7 +1061,16 @@ export default function AssignmentDetail() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {showDashboard ? (
+           <ExamTeacherDashboard 
+              classroom={classroom}
+              classStudents={classStudents}
+              submissions={submissions}
+              id={id}
+              setViewMode={setViewMode}
+           />
+        ) : (
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Main Question Area */}
           <div className="lg:col-span-8 flex flex-col gap-8 md:gap-10">
             <motion.div 
@@ -753,7 +1078,20 @@ export default function AssignmentDetail() {
               animate={{ opacity: 1, y: 0 }}
               className="glass rounded-[40px] md:rounded-[56px] p-8 md:p-12 border-white/60 shadow-2xl relative overflow-hidden min-h-[500px] lg:h-[calc(100vh-320px)] flex flex-col"
             >
-              {isOcrMode ? (
+              {userRole === "student" && assignment?.type === "exam" ? (
+                 <StudentExamView 
+                    assignment={assignment}
+                    answers={answers}
+                    ocrImage={ocrImage}
+                    uploadedFileName={uploadedFileName}
+                    isPdf={isPdf}
+                    aiEssayGrading={aiEssayGrading}
+                    teacherFeedback={teacherFeedback}
+                    totalScore={totalScore}
+                    mcScore={mcScore}
+                    essayScore={essayScore}
+                 />
+              ) : isOcrMode ? (
                   <div className="flex-1 flex flex-col space-y-8">
                      <div className="flex justify-between items-center pb-6 border-b border-on-surface/5">
                         <div className="flex items-center gap-3">
@@ -767,7 +1105,7 @@ export default function AssignmentDetail() {
                         </div>
                         <button 
                            onClick={() => setIsOcrMode(false)}
-                           type="button"
+                         type="button"
                            className="px-4 py-2 hover:bg-on-surface/5 rounded-xl font-black text-xs uppercase tracking-widest transition-all"
                         >
                            Tutup
@@ -783,8 +1121,8 @@ export default function AssignmentDetail() {
                            <p className="text-sm text-on-surface-variant/75 max-w-sm mb-8 leading-relaxed">Format yang didukung: JPG, PNG, atau scan PDF. Pastikan lembar jawaban rata dan mendapat pencahayaan yang cukup.</p>
                            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                               <label className="bg-secondary text-white px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-secondary/20 hover:scale-105 transition-all cursor-pointer text-center">
-                                 Pilih File Gambar
-                                 <input type="file" accept="image/*" onChange={handleOcrImageUpload} className="hidden" />
+                                 Pilih File Gambar / PDF
+                                 <input type="file" accept="image/*,application/pdf" onChange={handleOcrImageUpload} className="hidden" />
                               </label>
                               <button 
                                  type="button"
@@ -805,14 +1143,27 @@ export default function AssignmentDetail() {
                                  }} />
                               )}
                               
-                              <img 
-                                 src={ocrImage} 
-                                 alt="LJK Scanned" 
-                                 className={cn(
-                                    "max-h-[350px] object-contain rounded-xl shadow-md transition-all",
+                              {isPdf ? (
+                                 <div className={cn(
+                                    "flex flex-col items-center justify-center p-8 bg-white/40 border-2 border-white/60 rounded-3xl shadow-inner max-w-sm w-full text-center transition-all",
                                     isOcrScanning && "brightness-50 blur-[1px]"
-                                 )} 
-                              />
+                                 )}>
+                                    <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-4 border border-red-500/20">
+                                       <FileText size={32} />
+                                    </div>
+                                    <h5 className="font-black text-on-surface truncate max-w-[200px] leading-tight mb-1">{uploadedFileName || "dokumen_ujian.pdf"}</h5>
+                                    <span className="text-[9px] font-black text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/15 uppercase tracking-widest">Dokumen PDF</span>
+                                 </div>
+                              ) : (
+                                 <img 
+                                    src={ocrImage} 
+                                    alt="LJK Scanned" 
+                                    className={cn(
+                                       "max-h-[350px] object-contain rounded-xl shadow-md transition-all",
+                                       isOcrScanning && "brightness-50 blur-[1px]"
+                                    )} 
+                                 />
+                              )}
                               
                               {isOcrScanning ? (
                                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-6 space-y-4 text-white text-center rounded-3xl">
@@ -820,7 +1171,7 @@ export default function AssignmentDetail() {
                                     <div>
                                        <p className="font-black uppercase tracking-widest text-xs">Sedang Menganalisis...</p>
                                        <p className="text-[10px] uppercase text-white/60 tracking-wider mt-2">
-                                          {ocrProgressStep === 0 && "Memindai gambar lembar jawaban..."}
+                                          {ocrProgressStep === 0 && (isPdf ? "Mengekstrak halaman dokumen PDF..." : "Memindai gambar lembar jawaban...")}
                                           {ocrProgressStep === 1 && "Mendeteksi tanda tangan & nama siswa..."}
                                           {ocrProgressStep === 2 && "Membaca bulatan hitam pilihan ganda..."}
                                           {ocrProgressStep === 3 && "Mencocokkan dengan kunci jawaban..."}
@@ -838,7 +1189,7 @@ export default function AssignmentDetail() {
                                     </button>
                                     <button 
                                        type="button"
-                                       onClick={() => setOcrImage(null)}
+                                       onClick={resetOcr}
                                        className="bg-white/80 hover:bg-white text-on-surface px-6 py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all"
                                     >
                                        Batal
@@ -848,10 +1199,10 @@ export default function AssignmentDetail() {
                                  <div className="absolute bottom-6">
                                     <button 
                                        type="button"
-                                       onClick={() => setOcrImage(null)}
+                                       onClick={resetOcr}
                                        className="bg-white/90 hover:bg-white text-secondary px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all border border-secondary/20"
                                     >
-                                       Ganti Gambar LJK
+                                       Ganti File LJK
                                     </button>
                                  </div>
                               )}
@@ -921,11 +1272,73 @@ export default function AssignmentDetail() {
                                              );
                                           } else {
                                              return (
-                                                <div key={idx} className="flex items-center justify-between p-3.5 bg-white/40 border border-white/65 rounded-2xl opacity-60">
+                                                <div key={idx} className="p-4 bg-white/40 border border-white/65 rounded-2xl flex flex-col space-y-3">
                                                    <div className="flex items-center gap-3">
                                                       <span className="w-8 h-8 rounded-lg bg-on-surface/5 flex items-center justify-center text-xs font-bold text-on-surface-variant">S{idx + 1}</span>
-                                                      <span className="text-xs font-bold text-on-surface-variant">Soal Esai (Koreksi manual di kanan)</span>
+                                                      <span className="text-xs font-black text-on-surface-variant/75 uppercase tracking-wider">Soal Esai</span>
                                                    </div>
+                                                   
+                                                   <div className="text-xs font-semibold text-on-surface/80 bg-white/30 p-2.5 rounded-xl border border-white/50">
+                                                      <strong>Pertanyaan:</strong> {q.question}
+                                                   </div>
+
+                                                   <div className="flex flex-col space-y-1.5">
+                                                      <span className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">Hasil OCR Jawaban:</span>
+                                                      <textarea 
+                                                         value={ocrDetectedAnswers[idx] || ""}
+                                                         onChange={(e) => handleUpdateOcrText(idx, e.target.value)}
+                                                         className="w-full bg-white border border-white/80 focus:border-secondary outline-none p-3 rounded-xl text-xs font-medium min-h-[60px] resize-y"
+                                                         placeholder="Jawaban esai kosong / belum terdeteksi"
+                                                      />
+                                                   </div>
+
+                                                   {aiEssayGrading[idx] ? (
+                                                      <div className="p-3 bg-secondary/5 border border-secondary/15 rounded-xl space-y-2">
+                                                         <div className="flex justify-between items-center">
+                                                            <span className="text-[10px] font-black text-secondary uppercase tracking-widest">Analisis AI</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-bold text-on-surface-variant">Nilai:</span>
+                                                                <input 
+                                                                   type="number"
+                                                                   value={aiEssayGrading[idx].score || 0}
+                                                                   onChange={(e) => handleUpdateEssayScore(idx, Number(e.target.value))}
+                                                                   className="w-14 bg-white border border-white focus:border-secondary outline-none px-2 py-0.5 rounded text-right text-xs font-black"
+                                                                />
+                                                            </div>
+                                                         </div>
+                                                         <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                                                            <strong>Umpan Balik:</strong> {aiEssayGrading[idx].feedback}
+                                                         </p>
+                                                         <div className="grid grid-cols-3 gap-2 pt-1 border-t border-secondary/10 text-[9px] font-bold text-on-surface-variant/60 uppercase">
+                                                            <div>Konten: {aiEssayGrading[idx].analysis?.contentScore || 0}</div>
+                                                            <div>Struktur: {aiEssayGrading[idx].analysis?.structureScore || 0}</div>
+                                                            <div>Relevansi: {aiEssayGrading[idx].analysis?.relevanceScore || 0}</div>
+                                                         </div>
+                                                      </div>
+                                                   ) : (
+                                                      <div className="p-3 bg-on-surface/5 rounded-xl text-center text-[10px] text-on-surface-variant/60 font-bold uppercase tracking-wider flex items-center justify-between">
+                                                         <span>Belum ada rekomendasi AI</span>
+                                                         <button 
+                                                            type="button"
+                                                            onClick={() => handleReevaluateEssay(idx, q)}
+                                                            className="bg-secondary text-white px-3 py-1.5 rounded-lg hover:scale-105 transition-all text-[9px]"
+                                                         >
+                                                            Evaluasi
+                                                         </button>
+                                                      </div>
+                                                   )}
+
+                                                   {aiEssayGrading[idx] && (
+                                                      <div className="flex justify-end">
+                                                         <button 
+                                                            type="button"
+                                                            onClick={() => handleReevaluateEssay(idx, q)}
+                                                            className="text-[9px] font-black uppercase text-secondary hover:underline flex items-center gap-1"
+                                                         >
+                                                            <RefreshCw size={10} /> Koreksi Ulang dengan AI
+                                                         </button>
+                                                      </div>
+                                                   )}
                                                 </div>
                                              );
                                           }
@@ -1194,37 +1607,54 @@ export default function AssignmentDetail() {
 
           {/* Submission Panel */}
           <div className="lg:col-span-4 space-y-8 h-full flex flex-col">
-            <div className="glass p-10 rounded-[48px] border-white/60 shadow-xl flex flex-col">
-               <div className="flex justify-between items-center mb-10">
+            {userRole === "student" && hasSubmitted && (
+              <div className="glass p-10 rounded-[48px] border-white/60 shadow-xl bg-primary/5">
+                <h4 className="text-xl font-black tracking-tight mb-4">Nilai Anda</h4>
+                <div className="space-y-4">
+                  <div className="flex justify-between py-2 border-b border-white/20 items-center">
+                      <span className="text-xs font-bold text-on-surface-variant/40 uppercase">Status</span>
+                      <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-500/10 text-green-500 border border-green-500/20">Sudah Dinilai</span>
+                  </div>
+                  <div className="flex justify-between py-2 items-center">
+                      <span className="text-xs font-bold text-on-surface-variant/40 uppercase">Total Skor</span>
+                      <span className="text-3xl font-black text-primary">{totalScore !== null ? `${totalScore}/100` : "Belum dinilai"}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {assignment?.type !== "exam" && (
+              <div className="glass p-10 rounded-[48px] border-white/60 shadow-xl flex flex-col">
+                <div className="flex justify-between items-center mb-10">
                   <h4 className="text-xl font-black tracking-tight">{userRole === "teacher" ? "Jawaban Siswa" : "Input Digital"}</h4>
                   <FileText className="text-primary/20" size={24} />
-               </div>
-               <textarea 
-                className={cn(
-                    "w-full h-28 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-sm leading-relaxed placeholder:text-on-surface-variant/20 transition-all mb-8 shadow-inner",
-                    userRole === "teacher" && "cursor-not-allowed opacity-80"
-                )}
-                placeholder={userRole === "teacher" ? "Siswa belum menuliskan jawaban digital." : "Tuliskan catatan atau jawaban esai tambahan..."}
-                value={digitalAnswer}
-                onChange={(e) => setDigitalAnswer(e.target.value)}
-                readOnly={userRole === "teacher" || (hasSubmitted && userRole === "student")}
-              />
-              {userRole === "student" && !hasSubmitted && (
-                <button 
-                  className="btn-glass-primary w-full py-5 rounded-[24px] font-black tracking-widest text-xs uppercase"
-                >
-                    Simpan Progres
-                </button>
-              )}
-              {userRole === "teacher" && (
-                <div className="flex items-center gap-3 px-6 py-4 bg-primary/5 rounded-2xl border border-primary/10">
-                    <ShieldCheck className="text-primary" size={18} />
-                    <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-tight">Jawaban ini telah diverifikasi oleh pemeriksaan integritas AI</span>
                 </div>
-              )}
-            </div>
+                <textarea 
+                  className={cn(
+                      "w-full h-28 p-5 bg-white/40 border-2 border-white/40 focus:border-primary outline-none rounded-2xl font-medium text-sm leading-relaxed placeholder:text-on-surface-variant/20 transition-all mb-8 shadow-inner",
+                      userRole === "teacher" && "cursor-not-allowed opacity-80"
+                  )}
+                  placeholder={userRole === "teacher" ? "Siswa belum menuliskan jawaban digital." : "Tuliskan catatan atau jawaban esai tambahan..."}
+                  value={digitalAnswer}
+                  onChange={(e) => setDigitalAnswer(e.target.value)}
+                  readOnly={userRole === "teacher" || (hasSubmitted && userRole === "student")}
+                />
+                {userRole === "student" && !hasSubmitted && (
+                  <button 
+                    className="btn-glass-primary w-full py-5 rounded-[24px] font-black tracking-widest text-xs uppercase"
+                  >
+                      Simpan Progres
+                  </button>
+                )}
+                {userRole === "teacher" && (
+                  <div className="flex items-center gap-3 px-6 py-4 bg-primary/5 rounded-2xl border border-primary/10">
+                      <ShieldCheck className="text-primary" size={18} />
+                      <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-tight">Jawaban ini telah diverifikasi oleh pemeriksaan integritas AI</span>
+                  </div>
+                )}
+              </div>
+            )}
 
-            {userRole === "student" && !hasSubmitted && (
+            {userRole === "student" && !hasSubmitted && assignment?.type !== "exam" && (
               <button 
                   onClick={handleSubmit}
                   disabled={isSubmitting}
@@ -1299,9 +1729,98 @@ export default function AssignmentDetail() {
                 );
              })()}
           </div>
-        </div>
+           </div>
+        )}
       </div>
     </Layout>
+  );
+}
+
+function ExamTeacherDashboard({ classroom, classStudents, submissions, id, setViewMode }: any) {
+  return (
+    <div className="space-y-10">
+       <div className="glass rounded-[40px] p-8 md:p-12 border-white/60 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-secondary/5 to-primary/5">
+          <div className="space-y-2">
+             <div className="flex items-center gap-2 text-secondary">
+                <FileText size={20} />
+                <span className="text-xs font-black uppercase tracking-widest">Mode Ujian Kertas (Paper Mode)</span>
+             </div>
+             <h2 className="text-3xl font-black tracking-tight">Lembar Jawaban Kertas (LJK) & Scan OCR</h2>
+             <p className="text-on-surface-variant/80 text-sm max-w-2xl font-medium">
+                Cetak soal ujian untuk dibagikan ke siswa di kelas. Gunakan kamera atau unggah foto LJK siswa untuk memindai jawaban secara otomatis menggunakan AI & OCR.
+             </p>
+          </div>
+          <button 
+             onClick={() => setViewMode("paper")}
+             className="btn-primary flex items-center gap-2 shrink-0 py-4 px-8 shadow-xl shadow-primary/20"
+          >
+             <GraduationCap size={20} />
+             Cetak Soal Ujian
+          </button>
+       </div>
+
+       <div className="glass rounded-[40px] border-white/60 shadow-2xl p-8 md:p-12">
+          <div className="flex justify-between items-center mb-8 border-b border-on-surface/5 pb-6">
+             <div>
+                <h3 className="text-2xl font-black tracking-tight text-on-surface">Daftar Siswa & Pemeriksaan</h3>
+                <p className="text-xs text-on-surface-variant/60 mt-1 font-medium">Daftar siswa terdaftar di kelas {classroom?.name}</p>
+             </div>
+             <div className="bg-on-surface/5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-on-surface-variant/60">
+                Total: {classStudents.length} Siswa
+             </div>
+          </div>
+
+          {classStudents.length === 0 ? (
+             <div className="text-center py-12 text-on-surface-variant/40">
+                <User size={32} className="mx-auto mb-4" />
+                <p className="font-bold text-sm">Tidak ada siswa yang terdaftar di kelas ini.</p>
+             </div>
+          ) : (
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {classStudents.map((student: any) => {
+                   const sub = submissions[student.id];
+                   const isGraded = sub?.status === "graded";
+                   const score = sub?.totalScore;
+
+                   return (
+                      <div key={student.id} className="p-6 bg-white/40 border border-white/65 rounded-[32px] hover:shadow-lg transition-all flex justify-between items-center gap-4">
+                         <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center shrink-0 text-secondary">
+                               <User size={24} />
+                            </div>
+                            <div className="min-w-0">
+                               <h4 className="font-black text-lg text-on-surface truncate leading-none mb-1.5">{student.displayName || "Siswa"}</h4>
+                               <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 truncate leading-none">{student.email}</p>
+                            </div>
+                         </div>
+
+                         <div className="flex items-center gap-4 shrink-0">
+                            {isGraded ? (
+                               <div className="text-right">
+                                  <span className="inline-block px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full text-[9px] font-black uppercase tracking-widest mb-1.5">Selesai</span>
+                                  <p className="text-xl font-black text-green-600 leading-none">{score}/100</p>
+                               </div>
+                            ) : (
+                               <div className="text-right">
+                                  <span className="inline-block px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[9px] font-black uppercase tracking-widest">Belum Diperiksa</span>
+                                </div>
+                            )}
+
+                            <Link 
+                               to={`/assignment/${id}?studentId=${student.id}`}
+                               className="p-3 bg-secondary text-white rounded-xl shadow-lg shadow-secondary/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                               title="Mulai Scan LJK"
+                            >
+                               <Zap size={18} fill="currentColor" />
+                            </Link>
+                         </div>
+                      </div>
+                   );
+                })}
+             </div>
+          )}
+       </div>
+    </div>
   );
 }
 
@@ -1347,4 +1866,130 @@ function Clock({ className, size }: { className?: string, size?: number }) {
             <polyline points="12 6 12 12 16 14" />
         </svg>
     )
+}
+
+function StudentExamView({ 
+  assignment, 
+  answers, 
+  aiEssayGrading, 
+  teacherFeedback, 
+  totalScore, 
+  mcScore, 
+  essayScore 
+}: any) {
+  return (
+    <div className="flex-1 flex flex-col min-h-0 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-on-surface/5 gap-4">
+        <div>
+          <h3 className="text-2xl font-black italic text-primary leading-none">Hasil Ujian Anda</h3>
+          <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 mt-1.5">Koreksi Paper Mode Ujian</p>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-white/40 border border-white/60 rounded-2xl text-center">
+              <span className="text-[9px] font-black uppercase text-on-surface-variant/40 tracking-wider">Skor Akhir</span>
+              <p className="text-2xl font-black text-primary mt-1">{totalScore !== null ? totalScore : 0}/100</p>
+            </div>
+            <div className="p-4 bg-white/40 border border-white/60 rounded-2xl text-center">
+              <span className="text-[9px] font-black uppercase text-on-surface-variant/40 tracking-wider">Skor Pilihan Ganda</span>
+              <p className="text-2xl font-black text-secondary mt-1">{mcScore !== null ? mcScore : 0}</p>
+            </div>
+            <div className="p-4 bg-white/40 border border-white/60 rounded-2xl text-center">
+              <span className="text-[9px] font-black uppercase text-on-surface-variant/40 tracking-wider">Skor Esai</span>
+              <p className="text-2xl font-black text-secondary mt-1">{essayScore !== "" ? essayScore : 0}</p>
+            </div>
+          </div>
+
+          {teacherFeedback && (
+            <div className="p-5 bg-primary/5 border border-primary/10 rounded-2xl space-y-1">
+              <span className="text-[9px] font-black uppercase text-primary tracking-widest block">Umpan Balik Guru</span>
+              <p className="text-xs font-semibold text-on-surface-variant leading-relaxed whitespace-pre-wrap">{teacherFeedback}</p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <h4 className="text-sm font-black uppercase tracking-widest text-on-surface-variant">Analisis Lembar Jawaban</h4>
+            <div className="space-y-3">
+              {assignment?.questions?.map((q: any, idx: number) => {
+                if (q.type === "Multiple Choice") {
+                  const correctOpt = q.options?.find((o: any) => o.isCorrect)?.label || "A";
+                  const studentAns = answers[idx] || "-";
+                  const isCorrect = studentAns === correctOpt;
+                  return (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-white/40 border border-white/60 rounded-2xl gap-4">
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-lg bg-on-surface/5 flex items-center justify-center text-xs font-bold text-on-surface-variant">S{idx + 1}</span>
+                        <div>
+                          <span className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest block leading-none">Pertanyaan</span>
+                          <p className="text-xs font-bold text-on-surface truncate max-w-[200px] md:max-w-sm">{q.question}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="text-right">
+                          <span className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest block">Kunci</span>
+                          <span className="text-xs font-black text-primary">{correctOpt}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest block">Jawaban</span>
+                          <span className={cn("text-xs font-black", isCorrect ? "text-green-500" : "text-red-500")}>{studentAns}</span>
+                        </div>
+                        <span className={cn(
+                          "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border",
+                          isCorrect ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"
+                        )}>
+                          {isCorrect ? "Benar" : "Salah"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                } else {
+                  const studentAns = answers[idx] || "Tidak ada jawaban";
+                  const essayFeedback = aiEssayGrading[idx];
+                  return (
+                    <div key={idx} className="p-5 bg-white/40 border border-white/60 rounded-2xl space-y-3">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <span className="w-8 h-8 rounded-lg bg-on-surface/5 flex items-center justify-center text-xs font-bold text-on-surface-variant">S{idx + 1}</span>
+                          <span className="text-xs font-black text-on-surface-variant/75 uppercase tracking-wider">Soal Esai</span>
+                        </div>
+                        {essayFeedback && (
+                          <span className="px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                            Nilai: {essayFeedback.score || 0}/100
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="text-xs font-semibold text-on-surface bg-white/30 p-3 rounded-xl border border-white/50 space-y-1">
+                        <span className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest block leading-none mb-1">Pertanyaan:</span>
+                        <p>{q.question}</p>
+                      </div>
+
+                      <div className="text-xs font-medium text-on-surface-variant/80 bg-white/10 p-3 rounded-xl border border-white/30 space-y-1">
+                        <span className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest block leading-none mb-1">Jawaban Anda:</span>
+                        <p className="italic">"{studentAns}"</p>
+                      </div>
+
+                      {essayFeedback && (
+                        <div className="p-3.5 bg-secondary/5 border border-secondary/15 rounded-xl space-y-2">
+                          <span className="text-[9px] font-black text-secondary uppercase tracking-widest block">Evaluasi AI</span>
+                          <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                            <strong>Umpan Balik:</strong> {essayFeedback.feedback}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

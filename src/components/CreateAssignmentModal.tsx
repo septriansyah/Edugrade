@@ -13,9 +13,10 @@ interface CreateAssignmentModalProps {
   classId: string;
   subject: string;
   editAssignment?: any;
+  isExam?: boolean;
 }
 
-export default function CreateAssignmentModal({ isOpen, onClose, onCreated, classId, subject, editAssignment }: CreateAssignmentModalProps) {
+export default function CreateAssignmentModal({ isOpen, onClose, onCreated, classId, subject, editAssignment, isExam }: CreateAssignmentModalProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -49,9 +50,9 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
       setDueDate("");
       setFileUrl("");
       setMethod("manual");
-      setViewMode("standard");
+      setViewMode(isExam ? "paper" : "standard");
     }
-  }, [editAssignment, isOpen]);
+  }, [editAssignment, isOpen, isExam]);
 
   const handleCreateAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +66,11 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
         classId,
         assignmentTitle: title,
         description,
-        viewMode,
+        viewMode: isExam ? "paper" : viewMode,
       });
+      if (isExam) {
+        params.set("type", "exam");
+      }
       if (dueDate) params.set("dueDate", dueDate);
       navigate(`/generator?${params.toString()}`);
       onClose();
@@ -80,7 +84,8 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
           title,
           description,
           dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-          viewMode,
+          viewMode: isExam ? "paper" : viewMode,
+          type: isExam ? "exam" : (editAssignment.type || "assignment"),
           fileUrl: method === "manual" ? fileUrl : "",
         });
       } else {
@@ -93,7 +98,8 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
           dueDate: dueDate ? new Date(dueDate).toISOString() : null,
           status: "active",
           method,
-          viewMode,
+          viewMode: isExam ? "paper" : viewMode,
+          type: isExam ? "exam" : "assignment",
           fileUrl: method === "manual" ? fileUrl : "",
           createdAt: serverTimestamp(),
         });
@@ -136,10 +142,10 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
             </button>
             
             <h3 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">
-              {editAssignment ? "Ubah Tugas" : "Buat Tugas Baru"}
+              {editAssignment ? (isExam ? "Ubah Ujian" : "Ubah Tugas") : (isExam ? "Buat Ujian Baru" : "Buat Tugas Baru")}
             </h3>
             <p className="text-on-surface-variant font-medium mb-8">
-              {editAssignment ? "Perbarui informasi detail tugas di bawah ini." : "Pilih metode pembuatan tugas yang paling efisien."}
+              {editAssignment ? "Perbarui informasi detail di bawah ini." : (isExam ? "Pilih metode pembuatan ujian yang paling efisien." : "Pilih metode pembuatan tugas yang paling efisien.")}
             </p>
             
             <form onSubmit={handleCreateAssignment} className="space-y-6 md:space-y-8">
@@ -163,38 +169,40 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
               )}
 
               <div className="space-y-3">
-                <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest ml-1">Judul Tugas</label>
+                <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest ml-1">{isExam ? "Judul Ujian" : "Judul Tugas"}</label>
                 <input 
                   autoFocus
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Analisis Struktur Sel Tumbuhan" 
+                  placeholder={isExam ? "Contoh: Ujian Akhir Semester Biologi" : "Contoh: Analisis Struktur Sel Tumbuhan"} 
                   className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary outline-none px-6 py-4 rounded-[20px] font-bold text-lg transition-all"
                 />
               </div>
               
               {(method === "manual" || editAssignment) && (
                 <>
-                  <div className="space-y-3">
-                    <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest ml-1">Mode Tampilan Siswa</label>
-                    <select 
-                      value={viewMode}
-                      onChange={(e: any) => setViewMode(e.target.value)}
-                      className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary outline-none px-6 py-4 rounded-[20px] font-bold text-lg appearance-none"
-                    >
-                      <option value="standard">Mode Standar (Digital)</option>
-                      <option value="form">Mode Form (Pilihan Ganda Saja)</option>
-                      <option value="paper">Mode Kertas (Kertas Kosong)</option>
-                    </select>
-                  </div>
+                  {!isExam && (
+                    <div className="space-y-3">
+                      <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest ml-1">Mode Tampilan Siswa</label>
+                      <select 
+                        value={viewMode}
+                        onChange={(e: any) => setViewMode(e.target.value)}
+                        className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary outline-none px-6 py-4 rounded-[20px] font-bold text-lg appearance-none"
+                      >
+                        <option value="standard">Mode Standar (Digital)</option>
+                        <option value="form">Mode Form (Pilihan Ganda Saja)</option>
+                        <option value="paper">Mode Kertas (Kertas Kosong)</option>
+                      </select>
+                    </div>
+                  )}
 
                   <div className="space-y-3">
                     <label className="text-xs font-black text-on-surface-variant uppercase tracking-widest ml-1">Instruksi / Deskripsi</label>
                     <textarea 
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Jelaskan apa yang harus dikerjakan siswa..." 
+                      placeholder={isExam ? "Jelaskan tata tertib atau petunjuk ujian..." : "Jelaskan apa yang harus dikerjakan siswa..."} 
                       className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary outline-none px-6 py-4 rounded-[20px] font-bold text-lg transition-all min-h-[120px] resize-none"
                     />
                   </div>
@@ -245,7 +253,7 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
                 )}
               >
                 {isCreating ? <Loader2 className="animate-spin" size={24} /> : ((method === "ai" && !editAssignment) ? <Sparkles size={24} /> : <ClipboardList size={24} />)}
-                {editAssignment ? "SIMPAN PERUBAHAN" : (method === "ai" ? "LANJUT KE GENERATOR" : "TERBITKAN TUGAS")}
+                {editAssignment ? "SIMPAN PERUBAHAN" : (method === "ai" ? "LANJUT KE GENERATOR" : (isExam ? "TERBITKAN UJIAN" : "TERBITKAN TUGAS"))}
               </button>
             </form>
           </motion.div>

@@ -5,7 +5,7 @@ import { Clock, ArrowRight, Dna, History, Calculator, Search, Bell, Sparkles, Us
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
-import { collection, query, where, getDocs, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, onSnapshot } from "firebase/firestore";
 
 interface ClassData {
   id: string;
@@ -21,6 +21,7 @@ interface AssignmentData {
   classId: string;
   status?: string;
   score?: number | null;
+  type?: string;
 }
 
 interface SubmissionData {
@@ -41,16 +42,41 @@ export default function StudentDashboard() {
   const hasAutoJoined = useRef(false);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    let unsubscribeSubmissions: () => void = () => {};
+    let unsubscribeAssignments: () => void = () => {};
+
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
         fetchMyClasses();
+
+        // Listen to submissions in real-time
+        const qSubmissions = query(
+          collection(db, "submissions"),
+          where("studentId", "==", user.uid)
+        );
+        unsubscribeSubmissions = onSnapshot(qSubmissions, () => {
+          fetchMyClasses();
+        });
+
+        // Listen to assignments in real-time
+        const qAssignments = collection(db, "assignments");
+        unsubscribeAssignments = onSnapshot(qAssignments, () => {
+          fetchMyClasses();
+        });
       } else {
         setClasses([]);
         setAssignments([]);
         setIsLoading(false);
+        unsubscribeSubmissions();
+        unsubscribeAssignments();
       }
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeSubmissions();
+      unsubscribeAssignments();
+    };
   }, []);
 
   // Handle auto-join from AuthPage
@@ -150,14 +176,22 @@ export default function StudentDashboard() {
         }
 
         // 4. Map status to assignments
-        const assignmentsWithStatus = assignmentsList.map(assignment => {
-            const sub = submissionsMap[assignment.id];
-            return {
-                ...assignment,
-                status: sub?.status || "belum_dikumpulkan",
-                score: sub?.totalScore !== undefined ? sub.totalScore : (sub?.mcScore !== undefined ? sub.mcScore : null)
-            };
-        }) as AssignmentData[];
+        const assignmentsWithStatus = assignmentsList
+            .filter(assignment => {
+                if (assignment.type === "exam") {
+                    const sub = submissionsMap[assignment.id];
+                    return sub?.status === "graded";
+                }
+                return true;
+            })
+            .map(assignment => {
+                const sub = submissionsMap[assignment.id];
+                return {
+                    ...assignment,
+                    status: sub?.status || "belum_dikumpulkan",
+                    score: sub?.totalScore !== undefined ? sub.totalScore : (sub?.mcScore !== undefined ? sub.mcScore : null)
+                };
+            }) as AssignmentData[];
 
         setAssignments(assignmentsWithStatus);
 
