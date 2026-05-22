@@ -1,33 +1,119 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, Sparkles, Database, FileText, CheckCircle, GraduationCap } from "lucide-react";
-import { motion } from "motion/react";
+import { ArrowRight, Users, Sparkles, Database, FileText, CheckCircle, GraduationCap, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import Logo from "/src/img/Logo.svg";
 
 export default function LandingPage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-surface selection:bg-primary/20">
       {/* Navbar */}
       <header className="glass sticky top-0 z-50 h-24 border-b">
-        <div className="max-w-7xl mx-auto px-8 lg:px-12 h-full flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12 h-full flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img src={Logo} alt="Edugrade Logo" className="h-10 object-contain" />
+            <Link to="/" className="hover:scale-105 transition-transform">
+              <img src={Logo} alt="Edugrade Logo" className="h-9 md:h-10 object-contain" />
+            </Link>
           </div>
+          
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10">
             <Link to="/" className="font-extrabold text-primary border-b-4 border-primary pb-1">Beranda</Link>
-            <Link to="#" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Fitur AI</Link>
+            <Link to="/features" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Fitur AI</Link>
             <Link to="/pricing" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Pricing</Link>
           </nav>
-          <div className="flex items-center gap-6">
-            <Link to="/auth" className="font-black text-on-surface-variant hover:text-primary transition-colors text-sm uppercase tracking-[0.2em]">Login</Link>
+          
+          {/* Desktop Auth */}
+          <div className="hidden md:flex items-center gap-3 md:gap-6">
+            <Link to="/auth" className="font-black text-on-surface-variant hover:text-primary transition-colors text-xs md:text-sm uppercase tracking-[0.15em] md:tracking-[0.2em]">Login</Link>
             <Link
               to="/auth"
-              className="bg-primary text-white px-8 py-3.5 rounded-[20px] font-bold hover:brightness-110 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 text-sm uppercase tracking-widest"
+              className="bg-primary text-white px-4 md:px-8 py-2.5 md:py-3.5 rounded-[16px] md:rounded-[20px] font-bold hover:brightness-110 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 text-xs md:text-sm uppercase tracking-wider md:tracking-widest"
             >
               Get Started
             </Link>
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-4">
+            <Link
+              to="/auth"
+              className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-md shadow-primary/20 uppercase tracking-wider"
+            >
+              Mulai
+            </Link>
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 text-on-surface hover:bg-on-surface/5 rounded-xl transition-all"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* Mobile Nav Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[280px] bg-white z-[110] p-8 flex flex-col shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-on-surface/5 rounded-xl transition-all">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <nav className="flex flex-col gap-6">
+                <Link 
+                  to="/" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-extrabold text-primary text-lg"
+                >
+                  Beranda
+                </Link>
+                <Link 
+                  to="/features" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-bold text-on-surface-variant hover:text-primary text-lg transition-colors"
+                >
+                  Fitur AI
+                </Link>
+                <Link 
+                  to="/pricing" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-bold text-on-surface-variant hover:text-primary text-lg transition-colors"
+                >
+                  Pricing
+                </Link>
+                <hr className="border-outline-variant/30 my-2" />
+                <Link 
+                  to="/auth" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-bold text-on-surface hover:text-primary text-lg transition-colors"
+                >
+                  Login
+                </Link>
+              </nav>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-32 overflow-hidden flex items-center">
@@ -131,7 +217,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Smart AI Generator</h3>
                 <p className="text-on-surface-variant leading-relaxed">
-                  Buat soal essay atau pilihan ganda secara instan berdasarkan persentase level Taksonomi Bloom (C1-C6). Cukup masukkan topik, biarkan AI bekerja untuk Anda.
+                  Kelebihan utama: Buat soal essay atau pilihan ganda secara instan berdasarkan persentase level Taksonomi Bloom (C1-C6). Cukup masukkan topik, biarkan AI yang menghemat berjam-jam waktu kerja Anda.
                 </p>
               </div>
               <div className="flex-1 w-full p-6 bg-surface rounded-2xl border border-outline-variant">
@@ -157,7 +243,7 @@ export default function LandingPage() {
                 <Database size={48} className="mb-6 opacity-80" />
                 <h3 className="text-2xl font-bold mb-4">Bank Soal Komunitas</h3>
                 <p className="opacity-80 leading-relaxed">
-                  Berbagi dan temukan referensi soal berkualitas dari ribuan pendidik di seluruh Indonesia secara kolaboratif.
+                  Keunggulannya: Bagikan dan temukan ribuan referensi soal berkualitas dari sesama pendidik di seluruh Indonesia, memperkaya bank soal Anda tanpa batas secara kolaboratif.
                 </p>
               </div>
               <Users className="absolute -bottom-8 -right-8 text-white/10 w-48 h-48 group-hover:scale-110 transition-transform" />
@@ -171,7 +257,7 @@ export default function LandingPage() {
               <FileText size={48} className="text-secondary mb-6" />
               <h3 className="text-2xl font-bold mb-4">Analisis Butir Soal Pro</h3>
               <p className="text-on-surface-variant mb-8 leading-relaxed">
-                Hitung otomatis Indeks Kesukaran, Daya Pembeda, Efektivitas Pengecoh, serta Validitas dan Reliabilitas soal secara real-time.
+                Kelebihan sistem: Hitung otomatis Indeks Kesukaran, Daya Pembeda, Efektivitas Pengecoh, serta Validitas dan Reliabilitas soal secara real-time tanpa rumus Excel yang rumit.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-surface rounded-2xl text-center border border-outline-variant/30">
@@ -196,7 +282,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Generator Soal DeepSeek</h3>
                 <p className="text-on-surface-variant mb-6 leading-relaxed">
-                  Buat soal pilihan ganda dan esai berbasis Taksonomi Bloom, lengkap dengan opsi jawaban dan pembahasan.
+                  Keunggulan utama: Hasilkan soal pilihan ganda dan esai secara instan yang sangat presisi, relevan, lengkap dengan opsi jawaban dan pembahasannya.
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm font-semibold">
@@ -233,7 +319,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-2xl font-black tracking-tight">Generator Soal Cerdas</h3>
                 <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
-                  Hasilkan paket soal Pilihan Ganda (PG) dan Esai berkualitas tinggi yang disesuaikan dengan level kognitif Taksonomi Bloom (C1-C6) secara otomatis berdasarkan topik atau materi rujukan Anda.
+                  Hasilkan paket soal otomatis berdasarkan topik rujukan Anda. Kelebihan utamanya: Menghemat waktu pembuatan soal hingga 90% dengan hasil presisi yang terjamin sesuai standar kognitif Taksonomi Bloom (C1-C6).
                 </p>
               </div>
             </div>
@@ -245,7 +331,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-2xl font-black tracking-tight">Koreksi & Rekomendasi Nilai AI</h3>
                 <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
-                  Asisten AI mengevaluasi respon lembar jawaban esai siswa secara objektif, memberikan analisis kata kunci, serta menyajikan rekomendasi nilai instan sebelum divalidasi oleh guru.
+                  Asisten AI mengevaluasi respon jawaban esai siswa secara objektif. Kelebihannya: Memberikan rekomendasi nilai instan dan analisis kata kunci yang sangat akurat, sehingga guru bisa mengoreksi ratusan esai dalam hitungan menit.
                 </p>
               </div>
             </div>
@@ -257,7 +343,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-2xl font-black tracking-tight">Analisis Butir & Pengecoh</h3>
                 <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
-                  Menghitung tingkat kesukaran soal, daya pembeda kelompok unggul-asor, efektivitas pengecoh jawaban, serta validitas & reliabilitas tes otomatis untuk memastikan standar kualitas penilaian.
+                  Menghitung tingkat kesukaran, daya pembeda kelompok, efektivitas pengecoh, dan validitas tes otomatis. Keunggulannya: Menghasilkan laporan komprehensif tanpa pusing perhitungan rumit, memastikan evaluasi berkualitas.
                 </p>
               </div>
             </div>
@@ -299,7 +385,7 @@ export default function LandingPage() {
               <h4 className="font-bold">Product</h4>
               <ul className="space-y-2 text-on-surface-variant">
                 <li><Link to="/">Home</Link></li>
-                <li><Link to="/">Features</Link></li>
+                <li><Link to="/features">Features</Link></li>
                 <li><Link to="/pricing">Pricing</Link></li>
               </ul>
             </div>

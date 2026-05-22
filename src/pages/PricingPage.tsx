@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { motion } from "motion/react";
-import { CheckCircle2, Sparkles, Zap, ShieldCheck, ArrowLeft, Loader2, Crown } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { CheckCircle2, Sparkles, Zap, ShieldCheck, Loader2, Crown, Menu, X } from "lucide-react";
 import Logo from "@/src/img/Logo.svg";
 import { auth, db, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -12,6 +12,7 @@ export default function PricingPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -105,19 +106,111 @@ export default function PricingPage() {
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -mr-64 -mt-64 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[120px] -ml-64 -mb-64 pointer-events-none" />
 
-      {/* Header */}
-      <header className="px-8 py-6 flex items-center justify-between border-b border-white/40 glass z-10 sticky top-0">
-        <Link to="/" className="flex items-center gap-3 hover:scale-105 transition-transform">
-          <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
-          <span className="font-black text-xl tracking-tight text-on-surface hidden md:block">Edugrade</span>
-        </Link>
-        <button 
-            onClick={() => navigate(-1)} 
-            className="flex items-center gap-2 px-4 py-2 bg-on-surface/5 hover:bg-on-surface/10 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
-        >
-            <ArrowLeft size={16} /> Kembali
-        </button>
+      {/* Navbar */}
+      <header className="glass sticky top-0 z-50 h-24 border-b">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12 h-full flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Link to="/" className="hover:scale-105 transition-transform">
+              <img src={Logo} alt="Edugrade Logo" className="h-9 md:h-10 object-contain" />
+            </Link>
+          </div>
+          
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-10">
+            <Link to="/" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Beranda</Link>
+            <Link to="/features" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Fitur AI</Link>
+            <Link to="/pricing" className="font-extrabold text-primary border-b-4 border-primary pb-1">Pricing</Link>
+          </nav>
+          
+          {/* Desktop Auth */}
+          <div className="hidden md:flex items-center gap-3 md:gap-6">
+            <Link to="/auth" className="font-black text-on-surface-variant hover:text-primary transition-colors text-xs md:text-sm uppercase tracking-[0.15em] md:tracking-[0.2em]">Login</Link>
+            <Link
+              to="/auth"
+              className="bg-primary text-white px-4 md:px-8 py-2.5 md:py-3.5 rounded-[16px] md:rounded-[20px] font-bold hover:brightness-110 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 text-xs md:text-sm uppercase tracking-wider md:tracking-widest"
+            >
+              Get Started
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-4">
+            <Link
+              to="/auth"
+              className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-md shadow-primary/20 uppercase tracking-wider"
+            >
+              Mulai
+            </Link>
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 text-on-surface hover:bg-on-surface/5 rounded-xl transition-all"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
+        </div>
       </header>
+
+      {/* Mobile Nav Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[280px] bg-white z-[110] p-8 flex flex-col shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-on-surface/5 rounded-xl transition-all">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <nav className="flex flex-col gap-6">
+                <Link 
+                  to="/" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-bold text-on-surface-variant hover:text-primary text-lg transition-colors"
+                >
+                  Beranda
+                </Link>
+                <Link 
+                  to="/features" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-bold text-on-surface-variant hover:text-primary text-lg transition-colors"
+                >
+                  Fitur AI
+                </Link>
+                <Link 
+                  to="/pricing" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-extrabold text-primary text-lg"
+                >
+                  Pricing
+                </Link>
+                <hr className="border-outline-variant/30 my-2" />
+                <Link 
+                  to="/auth" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="font-bold text-on-surface hover:text-primary text-lg transition-colors"
+                >
+                  Login
+                </Link>
+              </nav>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Content */}
       <main className="flex-1 flex flex-col items-center justify-center py-20 px-6 z-10 relative">

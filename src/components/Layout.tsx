@@ -257,7 +257,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
         </header>
 
         {/* Page Content */}
-        <main className="flex-1">
+        <main className={cn("flex-1", userType === "teacher" && "pb-24 lg:pb-0")}>
           {children}
         </main>
 
@@ -320,7 +320,14 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
                           to="/analytics" 
                           icon={<Search size={20} />} 
                           label="Butir Soal" 
-                          active={location.pathname === "/analytics"} 
+                          active={location.pathname.startsWith("/analytics")} 
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        />
+                        <SidebarItem 
+                          to="/generator" 
+                          icon={<Sparkles size={20} />} 
+                          label="Bank Soal" 
+                          active={location.pathname.startsWith("/generator")} 
                           onClick={() => setIsMobileMenuOpen(false)}
                         />
                       </>
@@ -385,6 +392,38 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
             }
         }}
       />
+      {/* Mobile Bottom Navigation Bar for Teachers */}
+      {userType === "teacher" && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-outline-variant/30 px-6 py-2 flex justify-around items-center z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
+          <MobileNavItem 
+            to="/dashboard" 
+            icon={<Home size={20} />} 
+            label="Dashboard" 
+            active={location.pathname === "/dashboard"} 
+          />
+          <MobileNavItem 
+            to="/analytics" 
+            icon={<Search size={20} />} 
+            label="Butir Soal" 
+            active={location.pathname.startsWith("/analytics")} 
+          />
+          <MobileNavItem 
+            to="/generator" 
+            icon={<Sparkles size={20} />} 
+            label="Bank Soal" 
+            active={location.pathname.startsWith("/generator")} 
+          />
+          <button
+            onClick={handleAction}
+            className="flex flex-col items-center gap-1 text-on-surface-variant/60 hover:text-primary transition-colors"
+          >
+            <div className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
+              <Plus size={18} />
+            </div>
+            <span className="text-[9px] font-black uppercase tracking-wider">Buat</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -428,4 +467,21 @@ function HeaderLink({ to, label, active }: { to: string, label: string, active?:
             <div className="absolute bottom-0 left-0 w-0 h-1 bg-primary/20 rounded-full group-hover:w-full transition-all duration-300" />
         </Link>
     )
+}
+
+function MobileNavItem({ to, icon, label, active }: { to: string, icon: React.ReactNode, label: string, active: boolean }) {
+  return (
+    <Link 
+      to={to} 
+      className={cn(
+        "flex flex-col items-center gap-1 transition-colors py-1 px-3 rounded-xl",
+        active ? "text-primary font-black animate-pulse" : "text-on-surface-variant/60 hover:text-on-surface"
+      )}
+    >
+      <div className={cn("transition-transform", active && "scale-110 text-primary")}>
+        {icon}
+      </div>
+      <span className="text-[9px] uppercase tracking-wider font-bold">{label}</span>
+    </Link>
+  );
 }

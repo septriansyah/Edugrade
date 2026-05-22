@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Loader2, GraduationCap, BookOpen } from "lucide-react";
+import { Loader2, GraduationCap, BookOpen, ArrowLeft } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import { signInWithGoogle, ensureUserProfile, auth } from "@/src/lib/firebase";
 import type { UserRole } from "@/src/lib/firebase";
@@ -86,17 +86,29 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Back button */}
+      <div className="absolute top-6 left-6 md:top-10 md:left-10 z-20">
+        <Link 
+          to="/"
+          className="flex items-center gap-2 px-4 py-2.5 bg-white/40 hover:bg-white/60 border border-white/60 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm"
+        >
+          <ArrowLeft size={16} /> Kembali
+        </Link>
+      </div>
+
       {/* Decorative background blur */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -mr-64 -mt-64" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-student-primary/5 rounded-full blur-[120px] -ml-64 -mb-64" />
 
-      <header className="mb-16 text-center z-10">
+      <header className="mb-16 text-center z-10 pt-16 md:pt-0">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-center gap-4 mb-6"
         >
-          <img src={Logo} alt="Edugrade Logo" className="h-16 object-contain" />
+          <Link to="/" className="hover:scale-105 transition-transform flex items-center gap-4">
+            <img src={Logo} alt="Edugrade Logo" className="h-16 object-contain" />
+          </Link>
           <span className="bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase border border-primary/20">AI POWERED</span>
         </motion.div>
         <motion.h1 
@@ -116,25 +128,25 @@ export default function AuthPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
           whileHover={{ y: -8 }}
-          className="glass rounded-[48px] p-12 flex flex-col h-full border-white/40 shadow-2xl shadow-primary/5 group theme-teacher"
+          className="glass rounded-[32px] md:rounded-[48px] p-6 md:p-12 flex flex-col h-full border-white/40 shadow-2xl shadow-primary/5 group theme-teacher"
         >
-          <div className="w-20 h-20 bg-primary/10 rounded-[28px] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl shadow-primary/10">
-            <BookOpen className="text-primary w-10 h-10" />
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-[20px] md:rounded-[28px] flex items-center justify-center mb-6 md:mb-10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl shadow-primary/10">
+            <BookOpen className="text-primary w-8 h-8 md:w-10 md:h-10" />
           </div>
-          <h2 className="text-4xl font-black mb-6 tracking-tight">Saya Seorang Guru</h2>
-          <p className="text-on-surface-variant/80 text-xl mb-10 flex-grow leading-relaxed font-medium">
+          <h2 className="text-2xl md:text-4xl font-black mb-4 md:mb-6 tracking-tight">Saya Seorang Guru</h2>
+          <p className="text-on-surface-variant/80 text-base md:text-xl mb-6 md:mb-10 flex-grow leading-relaxed font-medium">
             Otomasi pembuatan soal, analisis mendalam, dan kelola kelas Anda dengan asisten AI.
           </p>
           <div className="space-y-4">
             <button 
               onClick={() => handleGoogleLogin("teacher")}
               disabled={isLoading}
-              className="w-full bg-primary text-white py-5 rounded-[24px] font-bold shadow-2xl shadow-primary/30 hover:brightness-110 active:scale-95 transition-all text-xl flex items-center justify-center gap-4 disabled:opacity-50"
+              className="w-full bg-primary text-white py-4 md:py-5 rounded-[18px] md:rounded-[24px] font-bold shadow-2xl shadow-primary/30 hover:brightness-110 active:scale-95 transition-all text-lg md:text-xl flex items-center justify-center gap-4 disabled:opacity-50"
             >
               {isLoading ? <Loader2 className="animate-spin" size={24} /> : <GoogleLogo />}
               Masuk Dengan Google
             </button>
-            <p className="text-center text-sm font-bold text-outline uppercase tracking-widest opacity-50">Portal Akademik Guru</p>
+            <p className="text-center text-xs md:text-sm font-bold text-outline uppercase tracking-widest opacity-50">Portal Akademik Guru</p>
           </div>
         </motion.div>
 
@@ -144,20 +156,20 @@ export default function AuthPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
           whileHover={{ y: -8 }}
-          className="glass rounded-[48px] p-12 flex flex-col h-full border-white/40 shadow-2xl shadow-student-primary/5 group theme-student"
+          className="glass rounded-[32px] md:rounded-[48px] p-6 md:p-12 flex flex-col h-full border-white/40 shadow-2xl shadow-student-primary/5 group theme-student"
         >
-          <div className="w-20 h-20 bg-primary/10 rounded-[28px] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 shadow-xl shadow-primary/10">
-            <GraduationCap className="text-primary w-10 h-10" />
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-[20px] md:rounded-[28px] flex items-center justify-center mb-6 md:mb-10 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 shadow-xl shadow-primary/10">
+            <GraduationCap className="text-primary w-8 h-8 md:w-10 md:h-10" />
           </div>
-          <h2 className="text-4xl font-black mb-6 tracking-tight">Saya Seorang Siswa</h2>
-          <p className="text-on-surface-variant/80 text-xl mb-10 flex-grow leading-relaxed font-medium">
+          <h2 className="text-2xl md:text-4xl font-black mb-4 md:mb-6 tracking-tight">Saya Seorang Siswa</h2>
+          <p className="text-on-surface-variant/80 text-base md:text-xl mb-6 md:mb-10 flex-grow leading-relaxed font-medium">
             Akses materi, kerjakan tugas, dan lihat progres belajar Anda secara real-time.
           </p>
           <div className="space-y-6">
             <button 
               onClick={() => handleGoogleLogin("student")}
               disabled={isLoading}
-              className="w-full bg-primary text-white py-5 rounded-[24px] font-bold shadow-2xl shadow-primary/30 hover:brightness-110 active:scale-95 transition-all text-xl flex items-center justify-center gap-4 disabled:opacity-50"
+              className="w-full bg-primary text-white py-4 md:py-5 rounded-[18px] md:rounded-[24px] font-bold shadow-2xl shadow-primary/30 hover:brightness-110 active:scale-95 transition-all text-lg md:text-xl flex items-center justify-center gap-4 disabled:opacity-50"
             >
               {isLoading ? <Loader2 className="animate-spin" size={24} /> : <GoogleLogo />}
               Masuk Dengan Google

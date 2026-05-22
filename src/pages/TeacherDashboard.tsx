@@ -212,44 +212,6 @@ export default function TeacherDashboard() {
           )}
         </div>
 
-        {/* AI Insight Recommendations Section */}
-        <section className="space-y-10">
-          <div className="flex justify-between items-end px-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 bg-primary/20 rounded-xl flex items-center justify-center">
-                  <Lightbulb size={18} className="text-primary" />
-                </div>
-                <h2 className="text-4xl font-black tracking-tight">AI Insights & Rekomendasi</h2>
-              </div>
-              <p className="text-on-surface-variant font-medium">Berdasarkan data performa terbaru, AI menyarankan fokus pada area berikut.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-             <RecommendationCard 
-                type="Perbaikan"
-                title="Review Performa"
-                desc="Beberapa siswa mungkin memerlukan perhatian lebih pada materi tertentu. Tinjau analisis butir soal untuk detail lebih mendalam."
-                icon={<TrendingDown className="text-error" size={24} />}
-                tag="Insight"
-                tagColor="bg-error/10 text-error border-error/20"
-                actionLabel="Analisis Butir Soal"
-                to="/analytics"
-             />
-             <RecommendationCard 
-                type="Pengayaan"
-                title="Optimasi Materi"
-                desc="Gunakan Generator Soal AI untuk menciptakan variasi soal baru yang menantang bagi siswa yang sudah mahir."
-                icon={<Target className="text-secondary" size={24} />}
-                tag="Tips"
-                tagColor="bg-secondary/10 text-secondary border-secondary/20"
-                actionLabel="Buka Generator AI"
-                to="/generator"
-             />
-          </div>
-        </section>
-
         {/* Student Progress Monitoring Section */}
         <section className="space-y-10">
           <div className="flex justify-between items-end px-4">
@@ -298,40 +260,6 @@ export default function TeacherDashboard() {
           </div>
         </section>
 
-        {/* AI Promo Banner */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass rounded-[56px] p-12 lg:p-16 relative overflow-hidden flex flex-col lg:flex-row items-center gap-16 border-white/40"
-        >
-          <div className="z-10 flex-1">
-            <div className="flex items-center gap-2 mb-6">
-               <span className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-black uppercase tracking-widest">Mesin Baru</span>
-               <Zap className="text-primary" size={20} fill="currentColor" />
-            </div>
-            <h3 className="text-5xl lg:text-6xl font-black mb-6 tracking-tight leading-none">Otomatiskan Bank Soal dengan AI</h3>
-            <p className="text-xl text-on-surface-variant/80 mb-12 max-w-xl font-medium leading-relaxed">
-              Buat paket soal kompleks berdasarkan Taksonomi Bloom dalam hitungan detik. Personalisasi sesuai kurikulum Anda.
-            </p>
-            <button className="bg-primary text-white px-10 py-5 rounded-[24px] font-bold shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all text-xl flex items-center gap-4">
-              Coba Generator Soal
-              <ArrowRight size={24} />
-            </button>
-          </div>
-          
-          <div className="relative z-10 w-full lg:w-[400px] h-[300px] rounded-[40px] overflow-hidden shadow-2xl ring-8 ring-white/20 group">
-             <img 
-              src="https://images.unsplash.com/photo-1614741118887-7a4ee193a5fa?q=80&w=1000&auto=format&fit=crop" 
-              alt="Pusat AI"
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent flex items-end p-8">
-               <p className="text-white font-black text-2xl">Mesin Cerdas v3.0</p>
-            </div>
-          </div>
-          
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] -mr-64 -mt-64" />
-        </motion.div>
       </div>
 
       {/* Create Class Modal */}
@@ -410,41 +338,6 @@ function ProgressRow({ name, className, assignment, status, score, statusColor, 
             </td>
         </tr>
     );
-}
-
-function RecommendationCard({ type, title, desc, icon, tag, tagColor, actionLabel, to = "#" }: any) {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      className="glass p-10 rounded-[48px] border-white/40 shadow-2xl relative overflow-hidden group"
-    >
-      <div className="flex justify-between items-start mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-white/50 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
-            {icon}
-          </div>
-          <div>
-             <span className={cn("px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border", tagColor)}>{tag}</span>
-             <h4 className="text-sm font-black text-on-surface-variant/40 mt-1 uppercase tracking-widest">{type}</h4>
-          </div>
-        </div>
-      </div>
-      
-      <h3 className="text-3xl font-black mb-4 tracking-tight underline decoration-primary/10">{title}</h3>
-      <p className="text-lg text-on-surface-variant/80 font-medium mb-10 leading-relaxed">
-        {desc}
-      </p>
-
-      <Link to={to} className="flex items-center gap-3 font-black text-primary hover:gap-5 transition-all text-lg group/btn w-fit">
-        {actionLabel}
-        <ArrowRight size={20} className="group-hover/btn:translate-x-2 transition-transform" />
-      </Link>
-
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16" />
-    </motion.div>
-  );
 }
 
 function StatCard({ icon, label, value, bgColor, delay }: any) {

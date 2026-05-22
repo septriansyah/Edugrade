@@ -14,6 +14,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import AssignmentDetail from './pages/AssignmentDetail';
 import LegalPage from './pages/LegalPage';
 import PricingPage from './pages/PricingPage';
+import AiFeaturesPage from './pages/AiFeaturesPage';
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/terms" element={<LegalPage />} />
         <Route path="/privacy" element={<LegalPage />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/features" element={<AiFeaturesPage />} />
         
         {/* Teacher Routes */}
         <Route path="/dashboard" element={<TeacherDashboard />} />
