@@ -250,6 +250,13 @@ export default function ItemAnalysisPG() {
     if (!assignment || !submissions.length || pgQuestions.length === 0) return null;
 
     const totalStudents = submissions.length;
+    const mcScoresList = submissions.map(s => s.mcScore !== undefined ? s.mcScore : (s.totalScore || 0));
+    const mean = totalStudents > 0 ? (mcScoresList.reduce((a, b) => a + b, 0) / totalStudents) : 0;
+    const completionRate = totalStudents > 0 ? ((mcScoresList.filter(s => s >= 70).length / totalStudents) * 100) : 0;
+    const maxScore = mcScoresList.length > 0 ? Math.max(...mcScoresList) : 0;
+    const minScore = mcScoresList.length > 0 ? Math.min(...mcScoresList) : 0;
+    const stdDev = analysisUtils.calculateStandardDeviation(mcScoresList);
+
     const itemResults = pgQuestions.map((q: any) => {
       const qIdx = q.originalIndex;
       const answers = submissions.map(s => s.answers?.[qIdx]);
@@ -311,6 +318,9 @@ export default function ItemAnalysisPG() {
           recommendation += ` Pengecoh (${nonFunctional.join(", ")}) tidak efektif karena tidak ada siswa yang memilih. Disarankan untuk menggantinya dengan pilihan yang lebih homogen atau masuk akal.`;
       }
 
+      let validity = analysisUtils.calculatePearsonCorrelation(answers.map(a => isAnsCorrect(a) ? 100 : 0), mcScoresList);
+      if (isNaN(validity)) validity = 0;
+
       return {
         questionIndex: qIdx,
         snippet: q.question,
@@ -318,24 +328,33 @@ export default function ItemAnalysisPG() {
         originalQuestion: q,
         tk,
         dp,
+        validity,
         distractors,
         status,
         recommendation
       };
     });
 
-    const mcScoresList = submissions.map(s => s.mcScore !== undefined ? s.mcScore : (s.totalScore || 0));
-    const mean = totalStudents > 0 ? (mcScoresList.reduce((a, b) => a + b, 0) / totalStudents) : 0;
-    const completionRate = totalStudents > 0 ? ((mcScoresList.filter(s => s >= 70).length / totalStudents) * 100) : 0;
-
-    // Reliability KR-20 for PG
-    const totalVar = analysisUtils.calculateVariance(mcScoresList);
+    // Reliability KR-20 for PG uses RAW scores variance, not 100-scale variance
+    const rawScoresList = submissions.map(s => {
+        let correct = 0;
+        pgQuestions.forEach((q:any) => {
+            const ans = s.answers?.[q.originalIndex || q.id];
+            if (typeof ans === 'string' && ans === q.correctLabel) correct++;
+            else if (ans?.isCorrect) correct++;
+        });
+        return correct;
+    });
+    const rawVar = analysisUtils.calculateVariance(rawScoresList);
     const pValues = itemResults.map((r: any) => r.tk || 0);
-    const reliability = analysisUtils.calculateKR20(pgQuestions.length, pValues, totalVar) || 0;
+    const reliability = analysisUtils.calculateKR20(pgQuestions.length, pValues, rawVar) || 0;
 
     return {
       reliability: isNaN(reliability) ? 0 : reliability,
       mean: isNaN(mean) ? 0 : mean,
+      maxScore,
+      minScore,
+      stdDev,
       completionRate: isNaN(completionRate) ? 0 : completionRate,
       items: itemResults
     };
@@ -351,222 +370,28 @@ export default function ItemAnalysisPG() {
   const handleExportTxt = () => {
     if (!analytics || !assignment || !submissions.length || pgQuestions.length === 0) return;
     
-    const totalStudents = submissions.length;
-    const totalItems = pgQuestions.length;
-    const fileNameText = `ANABUTIRSOAL_PG_${assignment.title.replace(/\s+/g, '_').toUpperCase().substring(0, 20)}.ANA`;
-    const fileName = `ANABUTIRSOAL_PG_${assignment.title.replace(/\s+/g, '_').toUpperCase().substring(0, 20)}.txt`;
-
-    // 1. Calculate Scores per Student
-    const studentScores = submissions.map((sub: any, idx: number) => {
-        let correctCount = 0;
-        let wrongCount = 0;
-        let emptyCount = 0;
-        let oddScore = 0;
-        let evenScore = 0;
-        const answersList: string[] = [];
-        
-        pgQuestions.forEach((q: any, qIdx: number) => {
-            const ans = sub.answers?.[q.originalIndex];
-            let isCorrect = false;
-            let isEmpty = ans === undefined || ans === null || ans === "";
-            
-            const correctOptionLabel = q.options?.find((opt: any) => opt.isCorrect)?.label;
-            isCorrect = typeof ans === 'string' ? ans === correctOptionLabel : ans?.isCorrect;
-            
-            if (isEmpty) {
-                emptyCount++;
-                answersList.push('-');
-            } else if (isCorrect) {
-                correctCount++;
-                answersList.push('1');
-                if ((qIdx + 1) % 2 !== 0) oddScore++;
-                else evenScore++;
-            } else {
-                wrongCount++;
-                answersList.push('0');
-            }
-        });
-        
-        return {
-            noUrut: idx + 1,
-            name: sub.studentName || sub.studentId.substring(0, 8),
-            correct: correctCount,
-            wrong: wrongCount,
-            empty: emptyCount,
-            score: correctCount, // Bobot = 1
-            oddScore,
-            evenScore,
-            answersList
-        };
-    });
-
-    const sortedStudents = [...studentScores].sort((a, b) => b.score - a.score);
-    const groupSize = Math.max(1, Math.floor(totalStudents * 0.27));
-    const upperGroup = sortedStudents.slice(0, groupSize);
-    const lowerGroup = sortedStudents.slice(-groupSize);
-
-    const scoresList = studentScores.map(s => s.score);
-    const mean = scoresList.reduce((a, b) => a + b, 0) / totalStudents;
-    const stdDev = Math.sqrt(analysisUtils.calculateVariance(scoresList) || 0);
-
-    let content = `SKOR DATA DIBOBOT (PILIHAN GANDA)\n=================================\n\n`;
-    content += `Jumlah Subyek   = ${totalStudents}\n`;
-    content += `Jumlah butir    = ${totalItems}\n`;
-    content += `Bobot jwb benar = 1\n`;
-    content += `Bobot jwb salah = 0\n`;
-    content += `Nama berkas: ${fileNameText}\n\n`;
-    
-    content += ` No       Kode/Nama  Benar  Salah   Kosong  Skr Asli  Skr Bobot \n`;
-    studentScores.forEach(s => {
-        content += ` ${s.noUrut.toString().padStart(3)} ${s.name.padStart(15).substring(0,15)} ${s.correct.toString().padStart(6)} ${s.wrong.toString().padStart(6)} ${s.empty.toString().padStart(8)} ${s.score.toString().padStart(9)} ${s.score.toString().padStart(10)} \n`;
-    });
-
-    content += `\n\nRELIABILITAS TES\n================\n\n`;
-    content += `Rata2= ${mean.toFixed(2).replace('.', ',')}\n`;
-    content += `Simpang Baku= ${stdDev.toFixed(2).replace('.', ',')}\n`;
-    
-    // Split half correlation
-    const oddScores = studentScores.map(s => s.oddScore);
-    const evenScores = studentScores.map(s => s.evenScore);
-    const meanOdd = oddScores.reduce((a,b)=>a+b,0)/totalStudents;
-    const meanEven = evenScores.reduce((a,b)=>a+b,0)/totalStudents;
-    let num = 0, den1 = 0, den2 = 0;
-    for(let i=0; i<totalStudents; i++){
-        num += (oddScores[i] - meanOdd) * (evenScores[i] - meanEven);
-        den1 += Math.pow(oddScores[i] - meanOdd, 2);
-        den2 += Math.pow(evenScores[i] - meanEven, 2);
-    }
-    const rXY = den1 * den2 === 0 ? 0 : num / Math.sqrt(den1 * den2);
-    const rel = (2 * rXY) / (1 + rXY);
-    
-    content += `KorelasiXY= ${rXY.toFixed(2).replace('.', ',')}\n`;
-    content += `Reliabilitas Tes= ${rel.toFixed(2).replace('.', ',')}\n`;
-    content += `Nama berkas: ${fileNameText}\n\n`;
-    content += ` No.Urut  Kode/Nama Subyek  Skor Ganjil   Skor Genap   Skor Total \n`;
-    studentScores.forEach(s => {
-        content += ` ${s.noUrut.toString().padStart(7)} ${s.name.padStart(17).substring(0,17)} ${s.oddScore.toString().padStart(12)} ${s.evenScore.toString().padStart(12)} ${s.score.toString().padStart(12)} \n`;
-    });
-
-    content += `\n\nKel Unggul & Asor\n=================\n\nKelompok Unggul\nNama berkas: ${fileNameText}\n\n`;
-    const formatAnswers = (group: any[]) => {
-        let str = "";
-        let chunks = Math.ceil(totalItems / 10);
-        for(let c=0; c<chunks; c++){
-            const start = c*10;
-            const end = Math.min(start+10, totalItems);
-            let header = ` No.Urut  Kode/Nama Subyek  Skor `;
-            for(let i=start; i<end; i++) header += `${(i+1).toString().padStart(3)} `;
-            str += header + `\n`;
-            
-            group.forEach(s => {
-                let row = ` ${s.noUrut.toString().padStart(7)} ${s.name.padStart(17).substring(0,17)} ${s.score.toString().padStart(5)} `;
-                for(let i=start; i<end; i++) row += `  ${s.answersList[i] === '0' ? '-' : s.answersList[i]} `;
-                str += row + `\n`;
+    const input: analysisUtils.PGReportInput = {
+        assignmentTitle: assignment.title,
+        questions: pgQuestions.map((q: any) => ({
+            id: q.originalIndex,
+            correctLabel: q.options?.find((opt: any) => opt.isCorrect)?.label || "A",
+            labels: q.options?.map((opt: any) => opt.label) || ["A", "B", "C", "D", "E"]
+        })),
+        submissions: submissions.map((sub: any) => {
+            const answers: Record<number, string> = {};
+            pgQuestions.forEach((q: any) => {
+                const ans = sub.answers?.[q.originalIndex];
+                answers[q.originalIndex] = typeof ans === 'string' ? ans : (ans?.label || "-");
             });
-            let sumRow = `             Jml Jwb Benar       `;
-            for(let i=start; i<end; i++){
-                const correctInGroup = group.filter(s => s.answersList[i] === '1').length;
-                sumRow += `  ${correctInGroup} `;
-            }
-            str += sumRow + `\n\n\n`;
-        }
-        return str;
+            return {
+                studentName: sub.studentName || sub.studentId.substring(0, 8),
+                answers
+            };
+        })
     };
-    content += formatAnswers(upperGroup);
-    
-    content += `Kelompok Asor\nNama berkas: ${fileNameText}\n\n`;
-    content += formatAnswers(lowerGroup);
 
-    content += `DAYA PEMBEDA\n============\n\n`;
-    content += `Jumlah Subyek= ${totalStudents}\n`;
-    content += `Klp atas/bawah(n)= ${groupSize}\n`;
-    content += `Butir Soal= ${totalItems}\n`;
-    content += `Nama berkas: ${fileNameText}\n\n`;
-    content += ` No Butir  Kel. Atas  Kel. Bawah   Beda   Indeks DP (%) \n`;
-    
-    pgQuestions.forEach((q: any, i: number) => {
-        const upperCorrect = upperGroup.filter(s => s.answersList[i] === '1').length;
-        const lowerCorrect = lowerGroup.filter(s => s.answersList[i] === '1').length;
-        const beda = upperCorrect - lowerCorrect;
-        const dp = groupSize > 0 ? (beda / groupSize) * 100 : 0;
-        content += ` ${((i+1).toString()).padStart(8)} ${upperCorrect.toString().padStart(10)} ${lowerCorrect.toString().padStart(11)} ${beda.toString().padStart(6)} ${dp.toFixed(2).replace('.', ',').padStart(15)} \n`;
-    });
-
-    content += `\n\nTINGKAT KESUKARAN\n=================\n\n`;
-    content += `Jumlah Subyek= ${totalStudents}\n`;
-    content += `Butir Soal= ${totalItems}\n`;
-    content += `Nama berkas: ${fileNameText}\n\n`;
-    content += ` No Butir  Jml Betul  Tkt. Kesukaran(%)      Tafsiran \n`;
-    pgQuestions.forEach((q: any, i: number) => {
-        const correctCount = studentScores.filter(s => s.answersList[i] === '1').length;
-        const tkPct = totalStudents > 0 ? (correctCount / totalStudents) * 100 : 0;
-        let tafsiran = "Sedang";
-        if (tkPct >= 75) tafsiran = "Mudah";
-        if (tkPct >= 90) tafsiran = "Sangat Mudah";
-        if (tkPct <= 25) tafsiran = "Sukar";
-        if (tkPct <= 10) tafsiran = "Sangat Sukar";
-        content += ` ${((i+1).toString()).padStart(8)} ${correctCount.toString().padStart(10)} ${tkPct.toFixed(2).replace('.', ',').padStart(18)}  ${tafsiran.padStart(12)} \n`;
-    });
-
-    content += `\n\nKORELASI SKOR BUTIR DG SKOR TOTAL\n=================================\n\n`;
-    content += `Jumlah Subyek= ${totalStudents}\n`;
-    content += `Butir Soal= ${totalItems}\n`;
-    content += `Nama berkas: ${fileNameText}\n\n`;
-    content += `             No Butir              Korelasi          Signifikansi \n`;
-    
-    pgQuestions.forEach((q: any, i: number) => {
-        const p = studentScores.filter(s => s.answersList[i] === '1').length / totalStudents;
-        let rPbisStr = "NAN";
-        let sig = "NAN";
-        if (p > 0 && p < 1 && stdDev > 0) {
-            const meanCorrect = studentScores.filter(s => s.answersList[i] === '1').reduce((a,b)=>a+b.score, 0) / (p * totalStudents);
-            const rPbis = ((meanCorrect - mean) / stdDev) * Math.sqrt(p / (1-p));
-            rPbisStr = rPbis.toFixed(3).replace('.', ',');
-            sig = rPbis > 0.3 ? "Signifikan" : "-";
-            if (rPbis > 0.5) sig = "Sangat Signifikan";
-        }
-        content += ` ${(i+1).toString().padStart(20)} ${rPbisStr.padStart(21)} ${sig.padStart(21)} \n`;
-    });
-
-    content += `\n\nKUALITAS PENGECOH\n=================\n\n`;
-    content += `Jumlah Subyek= ${totalStudents}\n`;
-    content += `Butir Soal= ${totalItems}\n`;
-    content += `Nama berkas: ${fileNameText}\n\n`;
-    content += ` No Butir      A      B      C      D      E  * \n`;
-    
-    pgQuestions.forEach((q: any, i: number) => {
-        const getCount = (label: string) => submissions.filter(s => {
-            const ans = s.answers?.[q.originalIndex];
-            return (typeof ans === 'string' ? ans : ans?.label) === label;
-        }).length;
-        
-        const correctOpt = q.options?.find((o: any) => o.isCorrect)?.label;
-        
-        let row = ` ${(i+1).toString().padStart(8)}`;
-        ['A', 'B', 'C', 'D', 'E'].forEach(opt => {
-            let countStr = "0";
-            if (q.options?.some((o: any) => o.label === opt)) {
-                const count = getCount(opt);
-                if (opt === correctOpt) countStr = count + "**";
-                else if (count === 0) countStr = count + "--";
-                else if (count > 0 && count < totalStudents * 0.05) countStr = count + "-";
-                else countStr = count.toString();
-            }
-            row += ` ${countStr.padStart(6)}`;
-        });
-        row += `  0 \n`;
-        content += row;
-    });
-    
-    content += `\n\nKeterangan: 
-** : Kunci Jawaban
-++ : Sangat Baik
-+  : Baik
--  : Kurang Baik
--- : Buruk
----: Sangat Buruk\n`;
-
-    const blob = new Blob([content], { type: "text/plain" });
+    const blob = analysisUtils.generatePGTextReport(input);
+    const fileName = `ANABUTIRSOAL_PG_${assignment.title.replace(/\s+/g, '_').toUpperCase().substring(0, 20)}.txt`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -748,29 +573,58 @@ export default function ItemAnalysisPG() {
           ) : (
             <>
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <StatBox 
-                  label="Reliabilitas Tes (KR-20)" 
-                  value={analytics?.reliability.toFixed(2) || "0.00"} 
-                  tag={analytics && analytics.reliability > 0.7 ? "Tinggi" : "Rendah"} 
-                  tagColor={analytics && analytics.reliability > 0.7 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"} 
-                />
-                <StatBox 
-                  label="Ketuntasan PG" 
-                  value={`${Math.round(analytics?.completionRate || 0)}%`} 
-                  progress={isNaN(analytics?.completionRate) ? 0 : analytics?.completionRate} 
-                />
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <div className="col-span-2 md:col-span-4 lg:col-span-2">
+                  <StatBox 
+                    label="Reliabilitas Tes (KR-20)" 
+                    value={analytics?.reliability.toFixed(2) || "0.00"} 
+                    tag={analytics && analytics.reliability > 0.7 ? "Tinggi" : "Rendah"} 
+                    tagColor={analytics && analytics.reliability > 0.7 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"} 
+                  />
+                </div>
+                <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                  <StatBox 
+                    label="Rata-rata Skor PG" 
+                    value={`${Math.round(analytics?.mean || 0)}`} 
+                    progress={isNaN(analytics?.mean) ? 0 : analytics?.mean} 
+                  />
+                </div>
+                <div className="col-span-1 md:col-span-1 lg:col-span-1">
+                  <StatBox 
+                    label="Tertinggi" 
+                    value={`${Math.round(analytics?.maxScore || 0)}`} 
+                  />
+                </div>
+                <div className="col-span-1 md:col-span-1 lg:col-span-1">
+                  <StatBox 
+                    label="Terendah" 
+                    value={`${Math.round(analytics?.minScore || 0)}`} 
+                  />
+                </div>
+                <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                  <StatBox 
+                    label="Ketuntasan PG" 
+                    value={`${Math.round(analytics?.completionRate || 0)}%`} 
+                    progress={isNaN(analytics?.completionRate) ? 0 : analytics?.completionRate} 
+                  />
+                </div>
+                <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                  <StatBox 
+                    label="Simpangan Baku (SD)" 
+                    value={`${(analytics?.stdDev || 0).toFixed(2)}`} 
+                  />
+                </div>
                 
-                <div className="glass p-10 rounded-[48px] border-white/60 md:col-span-2 flex items-center justify-between relative overflow-hidden group">
-                  <div className="relative z-10">
-                    <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-6">Distribusi Tingkat Kesukaran</p>
-                    <div className="flex gap-10">
+                <div className="glass p-8 rounded-[48px] border-white/60 col-span-2 md:col-span-4 lg:col-span-2 flex items-center justify-between relative overflow-hidden group">
+                  <div className="relative z-10 w-full">
+                    <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Distribusi Tingkat Kesukaran</p>
+                    <div className="flex justify-between items-center w-full gap-4">
                       <DifficultyInfo label="Mudah" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk >= 0.7).length || 0}`} />
                       <DifficultyInfo label="Sedang" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk >= 0.3 && i.tk < 0.7).length || 0}`} />
                       <DifficultyInfo label="Sukar" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk < 0.3).length || 0}`} />
                     </div>
                   </div>
-                  <div className="h-24 w-40 flex items-end gap-2 group-hover:scale-105 transition-transform duration-500">
+                  <div className="absolute -right-4 -bottom-4 h-24 w-40 flex items-end gap-2 group-hover:scale-105 transition-transform duration-500 opacity-20 pointer-events-none">
                     {[40, 90, 30].map((h, idx) => (
                       <div key={idx} className={cn("w-full rounded-t-2xl transition-all duration-1000", idx === 1 ? "bg-primary" : "bg-primary/20")} style={{ height: `${h}%` }} />
                     ))}
@@ -904,11 +758,12 @@ export default function ItemAnalysisPG() {
                     <table className="w-full text-left border-collapse">
                        <thead>
                           <tr className="bg-white/20 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">
-                             <th className="px-12 py-8">No</th>
-                             <th className="px-8 py-8">Soal PG</th>
+                             <th className="px-12 py-8 text-on-surface-variant/40">No</th>
+                             <th className="px-8 py-8">Pertanyaan</th>
                              <th className="px-8 py-8 text-center">Kesukaran (TK)</th>
                              <th className="px-8 py-8 text-center">Daya Beda (DP)</th>
-                             <th className="px-8 py-8">Rekomendasi</th>
+                             <th className="px-8 py-8 text-center">Validitas (rXY)</th>
+                             <th className="px-8 py-8">Evaluasi & Distraktor</th>
                              <th className="px-12 py-8 text-right">Aksi</th>
                           </tr>
                        </thead>
@@ -919,9 +774,11 @@ export default function ItemAnalysisPG() {
                               no={(idx + 1).toString().padStart(2, '0')} 
                               snippet={item.snippet} 
                               difficulty={`${analysisUtils.interpretTK(item.tk)} (${item.tk.toFixed(2)})`} 
-                              diffColor={item.tk >= 0.7 ? "bg-blue-500/10 text-blue-600" : item.tk < 0.3 ? "bg-red-500/10 text-red-600" : "bg-green-500/10 text-green-600"} 
+                              diffColor={item.tk >= 0.7 ? "bg-blue-500/10 text-blue-600 border-blue-500/20" : item.tk < 0.3 ? "bg-red-500/10 text-red-600 border-red-500/20" : "bg-green-500/10 text-green-600 border-green-500/20"} 
                               dp={`${analysisUtils.interpretDP(item.dp)} (${item.dp.toFixed(2)})`}
-                              dpColor={item.dp >= 0.3 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}
+                              dpColor={item.dp >= 0.3 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"}
+                              validity={`${item.validity >= 0.3 ? "Valid" : "Tidak Valid"} (${item.validity.toFixed(3)})`}
+                              validityColor={item.validity >= 0.3 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"}
                               recommendation={item.recommendation}
                               status={item.status}
                               statusColor={item.status === "Sangat Layak" ? "bg-green-500/10 text-green-600" : item.status === "Buang" ? "bg-error/10 text-error" : "bg-yellow-500/10 text-yellow-600"}
@@ -1145,7 +1002,7 @@ function SummaryItem({ icon, label, count, percent, color }: any) {
     );
 }
 
-function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, recommendation, statusColor, status, isWarn, isDanger, onFix, isFixing, distractorData }: any) {
+function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, validity, validityColor, recommendation, statusColor, status, isWarn, isDanger, onFix, isFixing, distractorData }: any) {
     return (
         <tr className="hover:bg-white/30 transition-all group">
             <td className="px-12 py-8 font-black text-on-surface/20 group-hover:text-primary/40 transition-colors">{no}</td>
@@ -1156,14 +1013,17 @@ function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, recommendat
                </div>
             </td>
             <td className="px-8 py-8 text-center">
-                <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", diffColor)}>{difficulty}</span>
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", diffColor)}>{difficulty}</span>
             </td>
             <td className="px-8 py-8 text-center">
-                <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", dpColor)}>{dp}</span>
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", dpColor)}>{dp}</span>
+            </td>
+            <td className="px-8 py-8 text-center">
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", validityColor)}>{validity}</span>
             </td>
             <td className="px-8 py-8">
                 <div className="flex flex-col gap-3 min-w-[200px]">
-                    <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm inline-block w-fit", statusColor)}>{status}</span>
+                    <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm inline-block w-fit", statusColor)}>{status}</span>
                     <p className="text-xs font-medium text-on-surface-variant leading-relaxed italic border-l-2 border-primary/20 pl-3">
                         "{recommendation}"
                     </p>

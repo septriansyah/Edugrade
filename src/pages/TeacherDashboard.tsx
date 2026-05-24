@@ -280,9 +280,12 @@ function ClassCard({ id, title, subject, joinCode, studentCount, delay }: any) {
       transition={{ delay }}
       className="glass rounded-[44px] overflow-hidden group border-white/60 shadow-xl"
     >
-      <div className="relative h-44 bg-primary/5 flex items-center justify-center border-b border-white/30">
+      <div className="relative h-44 bg-primary/5 flex flex-col items-center justify-center border-b border-white/30 gap-3">
+        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center font-black text-primary text-xl uppercase">
+            {title.charAt(0)}
+        </div>
         <div className="text-center">
-            <h4 className="text-3xl font-black text-on-surface tracking-tighter mb-1 px-6">{title}</h4>
+            <h4 className="text-2xl font-black text-on-surface tracking-tighter mb-1 px-6">{title}</h4>
             <p className="text-primary font-bold uppercase text-xs tracking-widest">{subject}</p>
         </div>
       </div>

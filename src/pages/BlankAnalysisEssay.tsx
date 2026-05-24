@@ -132,6 +132,13 @@ export default function BlankAnalysisEssay() {
     if (!assignment || !submissions.length || essayQuestions.length === 0) return null;
 
     const totalStudents = submissions.length;
+    const essayScoresList = submissions.map(s => s.essayScore || 0);
+    const mean = totalStudents > 0 ? (essayScoresList.reduce((a, b) => a + b, 0) / totalStudents) : 0;
+    const completionRate = totalStudents > 0 ? ((essayScoresList.filter(s => s >= 70).length / totalStudents) * 100) : 0;
+    const maxScore = essayScoresList.length > 0 ? Math.max(...essayScoresList) : 0;
+    const minScore = essayScoresList.length > 0 ? Math.min(...essayScoresList) : 0;
+    const stdDev = analysisUtils.calculateStandardDeviation(essayScoresList);
+
     const itemResults = essayQuestions.map((q: any) => {
       const qIdx = q.originalIndex;
       const scores = submissions.map(s => s.answers?.[qIdx]?.score || 0);
@@ -148,6 +155,9 @@ export default function BlankAnalysisEssay() {
       let status: any = "Layak";
       if (dp < 0.2) status = "Revisi";
       else if (dp >= 0.3) status = "Sangat Layak";
+      
+      let validity = analysisUtils.calculatePearsonCorrelation(scores, essayScoresList);
+      if (isNaN(validity)) validity = 0;
 
       return {
         questionIndex: qIdx,
@@ -155,16 +165,13 @@ export default function BlankAnalysisEssay() {
         type: "Essay",
         tk,
         dp,
+        validity,
         status,
         recommendation: status === "Revisi" 
           ? "Rubrik penilaian mungkin terlalu subjektif atau soal kurang spesifik. Pertimbangkan menyusun panduan penilaian (answer key) yang lebih rinci." 
           : "Soal esai memberikan sebaran nilai yang baik dan mengukur pemahaman secara efektif."
       };
     });
-
-    const essayScoresList = submissions.map(s => s.essayScore);
-    const mean = totalStudents > 0 ? (essayScoresList.reduce((a, b) => a + b, 0) / totalStudents) : 0;
-    const completionRate = totalStudents > 0 ? ((essayScoresList.filter(s => s >= 70).length / totalStudents) * 100) : 0;
 
     // Reliability Alpha Cronbach for Essays
     const totalVar = analysisUtils.calculateVariance(essayScoresList);
@@ -177,6 +184,9 @@ export default function BlankAnalysisEssay() {
     return {
       reliability: isNaN(reliability) ? 0 : reliability,
       mean: isNaN(mean) ? 0 : mean,
+      maxScore,
+      minScore,
+      stdDev,
       completionRate: isNaN(completionRate) ? 0 : completionRate,
       items: itemResults
     };
@@ -240,22 +250,27 @@ export default function BlankAnalysisEssay() {
   const handleExportTxt = () => {
     if (!analytics || !assignment || !submissions.length || essayQuestions.length === 0) return;
     
-    const totalStudents = submissions.length;
-    const totalItems = essayQuestions.length;
+    const input: analysisUtils.EssayReportInput = {
+        assignmentTitle: assignment.title,
+        questions: essayQuestions.map((q: any) => ({
+            id: q.originalIndex
+        })),
+        submissions: submissions.map((sub: any) => {
+            const answers: Record<number, number> = {};
+            essayQuestions.forEach((q: any) => {
+                const ans = sub.answers?.[q.originalIndex];
+                answers[q.originalIndex] = ans?.score !== undefined ? ans.score : 0;
+            });
+            return {
+                studentName: sub.studentName || sub.studentId.substring(0, 8),
+                answers,
+                essayScore: sub.essayScore || 0
+            };
+        })
+    };
+
+    const blob = analysisUtils.generateEssayTextReport(input);
     const fileName = `ANABUTIRSOAL_MANDIRI_ESAI_${assignment.title.replace(/\s+/g, '_').toUpperCase().substring(0, 20)}.txt`;
-
-    let content = `ANALISIS BUTIR SOAL (ESAI MANDIRI)\n==================================\n\n`;
-    content += `Jumlah Subyek   = ${totalStudents}\n`;
-    content += `Jumlah butir    = ${totalItems}\n\n`;
-    
-    content += ` No       Kode/Nama  Rerata Skor   Kategori Kelulusan \n`;
-    submissions.forEach((s, idx) => {
-        content += ` ${(idx+1).toString().padStart(3)} ${s.studentName.padStart(15).substring(0,15)} ${s.essayScore.toFixed(2).padStart(11)} ${s.essayScore >= 70 ? "   LULUS" : "   REMIDI"} \n`;
-    });
-
-    content += `\nReliabilitas Alpha Cronbach: ${analytics.reliability.toFixed(2)}\n`;
-
-    const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

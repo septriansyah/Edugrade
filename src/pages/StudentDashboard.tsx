@@ -371,7 +371,7 @@ export default function StudentDashboard() {
                       className="glass rounded-[44px] p-8 border-white/60 hover:shadow-2xl transition-all group"
                     >
                       <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                        <Dna className="text-primary" size={32} />
+                        <span className="text-3xl font-black text-primary uppercase">{cls.name.charAt(0)}</span>
                       </div>
                       <h3 className="text-2xl font-black mb-2 tracking-tight group-hover:text-primary transition-colors">{cls.name}</h3>
                       <p className="text-on-surface-variant font-medium">{cls.subject}</p>

@@ -961,16 +961,22 @@ export default function AssignmentDetail() {
                      <p className="font-bold text-lg"><span className="mr-4">S{i + 1}.</span> {q.question}</p>
                      
                      {q.type === "Multiple Choice" ? (
-                       <div className="grid grid-cols-1 gap-3 pl-10">
+                       <div className="grid grid-cols-1 gap-3 pl-6 mt-3">
                           {q.options?.map((opt: any) => (
-                             <div key={opt.label} className="flex gap-4 items-center break-inside-avoid">
-                                <div className="w-6 h-6 border-2 border-on-surface rounded-full flex items-center justify-center text-[10px] font-black shrink-0">{opt.label}</div>
-                                <span className="text-sm font-medium">{opt.text}</span>
+                             <div key={opt.label} className="flex gap-3 items-start break-inside-avoid">
+                                <div className="text-sm font-bold shrink-0">{opt.label}.</div>
+                                <span className="text-sm font-medium pt-[1px]">{opt.text}</span>
                              </div>
                           ))}
                        </div>
                      ) : (
-                       <div className="w-full h-40 border-2 border-on-surface/10 rounded-2xl mt-4" />
+                       <div className="w-full mt-6 space-y-6">
+                         <div className="w-full border-b border-on-surface/20 border-dashed" />
+                         <div className="w-full border-b border-on-surface/20 border-dashed" />
+                         <div className="w-full border-b border-on-surface/20 border-dashed" />
+                         <div className="w-full border-b border-on-surface/20 border-dashed" />
+                         <div className="w-full border-b border-on-surface/20 border-dashed" />
+                       </div>
                      )}
                   </div>
                ))}
@@ -1009,7 +1015,7 @@ export default function AssignmentDetail() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="flex flex-col sm:flex-row items-start gap-4 mb-4">
               <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center shrink-0">
-                 <Dna className="text-primary" size={24} />
+                 <span className="text-2xl font-black text-primary uppercase">{classroom ? classroom.name.charAt(0) : "E"}</span>
               </div>
               <div className="min-w-0">
                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] block mb-1">

@@ -27,7 +27,8 @@ import {
   Link as LinkIcon,
   File,
   Pencil,
-  Trash2
+  Trash2,
+  Copy
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import Layout from "@/src/components/Layout";
@@ -184,43 +185,49 @@ export default function ClassroomManagement() {
 
   return (
     <Layout userType="teacher">
-      <div className="flex h-full min-h-[calc(100vh-6rem)] lg:min-h-screen">
-        {/* Internal Classroom Sidebar */}
-        <aside className="w-72 glass border-r flex flex-col p-6 space-y-2 hidden lg:flex">
-          <div className="px-4 py-6 mb-4">
-            <h2 className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-2">{classroom?.subject}</h2>
-            <h1 className="text-2xl font-black tracking-tight text-on-surface">{classroom?.name}</h1>
-          </div>
-          
-          <nav className="space-y-1">
-            <ClassNavButton active={activeTab === "overview"} onClick={() => setActiveTab("overview")} icon={<LayoutDashboard size={20} />} label="Ringkasan" />
-            <ClassNavButton active={activeTab === "assignments"} onClick={() => setActiveTab("assignments")} icon={<ClipboardList size={20} />} label="Tugas" />
-            <ClassNavButton active={activeTab === "exams"} onClick={() => setActiveTab("exams")} icon={<FileText size={20} />} label="Ujian (Paper Mode)" />
-            <ClassNavButton active={activeTab === "materials"} onClick={() => setActiveTab("materials")} icon={<BookOpen size={20} />} label="Materi" />
-            <ClassNavButton active={activeTab === "meetings"} onClick={() => setActiveTab("meetings")} icon={<Video size={20} />} label="Pertemuan Virtual" />
-            <ClassNavButton active={activeTab === "students"} onClick={() => setActiveTab("students")} icon={<Users size={20} />} label="Siswa" />
-            <div className="my-4 h-px bg-on-surface-variant/5 mx-4" />
-            <ClassNavButton active={activeTab === "generator"} onClick={() => setActiveTab("generator")} icon={<Sparkles size={20} />} label="Generator AI" />
-            <ClassNavButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} icon={<CheckCircle2 size={20} />} label="Review Pengumpulan" />
-            <ClassNavButton active={activeTab === "grading"} onClick={() => setActiveTab("grading")} icon={<FileCheck size={20} />} label="Nilai" />
-          </nav>
-
-          <div className="mt-auto p-4 bg-primary/5 rounded-[24px] border border-primary/10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
-                <Zap size={16} className="text-primary" />
+      <div className="flex flex-col h-full min-h-[calc(100vh-6rem)] lg:min-h-screen bg-surface">
+        {/* Top Navbar for Classroom */}
+        <div className="w-full glass border-b px-4 md:px-8 lg:px-12 pt-8 pb-2">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+            <div>
+              <h2 className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-2">{classroom?.subject}</h2>
+              <h1 className="text-4xl font-black tracking-tight text-on-surface">{classroom?.name}</h1>
+            </div>
+            
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(classroom?.joinCode);
+                alert("Kode kelas berhasil disalin!");
+              }}
+              className="flex items-center gap-4 px-5 py-3 rounded-2xl transition-all hover:bg-primary/10 bg-primary/5 border border-primary/10 group w-fit"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                <Zap size={20} />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary">Kode Kelas</span>
-            </div>
-            <div className="bg-white/60 text-center py-3 rounded-xl font-mono font-black text-xl tracking-widest text-on-surface select-all">
-              {classroom?.joinCode}
-            </div>
-            <p className="text-[9px] text-center mt-3 font-bold text-on-surface-variant/40 uppercase">Undang siswa dengan kode ini</p>
+              <div className="text-left pr-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-0.5">Kode Kelas</p>
+                <p className="font-mono font-bold text-base text-on-surface tracking-wider">{classroom?.joinCode}</p>
+              </div>
+              <Copy size={18} className="text-primary/40 group-hover:text-primary transition-colors" />
+            </button>
           </div>
-        </aside>
+
+          <nav className="max-w-6xl mx-auto flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <ClassNavButton active={activeTab === "overview"} onClick={() => setActiveTab("overview")} icon={<LayoutDashboard size={18} />} label="Ringkasan" />
+            <ClassNavButton active={activeTab === "assignments"} onClick={() => setActiveTab("assignments")} icon={<ClipboardList size={18} />} label="Tugas" />
+            <ClassNavButton active={activeTab === "exams"} onClick={() => setActiveTab("exams")} icon={<FileText size={18} />} label="Ujian (Paper Mode)" />
+            <ClassNavButton active={activeTab === "materials"} onClick={() => setActiveTab("materials")} icon={<BookOpen size={18} />} label="Materi" />
+            <ClassNavButton active={activeTab === "meetings"} onClick={() => setActiveTab("meetings")} icon={<Video size={18} />} label="Pertemuan Virtual" />
+            <ClassNavButton active={activeTab === "students"} onClick={() => setActiveTab("students")} icon={<Users size={18} />} label="Siswa" />
+            <div className="w-px h-6 bg-on-surface-variant/20 mx-2 shrink-0 hidden md:block" />
+            <ClassNavButton active={activeTab === "generator"} onClick={() => setActiveTab("generator")} icon={<Sparkles size={18} />} label="Generator AI" />
+            <ClassNavButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} icon={<CheckCircle2 size={18} />} label="Review" />
+            <ClassNavButton active={activeTab === "grading"} onClick={() => setActiveTab("grading")} icon={<FileCheck size={18} />} label="Nilai" />
+          </nav>
+        </div>
 
         {/* Main Workspace Area */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 lg:px-12 py-6 md:py-10">
+        <div className="flex-1 overflow-y-auto px-4 md:px-8 lg:px-12 py-8 md:py-12">
           <div className="max-w-6xl mx-auto space-y-8 md:space-y-10">
             <AnimatePresence mode="wait">
               <motion.div
@@ -380,10 +387,10 @@ function ClassNavButton({ active, icon, label, onClick }: any) {
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all font-bold text-sm",
+        "shrink-0 flex items-center gap-3 px-5 py-3 rounded-2xl transition-all font-bold text-sm border border-transparent",
         active 
-          ? "bg-primary text-white shadow-xl shadow-primary/10" 
-          : "text-on-surface-variant/60 hover:bg-on-surface/5 hover:text-on-surface"
+          ? "bg-primary text-white shadow-xl shadow-primary/20 border-primary/20" 
+          : "text-on-surface-variant/60 hover:bg-on-surface/5 hover:text-on-surface border-on-surface/5 hover:border-on-surface/10"
       )}
     >
       {icon}

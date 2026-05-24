@@ -17,7 +17,7 @@ import {
   Save,
   ArrowLeft
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
 import { db, auth } from "@/src/lib/firebase";
@@ -35,6 +35,7 @@ export default function ItemAnalysisEssay() {
   const [manualRows, setManualRows] = useState<any[]>([]);
   const [deletedRowIds, setDeletedRowIds] = useState<string[]>([]);
   const [isSavingManual, setIsSavingManual] = useState(false);
+  const [selectedAIQuestion, setSelectedAIQuestion] = useState<any>(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -95,7 +96,8 @@ export default function ItemAnalysisEssay() {
               fetchedAssignment?.questions?.forEach((q: any, idx: number) => {
                   const ans = sub.answers?.[idx];
                   if (q.type === "Essay") {
-                      rowAnswers[idx] = ans?.score !== undefined ? ans.score : "";
+                      const aiScore = sub.aiEssayGrading?.[idx]?.score;
+                      rowAnswers[idx] = aiScore !== undefined ? aiScore : (ans?.score !== undefined ? ans.score : "");
                   }
               });
               return {
@@ -237,9 +239,20 @@ export default function ItemAnalysisEssay() {
     if (!assignment || !submissions.length || essayQuestions.length === 0) return null;
 
     const totalStudents = submissions.length;
+    const essayScoresList = submissions.map(s => s.essayScore !== undefined ? s.essayScore : (s.totalScore || 0));
+    const mean = totalStudents > 0 ? (essayScoresList.reduce((a, b) => a + b, 0) / totalStudents) : 0;
+    const completionRate = totalStudents > 0 ? ((essayScoresList.filter(s => s >= 70).length / totalStudents) * 100) : 0;
+    const maxScore = essayScoresList.length > 0 ? Math.max(...essayScoresList) : 0;
+    const minScore = essayScoresList.length > 0 ? Math.min(...essayScoresList) : 0;
+    const stdDev = analysisUtils.calculateStandardDeviation(essayScoresList);
+
     const itemResults = essayQuestions.map((q: any) => {
       const qIdx = q.originalIndex;
-      const scores = submissions.map(s => s.answers?.[qIdx]?.score || 0);
+      const scores = submissions.map(s => {
+          const aiScore = s.aiEssayGrading?.[qIdx]?.score;
+          const ansScore = s.answers?.[qIdx]?.score;
+          return aiScore !== undefined ? Number(aiScore) : (ansScore !== undefined ? Number(ansScore) : 0);
+      });
       const avgScore = scores.reduce((a, b) => a + b, 0) / totalStudents;
       const tk = avgScore / 100;
 
@@ -250,13 +263,24 @@ export default function ItemAnalysisEssay() {
         return scoreB - scoreA;
       });
       const groupSize = Math.floor(totalStudents * 0.27) || 1;
-      const upperAvg = sortedSubs.slice(0, groupSize).reduce((acc, s) => acc + (s.answers?.[qIdx]?.score || 0), 0) / groupSize;
-      const lowerAvg = sortedSubs.slice(-groupSize).reduce((acc, s) => acc + (s.answers?.[qIdx]?.score || 0), 0) / groupSize;
+      const upperAvg = sortedSubs.slice(0, groupSize).reduce((acc, s) => {
+          const aiScore = s.aiEssayGrading?.[qIdx]?.score;
+          const ansScore = s.answers?.[qIdx]?.score;
+          return acc + (aiScore !== undefined ? Number(aiScore) : (ansScore !== undefined ? Number(ansScore) : 0));
+      }, 0) / groupSize;
+      const lowerAvg = sortedSubs.slice(-groupSize).reduce((acc, s) => {
+          const aiScore = s.aiEssayGrading?.[qIdx]?.score;
+          const ansScore = s.answers?.[qIdx]?.score;
+          return acc + (aiScore !== undefined ? Number(aiScore) : (ansScore !== undefined ? Number(ansScore) : 0));
+      }, 0) / groupSize;
       const dp = (upperAvg - lowerAvg) / 100;
 
       let status: any = "Layak";
       if (dp < 0.2) status = "Revisi";
       else if (dp >= 0.3) status = "Sangat Layak";
+
+      let validity = analysisUtils.calculatePearsonCorrelation(scores, essayScoresList);
+      if (isNaN(validity)) validity = 0;
 
       return {
         questionIndex: qIdx,
@@ -265,6 +289,7 @@ export default function ItemAnalysisEssay() {
         originalQuestion: q,
         tk,
         dp,
+        validity,
         status,
         recommendation: status === "Revisi" 
           ? "Rubrik penilaian mungkin terlalu subjektif atau soal kurang spesifik. Pertimbangkan menyusun panduan penilaian (answer key) yang lebih rinci." 
@@ -272,14 +297,14 @@ export default function ItemAnalysisEssay() {
       };
     });
 
-    const essayScoresList = submissions.map(s => s.essayScore !== undefined ? s.essayScore : (s.totalScore || 0));
-    const mean = totalStudents > 0 ? (essayScoresList.reduce((a, b) => a + b, 0) / totalStudents) : 0;
-    const completionRate = totalStudents > 0 ? ((essayScoresList.filter(s => s >= 70).length / totalStudents) * 100) : 0;
-
     // Reliability Alpha Cronbach for Essays
     const totalVar = analysisUtils.calculateVariance(essayScoresList);
     const itemVariances = essayQuestions.map((q: any) => {
-        const itemScores = submissions.map(s => s.answers?.[q.originalIndex]?.score || 0);
+        const itemScores = submissions.map(s => {
+            const aiScore = s.aiEssayGrading?.[q.originalIndex]?.score;
+            const ansScore = s.answers?.[q.originalIndex]?.score;
+            return aiScore !== undefined ? Number(aiScore) : (ansScore !== undefined ? Number(ansScore) : 0);
+        });
         return analysisUtils.calculateVariance(itemScores);
     });
     const reliability = analysisUtils.calculateAlphaCronbach(essayQuestions.length, itemVariances, totalVar) || 0;
@@ -287,10 +312,39 @@ export default function ItemAnalysisEssay() {
     return {
       reliability: isNaN(reliability) ? 0 : reliability,
       mean: isNaN(mean) ? 0 : mean,
+      maxScore,
+      minScore,
+      stdDev,
       completionRate: isNaN(completionRate) ? 0 : completionRate,
       items: itemResults
     };
   }, [assignment, submissions, essayQuestions]);
+
+  const aiAnalytics = useMemo(() => {
+     let contentScore = 0;
+     let structureScore = 0;
+     let relevanceScore = 0;
+     let count = 0;
+
+     submissions.forEach(sub => {
+         essayQuestions.forEach(q => {
+             const aiData = sub.aiEssayGrading?.[q.originalIndex];
+             if (aiData?.analysis) {
+                 contentScore += aiData.analysis.contentScore || 0;
+                 structureScore += aiData.analysis.structureScore || 0;
+                 relevanceScore += aiData.analysis.relevanceScore || 0;
+                 count++;
+             }
+         });
+     });
+
+     if (count === 0) return null;
+     return [
+         { subject: 'Konten', A: Math.round(contentScore / count), fullMark: 100 },
+         { subject: 'Struktur', A: Math.round(structureScore / count), fullMark: 100 },
+         { subject: 'Relevansi', A: Math.round(relevanceScore / count), fullMark: 100 },
+     ];
+  }, [submissions, essayQuestions]);
 
   const chartData = useMemo(() => {
     return analytics?.items?.map((item: any, idx: number) => ({
@@ -302,67 +356,28 @@ export default function ItemAnalysisEssay() {
   const handleExportTxt = () => {
     if (!analytics || !assignment || !submissions.length || essayQuestions.length === 0) return;
     
-    const totalStudents = submissions.length;
-    const totalItems = essayQuestions.length;
-    const fileNameText = `ANABUTIRSOAL_ESAI_${assignment.title.replace(/\s+/g, '_').toUpperCase().substring(0, 20)}.ANA`;
+    const input: analysisUtils.EssayReportInput = {
+        assignmentTitle: assignment.title,
+        questions: essayQuestions.map((q: any) => ({
+            id: q.originalIndex
+        })),
+        submissions: submissions.map((sub: any) => {
+            const answers: Record<number, number> = {};
+            essayQuestions.forEach((q: any) => {
+                const ans = sub.answers?.[q.originalIndex];
+                const aiScore = sub.aiEssayGrading?.[q.originalIndex]?.score;
+                answers[q.originalIndex] = aiScore !== undefined ? Number(aiScore) : (ans?.score !== undefined ? Number(ans.score) : 0);
+            });
+            return {
+                studentName: sub.studentName || sub.studentId.substring(0, 8),
+                answers,
+                essayScore: sub.essayScore !== undefined ? sub.essayScore : (sub.totalScore || 0)
+            };
+        })
+    };
+
+    const blob = analysisUtils.generateEssayTextReport(input);
     const fileName = `ANABUTIRSOAL_ESAI_${assignment.title.replace(/\s+/g, '_').toUpperCase().substring(0, 20)}.txt`;
-
-    // 1. Calculate Scores per Student
-    const studentScores = submissions.map((sub: any, idx: number) => {
-        let correctCount = 0;
-        let wrongCount = 0;
-        let scoreSum = 0;
-        const answersList: string[] = [];
-        
-        essayQuestions.forEach((q: any) => {
-            const ans = sub.answers?.[q.originalIndex];
-            const scoreVal = ans?.score !== undefined ? ans.score : 0;
-            scoreSum += scoreVal;
-            answersList.push(scoreVal.toString());
-            if (scoreVal >= 70) correctCount++;
-            else wrongCount++;
-        });
-        
-        return {
-            noUrut: idx + 1,
-            name: sub.studentName || sub.studentId.substring(0, 8),
-            correct: correctCount,
-            wrong: wrongCount,
-            score: scoreSum / totalItems,
-            answersList
-        };
-    });
-
-    const scoresList = studentScores.map(s => s.score);
-    const mean = scoresList.reduce((a, b) => a + b, 0) / totalStudents;
-    const stdDev = Math.sqrt(analysisUtils.calculateVariance(scoresList) || 0);
-
-    let content = `ANALISIS BUTIR SOAL (ESAI)\n===========================\n\n`;
-    content += `Jumlah Subyek   = ${totalStudents}\n`;
-    content += `Jumlah butir    = ${totalItems}\n`;
-    content += `Nama berkas: ${fileNameText}\n\n`;
-    
-    content += ` No       Kode/Nama  Rerata Skor   Kategori Kelulusan \n`;
-    studentScores.forEach(s => {
-        content += ` ${s.noUrut.toString().padStart(3)} ${s.name.padStart(15).substring(0,15)} ${s.score.toFixed(2).padStart(11)} ${s.score >= 70 ? "   LULUS" : "   REMIDI"} \n`;
-    });
-
-    content += `\n\nRELIABILITAS ALPHA CRONBACH\n============================\n\n`;
-    content += `Rata2 total = ${mean.toFixed(2).replace('.', ',')}\n`;
-    content += `Simpang Baku = ${stdDev.toFixed(2).replace('.', ',')}\n`;
-    content += `Reliabilitas Tes = ${analytics.reliability.toFixed(2).replace('.', ',')}\n\n`;
-    
-    content += ` No Butir   Rata-rata Skor Soal   Tafsir Kesukaran \n`;
-    essayQuestions.forEach((q: any, i: number) => {
-        const itemScores = submissions.map(s => s.answers?.[q.originalIndex]?.score || 0);
-        const avg = itemScores.reduce((a,b)=>a+b,0) / totalStudents;
-        let kesukaran = "Sedang";
-        if (avg >= 75) kesukaran = "Mudah";
-        if (avg <= 25) kesukaran = "Sukar";
-        content += ` Soal ${(i+1).toString().padStart(2)} ${avg.toFixed(2).padStart(20)} ${kesukaran.padStart(18)} \n`;
-    });
-
-    const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -492,32 +507,56 @@ export default function ItemAnalysisEssay() {
           ) : (
             <>
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <StatBox 
-                  label="Reliabilitas Instrumen (Cronbach Alpha)" 
-                  value={analytics?.reliability.toFixed(2) || "0.00"} 
-                  tag={analytics && analytics.reliability > 0.6 ? "Baik" : "Kurang"} 
-                  tagColor={analytics && analytics.reliability > 0.6 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"} 
-                />
-                <StatBox 
-                  label="Rata-rata Skor Esai" 
-                  value={`${Math.round(analytics?.mean || 0)}/100`} 
-                  progress={isNaN(analytics?.mean) ? 0 : analytics?.mean} 
-                />
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <div className="col-span-2 md:col-span-4 lg:col-span-2">
+                  <StatBox 
+                    label="Reliabilitas (Alpha Cronbach)" 
+                    value={analytics?.reliability.toFixed(2) || "0.00"} 
+                    tag={analytics && analytics.reliability > 0.6 ? "Baik" : "Kurang"} 
+                    tagColor={analytics && analytics.reliability > 0.6 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"} 
+                  />
+                </div>
+                <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                  <StatBox 
+                    label="Rata-rata Skor Esai" 
+                    value={`${Math.round(analytics?.mean || 0)}`} 
+                    progress={isNaN(analytics?.mean) ? 0 : analytics?.mean} 
+                  />
+                </div>
+                <div className="col-span-1 md:col-span-1 lg:col-span-1">
+                  <StatBox 
+                    label="Tertinggi" 
+                    value={`${Math.round(analytics?.maxScore || 0)}`} 
+                  />
+                </div>
+                <div className="col-span-1 md:col-span-1 lg:col-span-1">
+                  <StatBox 
+                    label="Terendah" 
+                    value={`${Math.round(analytics?.minScore || 0)}`} 
+                  />
+                </div>
+                <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                  <StatBox 
+                    label="Ketuntasan (>70)" 
+                    value={`${Math.round(analytics?.completionRate || 0)}%`} 
+                    progress={isNaN(analytics?.completionRate) ? 0 : analytics?.completionRate} 
+                  />
+                </div>
+                <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                  <StatBox 
+                    label="Simpangan Baku (SD)" 
+                    value={`${(analytics?.stdDev || 0).toFixed(2)}`} 
+                  />
+                </div>
                 
-                <div className="glass p-10 rounded-[48px] border-white/60 md:col-span-2 flex items-center justify-between relative overflow-hidden group">
+                <div className="glass p-8 rounded-[48px] border-white/60 col-span-2 md:col-span-4 lg:col-span-2 flex flex-col justify-center relative overflow-hidden group">
                   <div className="relative z-10">
-                    <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-6">Tingkat Kesulitan Soal Esai</p>
-                    <div className="flex gap-10">
-                      <DifficultyInfo label="Mudah (TK >= 0.7)" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk >= 0.7).length || 0}`} />
+                    <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Kesulitan Esai</p>
+                    <div className="flex justify-between items-center w-full gap-4">
+                      <DifficultyInfo label="Mudah" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk >= 0.7).length || 0}`} />
                       <DifficultyInfo label="Sedang" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk >= 0.3 && i.tk < 0.7).length || 0}`} />
-                      <DifficultyInfo label="Sukar (TK < 0.3)" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk < 0.3).length || 0}`} />
+                      <DifficultyInfo label="Sukar" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk < 0.3).length || 0}`} />
                     </div>
-                  </div>
-                  <div className="h-24 w-40 flex items-end gap-2 group-hover:scale-105 transition-transform duration-500">
-                    {[40, 90, 30].map((h, idx) => (
-                      <div key={idx} className={cn("w-full rounded-t-2xl transition-all duration-1000", idx === 1 ? "bg-primary" : "bg-primary/20")} style={{ height: `${h}%` }} />
-                    ))}
                   </div>
                 </div>
               </div>
@@ -553,17 +592,33 @@ export default function ItemAnalysisEssay() {
                 </div>
 
                 {/* Summary Info */}
-                <div className="lg:col-span-4 flex flex-col gap-8">
-                   <div className="glass p-10 rounded-[48px] border-white/60 bg-primary/5 flex flex-col justify-center">
-                      <h4 className="text-2xl font-black mb-4 tracking-tight">Karakteristik Analisis Esai</h4>
-                      <p className="text-sm font-medium text-on-surface-variant leading-relaxed">
-                        Analisis soal esai diukur berdasarkan performa sebaran nilai rata-rata siswa. Uji reliabilitas Alpha Cronbach digunakan untuk mendeteksi konsistensi internal instrumen penilaian esai ini.
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                   <div className="glass p-8 rounded-[48px] border-white/60 bg-primary/5 flex flex-col items-center justify-center relative overflow-hidden group">
+                      <h4 className="text-xl font-black mb-2 tracking-tight z-10 w-full">Insight AI & Kompetensi</h4>
+                      <p className="text-xs font-medium text-on-surface-variant leading-relaxed z-10 w-full mb-6">
+                        {analytics?.items?.some((i:any) => i.status === "Revisi") 
+                          ? "Sebagian besar siswa memahami konsep dasar namun ada indikasi soal yang sulit dipahami atau rubrik penilaian butuh evaluasi." 
+                          : "Distribusi nilai essay sangat baik. Siswa umumnya mampu menguraikan argumen dengan terstruktur dan relevan."}
                       </p>
+                      
+                      {aiAnalytics && (
+                        <div className="h-[200px] w-full z-10">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={aiAnalytics}>
+                              <PolarGrid stroke="#e2e8f0" />
+                              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 'bold' }} />
+                              <Radar name="Skor Kelas" dataKey="A" stroke="#8031f4" fill="#8031f4" fillOpacity={0.4} />
+                            </RadarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                      
+                      <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors duration-700" />
                    </div>
 
-                   <div className="glass p-10 rounded-[48px] border-white/60 flex-1 flex flex-col">
-                      <h4 className="text-xl font-black mb-10 tracking-tight text-on-surface-variant/40 uppercase tracking-widest text-[10px]">Ringkasan Daya Pembeda</h4>
-                      <div className="space-y-8 flex-1">
+                   <div className="glass p-8 rounded-[48px] border-white/60 flex-1 flex flex-col">
+                      <h4 className="text-xl font-black mb-6 tracking-tight text-on-surface-variant/40 uppercase tracking-widest text-[10px]">Ringkasan Daya Pembeda</h4>
+                      <div className="space-y-6 flex-1 flex flex-col justify-center">
                          <SummaryItem icon={<CheckCircle2 className="text-green-600" />} label="Daya Beda Baik" count={`${analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-green-500/10" />
                          <SummaryItem icon={<AlertTriangle className="text-yellow-600" />} label="Perlu Evaluasi Rubrik" count={`${analytics?.items?.filter((i:any) => i.status === "Revisi").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Revisi").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-yellow-500/10" />
                       </div>
@@ -607,10 +662,15 @@ export default function ItemAnalysisEssay() {
                                   </td>
                                   {essayQuestions.map((q: any, qIdx: number) => {
                                       const ans = sub.answers?.[q.originalIndex];
-                                      const scoreVal = ans?.score !== undefined ? ans.score : 0;
-                                      
+                                      const aiScore = sub.aiEssayGrading?.[q.originalIndex]?.score;
+                                      const scoreVal = aiScore !== undefined ? aiScore : (ans?.score !== undefined ? ans.score : 0);
+                                      let cellClass = "text-on-surface";
+                                      if (scoreVal >= 80) cellClass = "bg-green-500/10 text-green-700";
+                                      else if (scoreVal >= 50) cellClass = "bg-yellow-500/10 text-yellow-700";
+                                      else if (scoreVal > 0) cellClass = "bg-red-500/10 text-red-700";
+
                                       return (
-                                          <td key={qIdx} className="px-4 py-4 text-center font-bold text-on-surface">
+                                          <td key={qIdx} className={`px-4 py-4 text-center font-bold border border-white/10 ${cellClass}`}>
                                              {scoreVal}
                                           </td>
                                       );
@@ -650,6 +710,7 @@ export default function ItemAnalysisEssay() {
                              <th className="px-8 py-8">Pertanyaan Esai</th>
                              <th className="px-8 py-8 text-center">Kesukaran (TK)</th>
                              <th className="px-8 py-8 text-center">Daya Beda (DP)</th>
+                             <th className="px-8 py-8 text-center">Validitas (rXY)</th>
                              <th className="px-8 py-8">Rekomendasi Rubrik</th>
                              <th className="px-12 py-8 text-right">Aksi</th>
                           </tr>
@@ -664,9 +725,12 @@ export default function ItemAnalysisEssay() {
                               diffColor={item.tk >= 0.7 ? "bg-blue-500/10 text-blue-600" : item.tk < 0.3 ? "bg-red-500/10 text-red-600" : "bg-green-500/10 text-green-600"} 
                               dp={`${analysisUtils.interpretDP(item.dp)} (${item.dp.toFixed(2)})`}
                               dpColor={item.dp >= 0.3 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}
+                              validity={`${item.validity >= 0.3 ? "Valid" : "Tidak Valid"} (${item.validity.toFixed(3)})`}
+                              validityColor={item.validity >= 0.3 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}
                               recommendation={item.recommendation}
                               status={item.status}
                               statusColor={item.status === "Sangat Layak" ? "bg-green-500/10 text-green-600" : "bg-yellow-500/10 text-yellow-600"}
+                              onViewAI={() => setSelectedAIQuestion(item)}
                             />
                           ))}
                        </tbody>
@@ -763,6 +827,67 @@ export default function ItemAnalysisEssay() {
           </div>
         )}
       </div>
+
+      {selectedAIQuestion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-surface border border-outline/20 rounded-[32px] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+          >
+            <div className="p-8 border-b border-outline/10 flex justify-between items-center bg-white/50 backdrop-blur-md">
+              <div>
+                <h3 className="text-2xl font-black tracking-tight mb-1">Evaluasi AI: {selectedAIQuestion.snippet}</h3>
+                <p className="text-sm text-on-surface-variant font-medium">Rekapitulasi analisis AI untuk jawaban seluruh siswa pada butir soal ini.</p>
+              </div>
+              <button onClick={() => setSelectedAIQuestion(null)} className="p-3 bg-white/60 hover:bg-white rounded-xl transition-all shadow-sm">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-8 space-y-6 flex-1 bg-white/30">
+              {submissions.map((sub: any) => {
+                const ans = sub.answers?.[selectedAIQuestion.questionIndex];
+                const aiData = sub.aiEssayGrading?.[selectedAIQuestion.questionIndex];
+                
+                if (!ans?.answer && !aiData?.feedback) return null;
+
+                return (
+                  <div key={sub.id} className="bg-white/80 p-6 rounded-2xl border border-outline/10 shadow-sm flex flex-col gap-4">
+                    <div className="flex items-center justify-between border-b border-outline/5 pb-4">
+                      <div className="flex items-center gap-3">
+                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-black text-primary text-xs">
+                            {sub.studentPhoto ? <img src={sub.studentPhoto} alt="" className="w-full h-full rounded-lg object-cover" /> : sub.studentName.charAt(0)}
+                         </div>
+                         <h4 className="font-bold text-on-surface">{sub.studentName}</h4>
+                      </div>
+                      <div className="bg-primary/10 text-primary px-4 py-1.5 rounded-xl font-black text-xs">
+                         Skor: {aiData?.score ?? ans?.score ?? 0}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 block mb-2">Jawaban Siswa:</span>
+                      <p className="text-sm font-medium text-on-surface whitespace-pre-wrap">{ans?.answer || <span className="italic text-on-surface-variant/40">Siswa tidak memberikan jawaban teks, namun dinilai secara manual/AI.</span>}</p>
+                    </div>
+                    {aiData?.feedback && (
+                      <div className="bg-secondary/5 border border-secondary/20 p-4 rounded-xl">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-secondary block mb-2 flex items-center gap-1"><CheckCircle2 size={12} /> Evaluasi & Umpan Balik AI:</span>
+                        <p className="text-sm font-medium text-on-surface-variant leading-relaxed">{aiData.feedback}</p>
+                        {aiData.analysis && (
+                           <div className="flex gap-4 mt-3 pt-3 border-t border-secondary/10 text-xs font-bold text-secondary/80">
+                             <span>Konten: {aiData.analysis.contentScore || 0}</span>
+                             <span>Struktur: {aiData.analysis.structureScore || 0}</span>
+                             <span>Relevansi: {aiData.analysis.relevanceScore || 0}</span>
+                           </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </Layout>
   );
 }
@@ -817,7 +942,7 @@ function SummaryItem({ icon, label, count, percent, color }: any) {
     );
 }
 
-function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, recommendation, statusColor, status }: any) {
+function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, validity, validityColor, recommendation, statusColor, status, onViewAI }: any) {
     return (
         <tr className="hover:bg-white/30 transition-all group">
             <td className="px-12 py-8 font-black text-on-surface/20 group-hover:text-primary/40 transition-colors">{no}</td>
@@ -828,14 +953,17 @@ function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, recommendat
                </div>
             </td>
             <td className="px-8 py-8 text-center">
-                <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", diffColor)}>{difficulty}</span>
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", diffColor)}>{difficulty}</span>
             </td>
             <td className="px-8 py-8 text-center">
-                <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", dpColor)}>{dp}</span>
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", dpColor)}>{dp}</span>
+            </td>
+            <td className="px-8 py-8 text-center">
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", validityColor)}>{validity}</span>
             </td>
             <td className="px-8 py-8">
                 <div className="flex flex-col gap-3 min-w-[200px]">
-                    <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm inline-block w-fit", statusColor)}>{status}</span>
+                    <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm inline-block w-fit", statusColor)}>{status}</span>
                     <p className="text-xs font-medium text-on-surface-variant leading-relaxed italic border-l-2 border-primary/20 pl-3">
                         "{recommendation}"
                     </p>
@@ -843,7 +971,7 @@ function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, recommendat
             </td>
             <td className="px-12 py-8 text-right">
                 <div className="flex gap-2 justify-end">
-                    <button className="p-3 bg-white/40 rounded-xl hover:text-primary transition-all backdrop-blur-md border border-white/60 shadow-sm"><Eye size={18} /></button>
+                    <button onClick={onViewAI} title="Lihat Evaluasi AI" className="p-3 bg-white/40 rounded-xl hover:text-primary transition-all backdrop-blur-md border border-white/60 shadow-sm"><Eye size={18} /></button>
                     <button className="p-3 bg-white/40 rounded-xl hover:text-on-surface transition-all backdrop-blur-md border border-white/60 shadow-sm"><MoreVertical size={18} /></button>
                 </div>
             </td>

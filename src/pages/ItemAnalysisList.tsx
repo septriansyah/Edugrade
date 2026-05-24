@@ -9,11 +9,12 @@ import {
   Users, 
   Clock,
   Loader2,
-  FileText
+  FileText,
+  Trash2
 } from "lucide-react";
 import Layout from "@/src/components/Layout";
 import { db, auth } from "@/src/lib/firebase";
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { cn } from "@/src/lib/utils";
 
 export default function ItemAnalysisList() {
@@ -38,11 +39,16 @@ export default function ItemAnalysisList() {
     try {
       const q = query(
         collection(db, "assignments"), 
-        where("teacherId", "==", auth.currentUser.uid),
-        orderBy("createdAt", "desc")
+        where("teacherId", "==", auth.currentUser.uid)
       );
       const snap = await getDocs(q);
-      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+      // Sort locally to avoid requiring Firestore composite index
+      data.sort((a, b) => {
+        const dateA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const dateB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return dateB - dateA;
+      });
       setAssignments(data);
     } catch (error) {
       console.error("Error fetching assignments:", error);
@@ -55,6 +61,31 @@ export default function ItemAnalysisList() {
     a.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
     a.subject?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleDeleteAssignment = async (assignmentId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!window.confirm("Apakah Anda yakin ingin menghapus paket soal ini? Seluruh data analisis dan respons siswa akan ikut terhapus permanen.")) return;
+    
+    try {
+      // Find all submissions associated with this assignment and delete them
+      const subsQuery = query(collection(db, "submissions"), where("assignmentId", "==", assignmentId));
+      const subsSnap = await getDocs(subsQuery);
+      
+      const deletePromises = subsSnap.docs.map(d => deleteDoc(doc(db, "submissions", d.id)));
+      
+      // Delete the assignment itself
+      deletePromises.push(deleteDoc(doc(db, "assignments", assignmentId)));
+      
+      await Promise.all(deletePromises);
+      
+      setAssignments(prev => prev.filter(a => a.id !== assignmentId));
+    } catch (error) {
+      console.error("Error deleting assignment:", error);
+      alert("Gagal menghapus paket soal.");
+    }
+  };
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -152,11 +183,19 @@ export default function ItemAnalysisList() {
                 transition={{ delay: idx * 0.05 }}
               >
                 <div className="glass group block rounded-[44px] border-white/60 shadow-xl hover:shadow-2xl transition-all relative overflow-hidden bg-white/30">
-                  <div className="p-10">
+                  <div className="p-10 relative">
+                    <button 
+                      onClick={(e) => handleDeleteAssignment(a.id, e)}
+                      className="absolute top-8 right-8 p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all z-10 shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      title="Hapus Tugas"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+
                     <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
                       <FileText className="text-primary" size={28} />
                     </div>
-                    <h3 className="text-2xl font-black mb-2 tracking-tight group-hover:text-primary transition-colors leading-tight">{a.title}</h3>
+                    <h3 className="text-2xl font-black mb-2 tracking-tight group-hover:text-primary transition-colors leading-tight pr-12">{a.title}</h3>
                     <p className="text-sm font-bold text-on-surface-variant/60 mb-6">{a.subject}</p>
                     
                     {/* Question counts */}

@@ -161,6 +161,13 @@ export default function BlankAnalysisPG() {
     if (!assignment || !submissions.length || pgQuestions.length === 0) return null;
 
     const totalStudents = submissions.length;
+    const mcScoresList = submissions.map(s => s.mcScore);
+    const mean = totalStudents > 0 ? (mcScoresList.reduce((a, b) => a + b, 0) / totalStudents) : 0;
+    const completionRate = totalStudents > 0 ? ((mcScoresList.filter(s => s >= 70).length / totalStudents) * 100) : 0;
+    const maxScore = mcScoresList.length > 0 ? Math.max(...mcScoresList) : 0;
+    const minScore = mcScoresList.length > 0 ? Math.min(...mcScoresList) : 0;
+    const stdDev = analysisUtils.calculateStandardDeviation(mcScoresList);
+
     const itemResults = pgQuestions.map((q: any) => {
       const qIdx = q.originalIndex;
       const answers = submissions.map(s => s.answers?.[qIdx]);
@@ -208,30 +215,42 @@ export default function BlankAnalysisPG() {
           recommendation = "Soal memiliki daya beda yang sangat baik dan tingkat kesulitan ideal.";
       }
 
+      let validity = analysisUtils.calculatePearsonCorrelation(answers.map(a => isAnsCorrect(a) ? 100 : 0), mcScoresList);
+      if (isNaN(validity)) validity = 0;
+
       return {
         questionIndex: qIdx,
         snippet: `Butir Soal Nomor ${qIdx + 1}`,
         type: "Multiple Choice",
         tk,
         dp,
+        validity,
         distractors,
         status,
         recommendation
       };
     });
 
-    const mcScoresList = submissions.map(s => s.mcScore);
-    const mean = totalStudents > 0 ? (mcScoresList.reduce((a, b) => a + b, 0) / totalStudents) : 0;
-    const completionRate = totalStudents > 0 ? ((mcScoresList.filter(s => s >= 70).length / totalStudents) * 100) : 0;
-
-    // Reliability KR-20 for PG
-    const totalVar = analysisUtils.calculateVariance(mcScoresList);
+    // Reliability KR-20 uses RAW scores variance, not 100-scale variance
+    const rawScoresList = submissions.map(s => {
+        let correct = 0;
+        pgQuestions.forEach(q => {
+            const ans = s.answers?.[q.originalIndex];
+            const isAnsCorrect = typeof ans === 'string' ? ans === (kunjau[q.originalIndex] || "A") : ans?.isCorrect;
+            if (isAnsCorrect) correct++;
+        });
+        return correct;
+    });
+    const rawVar = analysisUtils.calculateVariance(rawScoresList);
     const pValues = itemResults.map((r: any) => r.tk || 0);
-    const reliability = analysisUtils.calculateKR20(pgQuestions.length, pValues, totalVar) || 0;
+    const reliability = analysisUtils.calculateKR20(pgQuestions.length, pValues, rawVar) || 0;
 
     return {
       reliability: isNaN(reliability) ? 0 : reliability,
       mean: isNaN(mean) ? 0 : mean,
+      maxScore,
+      minScore,
+      stdDev,
       completionRate: isNaN(completionRate) ? 0 : completionRate,
       items: itemResults
     };
@@ -305,29 +324,28 @@ export default function BlankAnalysisPG() {
   const handleExportTxt = () => {
     if (!analytics || !assignment || !submissions.length || pgQuestions.length === 0) return;
     
-    const totalStudents = submissions.length;
-    const totalItems = pgQuestions.length;
+    const input: analysisUtils.PGReportInput = {
+        assignmentTitle: assignment.title,
+        questions: pgQuestions.map((q: any) => ({
+            id: q.originalIndex,
+            correctLabel: kunjau[q.originalIndex] || "A",
+            labels: ["A", "B", "C", "D", "E"]
+        })),
+        submissions: submissions.map((sub: any) => {
+            const answers: Record<number, string> = {};
+            pgQuestions.forEach((q: any) => {
+                const ans = sub.answers?.[q.originalIndex];
+                answers[q.originalIndex] = typeof ans === 'string' ? ans : (ans?.label || "-");
+            });
+            return {
+                studentName: sub.studentName || sub.studentId.substring(0, 8),
+                answers
+            };
+        })
+    };
+
+    const blob = analysisUtils.generatePGTextReport(input);
     const fileName = `ANABUTIRSOAL_MANDIRI_PG_${assignment.title.replace(/\s+/g, '_').toUpperCase().substring(0, 20)}.txt`;
-
-    let content = `SKOR DATA DIBOBOT (PILIHAN GANDA MANDIRI)\n=========================================\n\n`;
-    content += `Jumlah Subyek   = ${totalStudents}\n`;
-    content += `Jumlah butir    = ${totalItems}\n`;
-    content += `Bobot jwb benar = 1\n`;
-    content += `Bobot jwb salah = 0\n\n`;
-    
-    content += ` No       Kode/Nama  Benar  Skr Bobot \n`;
-    submissions.forEach((s, idx) => {
-        let correctCount = 0;
-        pgQuestions.forEach((q) => {
-          const ans = s.answers?.[q.originalIndex];
-          if (ans?.isCorrect) correctCount++;
-        });
-        content += ` ${(idx+1).toString().padStart(3)} ${s.studentName.padStart(15).substring(0,15)} ${correctCount.toString().padStart(6)} ${s.totalScore.toString().padStart(10)} \n`;
-    });
-
-    content += `\nReliabilitas Tes (KR-20): ${analytics.reliability.toFixed(2)}\n`;
-
-    const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -569,29 +587,58 @@ export default function BlankAnalysisPG() {
           /* Analysis Dashboard Mode */
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <StatBox 
-                label="Reliabilitas Tes (KR-20)" 
-                value={analytics?.reliability.toFixed(2) || "0.00"} 
-                tag={analytics && analytics.reliability > 0.7 ? "Tinggi" : "Rendah"} 
-                tagColor={analytics && analytics.reliability > 0.7 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"} 
-              />
-              <StatBox 
-                label="Ketuntasan PG" 
-                value={`${Math.round(analytics?.completionRate || 0)}%`} 
-                progress={isNaN(analytics?.completionRate) ? 0 : analytics?.completionRate} 
-              />
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+              <div className="col-span-2 md:col-span-4 lg:col-span-2">
+                <StatBox 
+                  label="Reliabilitas Tes (KR-20)" 
+                  value={analytics?.reliability.toFixed(2) || "0.00"} 
+                  tag={analytics && analytics.reliability > 0.7 ? "Tinggi" : "Rendah"} 
+                  tagColor={analytics && analytics.reliability > 0.7 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"} 
+                />
+              </div>
+              <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                <StatBox 
+                  label="Rata-rata Skor PG" 
+                  value={`${Math.round(analytics?.mean || 0)}`} 
+                  progress={isNaN(analytics?.mean) ? 0 : analytics?.mean} 
+                />
+              </div>
+              <div className="col-span-1 md:col-span-1 lg:col-span-1">
+                <StatBox 
+                  label="Tertinggi" 
+                  value={`${Math.round(analytics?.maxScore || 0)}`} 
+                />
+              </div>
+              <div className="col-span-1 md:col-span-1 lg:col-span-1">
+                <StatBox 
+                  label="Terendah" 
+                  value={`${Math.round(analytics?.minScore || 0)}`} 
+                />
+              </div>
+              <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                <StatBox 
+                  label="Ketuntasan PG" 
+                  value={`${Math.round(analytics?.completionRate || 0)}%`} 
+                  progress={isNaN(analytics?.completionRate) ? 0 : analytics?.completionRate} 
+                />
+              </div>
+              <div className="col-span-2 md:col-span-2 lg:col-span-2">
+                <StatBox 
+                  label="Simpangan Baku (SD)" 
+                  value={`${(analytics?.stdDev || 0).toFixed(2)}`} 
+                />
+              </div>
               
-              <div className="glass p-10 rounded-[48px] border-white/60 md:col-span-2 flex items-center justify-between relative overflow-hidden group">
-                <div className="relative z-10">
-                  <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-6">Distribusi Tingkat Kesukaran</p>
-                  <div className="flex gap-10">
+              <div className="glass p-8 rounded-[48px] border-white/60 col-span-2 md:col-span-4 lg:col-span-2 flex items-center justify-between relative overflow-hidden group">
+                <div className="relative z-10 w-full">
+                  <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Distribusi Tingkat Kesukaran</p>
+                  <div className="flex justify-between items-center w-full gap-4">
                     <DifficultyInfo label="Mudah" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk >= 0.7).length || 0}`} />
                     <DifficultyInfo label="Sedang" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk >= 0.3 && i.tk < 0.7).length || 0}`} />
                     <DifficultyInfo label="Sukar" percent={`${analytics?.items?.filter((i:any) => !isNaN(i.tk) && i.tk < 0.3).length || 0}`} />
                   </div>
                 </div>
-                <div className="h-24 w-40 flex items-end gap-2 group-hover:scale-105 transition-transform duration-500">
+                <div className="absolute -right-4 -bottom-4 h-24 w-40 flex items-end gap-2 group-hover:scale-105 transition-transform duration-500 opacity-20 pointer-events-none">
                   {[40, 90, 30].map((h, idx) => (
                     <div key={idx} className={cn("w-full rounded-t-2xl transition-all duration-1000", idx === 1 ? "bg-primary" : "bg-primary/20")} style={{ height: `${h}%` }} />
                   ))}
@@ -715,11 +762,12 @@ export default function BlankAnalysisPG() {
                   <table className="w-full text-left border-collapse">
                      <thead>
                         <tr className="bg-white/20 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">
-                           <th className="px-12 py-8">No</th>
-                           <th className="px-8 py-8">Soal PG</th>
+                           <th className="px-12 py-8 text-on-surface-variant/40">No</th>
+                           <th className="px-8 py-8">Pertanyaan</th>
                            <th className="px-8 py-8 text-center">Kesukaran (TK)</th>
                            <th className="px-8 py-8 text-center">Daya Beda (DP)</th>
-                           <th className="px-8 py-8">Rekomendasi</th>
+                           <th className="px-8 py-8 text-center">Validitas (rXY)</th>
+                           <th className="px-8 py-8">Evaluasi & Distraktor</th>
                            <th className="px-12 py-8 text-right">Aksi</th>
                         </tr>
                      </thead>
@@ -730,9 +778,11 @@ export default function BlankAnalysisPG() {
                             no={(idx + 1).toString().padStart(2, '0')} 
                             snippet={item.snippet} 
                             difficulty={`${analysisUtils.interpretTK(item.tk)} (${item.tk.toFixed(2)})`} 
-                            diffColor={item.tk >= 0.7 ? "bg-blue-500/10 text-blue-600" : item.tk < 0.3 ? "bg-red-500/10 text-red-600" : "bg-green-500/10 text-green-600"} 
+                            diffColor={item.tk >= 0.7 ? "bg-blue-500/10 text-blue-600 border-blue-500/20" : item.tk < 0.3 ? "bg-red-500/10 text-red-600 border-red-500/20" : "bg-green-500/10 text-green-600 border-green-500/20"} 
                             dp={`${analysisUtils.interpretDP(item.dp)} (${item.dp.toFixed(2)})`}
-                            dpColor={item.dp >= 0.3 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}
+                            dpColor={item.dp >= 0.3 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"}
+                            validity={`${item.validity >= 0.3 ? "Valid" : "Tidak Valid"} (${item.validity.toFixed(3)})`}
+                            validityColor={item.validity >= 0.3 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"}
                             recommendation={item.recommendation}
                             status={item.status}
                             statusColor={item.status === "Sangat Layak" ? "bg-green-500/10 text-green-600" : item.status === "Buang" ? "bg-error/10 text-error" : "bg-yellow-500/10 text-yellow-600"}
@@ -802,7 +852,7 @@ function SummaryItem({ icon, label, count, percent, color }: any) {
     );
 }
 
-function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, recommendation, statusColor, status, distractorData }: any) {
+function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, validity, validityColor, recommendation, statusColor, status, distractorData }: any) {
     return (
         <tr className="hover:bg-white/30 transition-all group">
             <td className="px-12 py-8 font-black text-on-surface/20 group-hover:text-primary/40 transition-colors">{no}</td>
@@ -813,14 +863,17 @@ function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, recommendat
                </div>
             </td>
             <td className="px-8 py-8 text-center">
-                <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", diffColor)}>{difficulty}</span>
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", diffColor)}>{difficulty}</span>
             </td>
             <td className="px-8 py-8 text-center">
-                <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", dpColor)}>{dp}</span>
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", dpColor)}>{dp}</span>
+            </td>
+            <td className="px-8 py-8 text-center">
+                <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm", validityColor)}>{validity}</span>
             </td>
             <td className="px-8 py-8">
                 <div className="flex flex-col gap-3 min-w-[200px]">
-                    <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm inline-block w-fit", statusColor)}>{status}</span>
+                    <span className={cn("whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40 shadow-sm inline-block w-fit", statusColor)}>{status}</span>
                     <p className="text-xs font-medium text-on-surface-variant leading-relaxed italic border-l-2 border-primary/20 pl-3">
                         "{recommendation}"
                     </p>
