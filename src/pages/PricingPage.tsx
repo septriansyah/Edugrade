@@ -3,6 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, Sparkles, Zap, ShieldCheck, Loader2, Crown, Menu, X } from "lucide-react";
 import Logo from "@/src/img/Logo.svg";
+import Asset1 from "@/src/img/Asset 1.png";
+import Asset2 from "@/src/img/Asset 2.png";
+import Asset3 from "@/src/img/Asset 3.png";
+import Asset4 from "@/src/img/Asset 4.png";
+import Asset5 from "@/src/img/Asset 5.png";
+import Asset6 from "@/src/img/Asset 6.png";
 import { auth, db, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
@@ -102,9 +108,13 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col relative overflow-hidden">
-      {/* Decorative background blur */}
+      {/* Decorative background blur & Assets */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -mr-64 -mt-64 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[120px] -ml-64 -mb-64 pointer-events-none" />
+
+      <motion.img src={Asset5} animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }} transition={{ duration: 6, repeat: Infinity }} className="absolute top-32 left-10 lg:left-32 w-24 md:w-32 h-24 md:h-32 object-contain opacity-60 z-0 pointer-events-none drop-shadow-xl hidden md:block" />
+      <motion.img src={Asset2} animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }} transition={{ duration: 7, repeat: Infinity, delay: 1 }} className="absolute bottom-20 left-10 lg:left-40 w-32 md:w-40 h-32 md:h-40 object-contain opacity-50 z-0 pointer-events-none drop-shadow-xl hidden md:block" />
+      <motion.img src={Asset6} animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }} transition={{ duration: 8, repeat: Infinity, delay: 0.5 }} className="absolute top-1/2 right-10 lg:right-24 w-28 md:w-36 h-28 md:h-36 object-contain opacity-60 z-0 pointer-events-none drop-shadow-xl hidden md:block" />
 
       {/* Navbar */}
       <header className="glass sticky top-0 z-50 h-24 border-b">

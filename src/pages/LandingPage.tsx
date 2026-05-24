@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Users, Sparkles, Database, FileText, CheckCircle, GraduationCap, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Logo from "/src/img/Logo.svg";
+import Asset1 from "/src/img/Asset 1.png";
+import Asset2 from "/src/img/Asset 2.png";
+import Asset3 from "/src/img/Asset 3.png";
+import Asset4 from "/src/img/Asset 4.png";
+import Asset5 from "/src/img/Asset 5.png";
+import Asset6 from "/src/img/Asset 6.png";
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -193,17 +199,34 @@ export default function LandingPage() {
             {/* Background blobs */}
             <div className="absolute -top-24 -right-24 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -z-10" />
             <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] bg-student-primary/10 rounded-full blur-[100px] -z-10" />
+
+            {/* Decorative Assets for Hero */}
+            <motion.img 
+              src={Asset1} 
+              animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }} 
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-16 -left-16 lg:-left-24 w-32 lg:w-40 h-32 lg:h-40 object-contain z-30 drop-shadow-2xl opacity-90 hidden md:block"
+            />
+            <motion.img 
+              src={Asset2} 
+              animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }} 
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute -bottom-12 -right-12 lg:-right-20 w-40 lg:w-48 h-40 lg:h-48 object-contain z-30 drop-shadow-2xl opacity-90 hidden md:block"
+            />
           </motion.div>
         </div>
       </section>
 
       {/* Features Bento Grid */}
       <section className="py-24 bg-surface-container-low">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="text-center mb-16">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative">
+          <div className="text-center mb-16 relative z-10">
             <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold tracking-widest">FITUR UNGGULAN</span>
             <h2 className="text-4xl font-bold mt-4">Platform Cerdas untuk Guru Masa Depan</h2>
           </div>
+          
+          <motion.img src={Asset3} animate={{ y: [0, -10, 0] }} transition={{ duration: 5, repeat: Infinity }} className="absolute -top-10 left-0 lg:left-10 w-24 lg:w-32 h-24 lg:h-32 object-contain opacity-70 z-0 pointer-events-none hidden md:block" />
+          <motion.img src={Asset4} animate={{ y: [0, 15, 0] }} transition={{ duration: 6, repeat: Infinity, delay: 0.5 }} className="absolute top-20 right-0 lg:right-10 w-28 lg:w-36 h-28 lg:h-36 object-contain opacity-70 z-0 pointer-events-none hidden md:block" />
 
           <div className="grid grid-cols-12 gap-6">
             {/* AI Generator */}
@@ -353,8 +376,11 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24">
-        <div className="max-w-4xl mx-auto px-6 text-center">
+      <section className="py-24 relative overflow-hidden">
+        <motion.img src={Asset5} animate={{ y: [0, 20, 0], rotate: [0, 10, 0] }} transition={{ duration: 8, repeat: Infinity }} className="absolute top-10 left-10 lg:left-40 w-32 h-32 object-contain opacity-60 drop-shadow-xl z-0 pointer-events-none hidden md:block" />
+        <motion.img src={Asset6} animate={{ y: [0, -20, 0], rotate: [0, -10, 0] }} transition={{ duration: 7, repeat: Infinity, delay: 1 }} className="absolute bottom-10 right-10 lg:right-40 w-40 h-40 object-contain opacity-60 drop-shadow-xl z-0 pointer-events-none hidden md:block" />
+        
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <h2 className="text-5xl font-bold mb-12">Siap Memulai Transformasi Digital Kelas Anda?</h2>
           <div className="bg-primary/5 p-10 rounded-[40px] border-2 border-primary/10 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="text-left">

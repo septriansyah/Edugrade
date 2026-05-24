@@ -201,10 +201,10 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
             
             <div className="flex gap-4 sm:gap-10 ml-4 sm:ml-8">
               {userType === "student" ? (
-                <>
+                <div className="hidden md:flex gap-10">
                   <HeaderLink to="/student/dashboard" label="Dashboard" active={location.pathname === "/student/dashboard"} />
                   <HeaderLink to="/assignments" label="Tugas & Ujian" active={location.pathname === "/assignments" || location.pathname.includes("/assignment/")} />
-                </>
+                </div>
               ) : (
                 <div className="hidden lg:flex gap-10">
                   <HeaderLink to="/dashboard" label="Dashboard" active={location.pathname === "/dashboard"} />
@@ -218,7 +218,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
             {userType === "student" && (
               <button 
                 onClick={handleAction}
-                className="btn-glass-primary px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/10 whitespace-nowrap"
+                className="hidden md:flex btn-glass-primary px-4 py-2.5 rounded-xl items-center gap-2 text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/10 whitespace-nowrap"
               >
                 <Plus size={16} /> <span className="hidden sm:inline">Gabung Kelas</span><span className="sm:hidden">Gabung</span>
               </button>
@@ -257,7 +257,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
         </header>
 
         {/* Page Content */}
-        <main className={cn("flex-1", userType === "teacher" && "pb-24 lg:pb-0")}>
+        <main className={cn("flex-1", userType === "teacher" ? "pb-24 lg:pb-0" : "pb-24 md:pb-0")}>
           {children}
         </main>
 
@@ -394,7 +394,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
       />
       {/* Mobile Bottom Navigation Bar for Teachers */}
       {userType === "teacher" && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-outline-variant/30 px-6 py-2 flex justify-around items-center z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-outline-variant/30 px-6 py-2 flex justify-around items-center z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] pb-safe">
           <MobileNavItem 
             to="/dashboard" 
             icon={<Home size={20} />} 
@@ -421,6 +421,33 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
               <Plus size={18} />
             </div>
             <span className="text-[9px] font-black uppercase tracking-wider">Buat</span>
+          </button>
+        </div>
+      )}
+
+      {/* Mobile Bottom Navigation Bar for Students */}
+      {userType === "student" && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-outline-variant/30 px-6 py-2 flex justify-around items-center z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] pb-safe">
+          <MobileNavItem 
+            to="/student/dashboard" 
+            icon={<Home size={20} />} 
+            label="Dashboard" 
+            active={location.pathname === "/student/dashboard"} 
+          />
+          <MobileNavItem 
+            to="/assignments" 
+            icon={<GraduationCap size={20} />} 
+            label="Tugas & Ujian" 
+            active={location.pathname === "/assignments" || location.pathname.includes("/assignment/")} 
+          />
+          <button
+            onClick={handleAction}
+            className="flex flex-col items-center gap-1 text-on-surface-variant/60 hover:text-primary transition-colors"
+          >
+            <div className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
+              <Plus size={18} />
+            </div>
+            <span className="text-[9px] font-black uppercase tracking-wider">Gabung</span>
           </button>
         </div>
       )}

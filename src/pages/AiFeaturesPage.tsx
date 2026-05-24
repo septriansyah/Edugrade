@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Cpu, CheckCircle2, Zap, BarChart3, Clock, GraduationCap, Users, Award, ShieldCheck, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Logo from "/src/img/Logo.svg";
+import Asset1 from "/src/img/Asset 1.png";
+import Asset2 from "/src/img/Asset 2.png";
+import Asset3 from "/src/img/Asset 3.png";
+import Asset4 from "/src/img/Asset 4.png";
+import Asset5 from "/src/img/Asset 5.png";
+import Asset6 from "/src/img/Asset 6.png";
 
 export default function AiFeaturesPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -147,8 +153,10 @@ export default function AiFeaturesPage() {
           </motion.p>
         </div>
         
-        {/* Background blobs */}
+        {/* Background blobs & Decorative Assets */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-primary/5 rounded-full blur-[100px] -z-10" />
+        <motion.img src={Asset1} animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }} transition={{ duration: 6, repeat: Infinity }} className="absolute top-20 left-10 lg:left-32 w-24 md:w-32 h-24 md:h-32 object-contain opacity-60 z-0 pointer-events-none drop-shadow-xl hidden md:block" />
+        <motion.img src={Asset2} animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }} transition={{ duration: 7, repeat: Infinity, delay: 1 }} className="absolute bottom-20 right-10 lg:right-32 w-32 md:w-40 h-32 md:h-40 object-contain opacity-50 z-0 pointer-events-none drop-shadow-xl hidden md:block" />
       </section>
 
       {/* Main Advantages Grid */}
@@ -353,8 +361,11 @@ export default function AiFeaturesPage() {
       </section>
 
       {/* Summary of Advantages Section */}
-      <section className="py-20 bg-surface">
-        <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12 space-y-16">
+      <section className="py-20 bg-surface relative overflow-hidden">
+        <motion.img src={Asset3} animate={{ y: [0, -10, 0] }} transition={{ duration: 5, repeat: Infinity }} className="absolute top-1/3 left-0 lg:left-10 w-24 lg:w-32 h-24 lg:h-32 object-contain opacity-40 z-0 pointer-events-none hidden md:block" />
+        <motion.img src={Asset4} animate={{ y: [0, 15, 0] }} transition={{ duration: 6, repeat: Infinity, delay: 0.5 }} className="absolute top-2/3 right-0 lg:right-10 w-28 lg:w-36 h-28 lg:h-36 object-contain opacity-40 z-0 pointer-events-none hidden md:block" />
+        
+        <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12 space-y-16 relative z-10">
           <div className="text-center space-y-4">
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">Mengapa Harus Menggunakan Edugrade AI?</h2>
             <p className="text-lg text-on-surface-variant max-w-xl mx-auto font-medium">Bandingkan alur kerja tradisional dengan alur kerja modern Edugrade.</p>
@@ -405,8 +416,11 @@ export default function AiFeaturesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-surface-container-low">
-        <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
+      <section className="py-20 bg-surface-container-low relative overflow-hidden">
+        <motion.img src={Asset5} animate={{ y: [0, 20, 0], rotate: [0, 10, 0] }} transition={{ duration: 8, repeat: Infinity }} className="absolute top-10 left-10 lg:left-40 w-32 h-32 object-contain opacity-60 drop-shadow-xl z-0 pointer-events-none hidden md:block" />
+        <motion.img src={Asset6} animate={{ y: [0, -20, 0], rotate: [0, -10, 0] }} transition={{ duration: 7, repeat: Infinity, delay: 1 }} className="absolute bottom-10 right-10 lg:right-40 w-40 h-40 object-contain opacity-60 drop-shadow-xl z-0 pointer-events-none hidden md:block" />
+        
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-8 relative z-10">
           <h2 className="text-3xl md:text-5xl font-black tracking-tight text-on-surface">Siap Merasakan Kemudahan Ini?</h2>
           <p className="text-on-surface-variant max-w-xl mx-auto font-medium text-base md:text-lg">
             Bergabunglah dengan ribuan pendidik lain dan mulailah menghemat waktu kerja Anda hari ini.

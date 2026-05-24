@@ -156,24 +156,10 @@ export default function StudentDashboard() {
         const qSubmissions = query(collection(db, submissionsPath), where("studentId", "==", auth.currentUser.uid));
         const querySnapshotSubmissions = await getDocs(qSubmissions);
         const submissionsMap: Record<string, any> = {};
-        let totalScoreSum = 0;
-        let gradedCount = 0;
-        
         querySnapshotSubmissions.docs.forEach(doc => {
             const data = doc.data();
             submissionsMap[data.assignmentId] = data;
-            if (data.status === 'graded') {
-                const score = data.totalScore !== undefined ? data.totalScore : (data.mcScore !== undefined ? data.mcScore : 0);
-                totalScoreSum += score;
-                gradedCount++;
-            }
         });
-
-        if (gradedCount > 0) {
-            setAverageScore(Math.round(totalScoreSum / gradedCount));
-        } else {
-            setAverageScore(0);
-        }
 
         // 4. Map status to assignments
         const assignmentsWithStatus = assignmentsList
@@ -194,6 +180,14 @@ export default function StudentDashboard() {
             }) as AssignmentData[];
 
         setAssignments(assignmentsWithStatus);
+
+        const gradedAssignments = assignmentsWithStatus.filter(a => a.status === 'graded' && a.score !== null && a.score !== undefined);
+        if (gradedAssignments.length > 0) {
+            const sum = gradedAssignments.reduce((acc, curr) => acc + Number(curr.score), 0);
+            setAverageScore(Math.round(sum / gradedAssignments.length));
+        } else {
+            setAverageScore(0);
+        }
 
         // Fetch Materials
         const qMaterials = query(collection(db, "materials"), where("classId", "in", classIds));
@@ -252,7 +246,7 @@ export default function StudentDashboard() {
               </div>
               <span className="text-sm font-black text-primary uppercase tracking-[0.2em]">Siswa Portal</span>
             </div>
-            <h1 className="text-5xl lg:text-6xl font-black mb-0 tracking-tighter text-on-surface">Hello, <span className="text-primary italic">Student!</span></h1>
+            <h1 className="text-5xl lg:text-6xl font-black mb-0 tracking-tighter text-on-surface">Hello, <span className="text-primary italic">{auth.currentUser?.displayName || "Student"}!</span></h1>
           </motion.div>
           
           <div className="flex gap-4 w-full md:w-auto">
@@ -307,34 +301,36 @@ export default function StudentDashboard() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.1 }}
-                      className="glass rounded-[40px] p-8 border-white/60 flex flex-col md:flex-row justify-between items-center gap-8 group hover:shadow-2xl transition-all"
+                      className="glass rounded-[40px] p-6 md:p-8 border-white/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 group hover:shadow-2xl transition-all"
                     >
-                      <div className="flex items-center gap-6 flex-1">
+                      <div className="flex items-center gap-5 md:gap-6 flex-1 w-full">
                         <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
                           <FileText className="text-primary" size={24} />
                         </div>
-                        <div>
-                          <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 truncate">
                             {classes.find(c => c.id === assignment.classId)?.name || 'Kelas'}
                           </p>
-                          <h3 className="text-xl font-black tracking-tight group-hover:text-primary transition-colors">{assignment.title}</h3>
+                          <h3 className="text-lg md:text-xl font-black tracking-tight group-hover:text-primary transition-colors truncate">{assignment.title}</h3>
                           <div className="flex items-center gap-2 mt-1 text-on-surface-variant/60">
-                            <Clock size={12} />
-                            <span className="text-xs font-medium">Tenggat: {assignment.dueDate?.toDate ? assignment.dueDate.toDate().toLocaleDateString() : assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'Tidak ada'}</span>
+                            <Clock size={12} className="shrink-0" />
+                            <span className="text-xs font-medium truncate">Tenggat: {assignment.dueDate?.toDate ? assignment.dueDate.toDate().toLocaleDateString() : assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'Tidak ada'}</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-6 w-full md:w-auto">
-                        <StatusBadge status={assignment.status || "belum_dikumpulkan"} />
-                        {assignment.status === 'graded' && assignment.score !== null && assignment.score !== undefined && (
-                            <div className="px-4 py-2 bg-secondary/10 text-secondary border border-secondary/20 rounded-xl font-black text-sm whitespace-nowrap">
-                                Nilai: {assignment.score}/100
-                            </div>
-                        )}
+                      <div className="flex flex-wrap md:flex-nowrap items-center gap-4 md:gap-6 w-full md:w-auto mt-2 md:mt-0">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <StatusBadge status={assignment.status || "belum_dikumpulkan"} />
+                          {assignment.status === 'graded' && assignment.score !== null && assignment.score !== undefined && (
+                              <div className="px-4 py-2 bg-secondary/10 text-secondary border border-secondary/20 rounded-xl font-black text-sm whitespace-nowrap">
+                                  Nilai: {assignment.score}/100
+                              </div>
+                          )}
+                        </div>
                         <Link 
                           to={`/assignment/${assignment.id}`}
-                          className="px-8 py-4 bg-on-surface text-surface rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-on-surface-variant transition-all whitespace-nowrap"
+                          className="w-full md:w-auto px-8 py-4 bg-on-surface text-surface rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-on-surface-variant transition-all whitespace-nowrap"
                         >
                           Buka Tugas
                           <ArrowRight size={18} />
