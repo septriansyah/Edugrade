@@ -134,17 +134,9 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
                   <p className="text-xs font-black text-on-surface truncate leading-none mb-1">{currentUser?.displayName || "User Profile"}</p>
                   <p className="text-[9px] font-black text-on-surface-variant/40 uppercase tracking-widest">{userType === "teacher" ? "Guru" : userType}</p>
                 </div>
-                <button className="text-on-surface-variant hover:text-primary transition-all p-2 rounded-xl hover:bg-white/60 relative">
-                  <Bell size={18} />
-                  <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-white" />
-                </button>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3 mb-4">
-                <button className="text-on-surface-variant hover:text-primary transition-all p-2 rounded-xl hover:bg-white/60 relative">
-                  <Bell size={18} />
-                  <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-white" />
-                </button>
                 <div className="w-10 h-10 rounded-xl overflow-hidden border border-white shadow-sm relative group cursor-pointer active:scale-95 transition-transform" title={currentUser?.displayName || "Profile"}>
                   <img 
                     src={currentUser?.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=800&auto=format&fit=crop"} 
@@ -187,14 +179,6 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
           userType !== "student" && "lg:hidden"
         )}>
           <div className="flex items-center gap-4 md:gap-8">
-            {userType !== "student" && (
-              <button 
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-2 text-on-surface hover:bg-on-surface/5 rounded-xl transition-all"
-              >
-                <Menu size={24} />
-              </button>
-            )}
             <Link to={userType === "teacher" ? "/dashboard" : "/student/dashboard"} className="flex items-center gap-2 md:gap-3">
               <img src={Logo} alt="Edugrade Logo" className="h-8 md:h-10 object-contain" />
             </Link>
@@ -223,11 +207,6 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
                 <Plus size={16} /> <span className="hidden sm:inline">Gabung Kelas</span><span className="sm:hidden">Gabung</span>
               </button>
             )}
-            
-            <button className="text-on-surface-variant hover:text-primary transition-all p-3 rounded-2xl hover:bg-white/60 relative">
-              <Bell size={22} />
-              <div className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-primary rounded-full border-2 border-white" />
-            </button>
 
             {userType === "student" && (
               <button 
@@ -278,94 +257,6 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
           </div>
         </footer>
       </div>
-      {/* Mobile Sidebar Overlay */}
-      {userType !== "student" && (
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <>
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[50] lg:hidden"
-              />
-              <motion.aside 
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed top-0 left-0 bottom-0 w-[280px] bg-white z-[60] p-8 flex flex-col lg:hidden shadow-2xl"
-              >
-                 <div className="flex justify-between items-center mb-12">
-                    <div className="flex items-center gap-3">
-                      <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
-                    </div>
-                    <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-on-surface/5 rounded-xl transition-all">
-                      <X size={20} />
-                    </button>
-                 </div>
-
-                 <nav className="flex-1 space-y-2">
-                    <SidebarItem 
-                      to={userType === "teacher" ? "/dashboard" : "/student/dashboard"} 
-                      icon={<Home size={20} />} 
-                      label="Dashboard" 
-                      active={location.pathname === "/dashboard" || location.pathname === "/student/dashboard"} 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    />
-                    {userType === "teacher" ? (
-                      <>
-                        <SidebarItem 
-                          to="/analytics" 
-                          icon={<Search size={20} />} 
-                          label="Butir Soal" 
-                          active={location.pathname.startsWith("/analytics")} 
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        />
-                        <SidebarItem 
-                          to="/generator" 
-                          icon={<Sparkles size={20} />} 
-                          label="Bank Soal" 
-                          active={location.pathname.startsWith("/generator")} 
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        />
-                      </>
-                    ) : (
-                    <SidebarItem 
-                      to="/assignments" 
-                      icon={<GraduationCap size={20} />} 
-                      label="Tugas & Ujian" 
-                      active={location.pathname === "/assignments" || location.pathname.includes("/assignment/")} 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    />
-                  )}
-               </nav>
-
-               <div className="pt-8 mt-auto border-t border-on-surface/5 space-y-3">
-                  <button 
-                    onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        handleAction();
-                    }}
-                    className="w-full btn-glass-primary flex items-center justify-center gap-3 py-4 rounded-[20px] transition-all"
-                  >
-                    <Plus size={18} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{userType === "teacher" ? "Buat Kelas" : "Gabung Kelas"}</span>
-                  </button>
-                  <SidebarItem 
-                    to="/auth" 
-                    icon={<LogOut size={20} />} 
-                    label="Keluar" 
-                    variant="error"
-                    onClick={handleSignOut}
-                  />
-               </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-      )}
 
       <JoinClassModal 
         isOpen={isJoinModalOpen} 
@@ -417,10 +308,9 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
             onClick={handleAction}
             className="flex flex-col items-center gap-1 text-on-surface-variant/60 hover:text-primary transition-colors"
           >
-            <div className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
-              <Plus size={18} />
+            <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
+              <Plus size={20} />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-wider">Buat</span>
           </button>
         </div>
       )}
@@ -444,10 +334,9 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
             onClick={handleAction}
             className="flex flex-col items-center gap-1 text-on-surface-variant/60 hover:text-primary transition-colors"
           >
-            <div className="w-9 h-9 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
-              <Plus size={18} />
+            <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
+              <Plus size={20} />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-wider">Gabung</span>
           </button>
         </div>
       )}
@@ -500,15 +389,15 @@ function MobileNavItem({ to, icon, label, active }: { to: string, icon: ReactNod
   return (
     <Link 
       to={to} 
+      title={label}
       className={cn(
-        "flex flex-col items-center gap-1 transition-colors py-1 px-3 rounded-xl",
-        active ? "text-primary font-black animate-pulse" : "text-on-surface-variant/60 hover:text-on-surface"
+        "flex flex-col items-center justify-center transition-colors p-2 rounded-xl",
+        active ? "text-primary animate-pulse" : "text-on-surface-variant/60 hover:text-on-surface"
       )}
     >
       <div className={cn("transition-transform", active && "scale-110 text-primary")}>
         {icon}
       </div>
-      <span className="text-[9px] uppercase tracking-wider font-bold">{label}</span>
     </Link>
   );
 }

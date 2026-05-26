@@ -2,7 +2,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Varela Round", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Nunito", sans-serif;
   
   --color-surface: #fcfcfd;
   --color-on-surface: #1a1c1e;
@@ -34,6 +35,10 @@
 @layer base {
   body {
     @apply bg-surface text-on-surface font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 }
 

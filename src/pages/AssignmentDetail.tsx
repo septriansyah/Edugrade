@@ -78,6 +78,10 @@ export default function AssignmentDetail() {
   const [isOcrMode, setIsOcrMode] = useState(false);
   const [ocrImage, setOcrImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  
+  // Paper Mode Print state
+  const [kopTitle, setKopTitle] = useState("KOP SEKOLAH");
+  const [kopSubtitle, setKopSubtitle] = useState("Alamat & Kontak Sekolah Anda");
   const [isPdf, setIsPdf] = useState(false);
   const [isOcrScanning, setIsOcrScanning] = useState(false);
   const [isOcrCompleted, setIsOcrCompleted] = useState(false);
@@ -938,8 +942,18 @@ export default function AssignmentDetail() {
                      <GraduationCap size={32} />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-black uppercase tracking-tighter">Akademi Edugrade</h1>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant/60">Repositori Penilaian Resmi</p>
+                    <input 
+                       value={kopTitle}
+                       onChange={(e) => setKopTitle(e.target.value)}
+                       className="text-3xl font-black uppercase tracking-tighter outline-none bg-transparent w-full text-on-surface" 
+                       placeholder="KOP SEKOLAH"
+                    />
+                    <input 
+                       value={kopSubtitle}
+                       onChange={(e) => setKopSubtitle(e.target.value)}
+                       className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant/60 outline-none bg-transparent block w-full mt-1"
+                       placeholder="Alamat & Info"
+                    />
                   </div>
                </div>
                <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-[10px] font-black uppercase tracking-widest">
@@ -983,9 +997,56 @@ export default function AssignmentDetail() {
             </div>
 
             <div className="flex justify-center gap-6 print:hidden">
-               <button onClick={() => window.print()} className="bg-on-surface text-surface px-8 py-4 rounded-2xl font-bold flex items-center gap-2">
-                  <Plus size={20} />
-                  Cetak Sekarang
+               <button 
+                  onClick={() => {
+                    const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                      <head><meta charset='utf-8'><title>Ujian Paper Mode</title>
+                        <style>
+                           body { font-family: 'Arial', sans-serif; }
+                           .kop-title { font-size: 20pt; font-weight: bold; text-align: center; margin-bottom: 0; text-transform: uppercase; }
+                           .kop-subtitle { font-size: 10pt; text-align: center; margin-top: 5px; border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+                           .student-info { margin-bottom: 20px; font-weight: bold; font-size: 11pt; }
+                           .question { margin-top: 20px; font-weight: bold; font-size: 11pt; }
+                           .option { margin-left: 20px; margin-top: 5px; font-size: 11pt; }
+                        </style>
+                      </head><body>`;
+                    
+                    let content = `
+                      <div class="kop-title">${kopTitle}</div>
+                      <div class="kop-subtitle">${kopSubtitle}</div>
+                      <div class="student-info">
+                        <p>Nama: _______________________ &nbsp;&nbsp;&nbsp;&nbsp; Kelas: _______________________ &nbsp;&nbsp;&nbsp;&nbsp; Nilai: _______</p>
+                      </div>
+                      <h2 style="text-align: center;">${assignment?.title || "Ujian"}</h2>
+                      <p style="font-style: italic;">Petunjuk: Bacalah setiap soal dengan cermat. Untuk pilihan ganda, lingkari atau silang jawaban yang benar. Untuk esai, tulis jawaban dengan jelas pada ruang yang tersedia.</p>
+                    `;
+
+                    assignment?.questions?.forEach((q: any, i: number) => {
+                      content += `<div class="question">${i + 1}. ${q.question}</div>`;
+                      if (q.type === "Multiple Choice") {
+                         q.options?.forEach((opt: any) => {
+                            content += `<div class="option">${opt.label}. ${opt.text}</div>`;
+                         });
+                      } else {
+                         content += `<br/><br/><br/><br/><br/>`;
+                      }
+                    });
+
+                    const footer = "</body></html>";
+                    const sourceHTML = header + content + footer;
+                    const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+                    const url = URL.createObjectURL(blob);
+                    const fileDownload = document.createElement("a");
+                    document.body.appendChild(fileDownload);
+                    fileDownload.href = url;
+                    fileDownload.download = 'Ujian_Paper_Mode.doc';
+                    fileDownload.click();
+                    document.body.removeChild(fileDownload);
+                  }} 
+                  className="bg-primary text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2"
+               >
+                  <Upload size={20} />
+                  Download .DOCX (Word)
                </button>
                <button onClick={() => setViewMode("standard")} className="px-8 py-4 bg-on-surface/5 rounded-2xl font-bold">Kembali ke Pratinjau</button>
             </div>

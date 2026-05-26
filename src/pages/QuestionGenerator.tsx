@@ -571,19 +571,19 @@ export default function QuestionGenerator() {
                   </div>
                 </div>
 
-                <div className="mt-12 flex flex-col md:flex-row justify-end gap-6 pt-10 border-t border-white/30">
+                <div className="mt-12 flex flex-col items-center md:flex-row justify-end gap-4 md:gap-6 pt-10 border-t border-white/30">
                    {generationError && (
-                     <div className="flex-1 bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-center gap-4 text-red-600">
+                     <div className="w-full bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-center gap-4 text-red-600 mb-4 md:mb-0">
                         <X className="shrink-0" size={20} />
                         <p className="text-sm font-bold">{generationError}</p>
                      </div>
                    )}
-                   <div className="flex gap-6">
-                    <button onClick={() => { setTopic(""); setQuestions([]); setGenerationError(null); }} className="btn-glass px-10 text-on-surface-variant font-bold">Reset</button>
+                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full md:w-auto">
+                    <button onClick={() => { setTopic(""); setQuestions([]); setGenerationError(null); }} className="btn-glass w-full sm:w-auto px-10 py-5 sm:py-3 text-on-surface-variant font-bold text-center">Reset</button>
                     <button 
                       onClick={handleGenerate}
                       disabled={isGenerating || retryCountdown !== null || (!topic && !referenceMaterial)}
-                      className="btn-glass-primary px-12 py-5 rounded-[24px] text-xl flex items-center gap-4 min-w-[280px] justify-center transition-all disabled:opacity-50"
+                      className="btn-glass-primary w-full sm:w-auto px-12 py-5 rounded-[24px] text-xl flex items-center gap-4 sm:min-w-[280px] justify-center transition-all disabled:opacity-50"
                     >
                       {isGenerating ? <Loader2 className="animate-spin" size={28} /> : (retryCountdown !== null ? <span className="text-secondary">{retryCountdown}s</span> : <Sparkles size={28} />)}
                       {isGenerating ? "Menganalisis..." : (retryCountdown !== null ? "Harap Tunggu..." : "Buat dengan AI")}

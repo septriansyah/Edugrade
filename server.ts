@@ -134,6 +134,7 @@ ${(req.body.requestedLevels || []).map((lvl: string, i: number) => `Question ${i
 
     Ensure questions are clear, pedagogically sound, and follow the specified taxonomy levels and types accurately.
     The language and difficulty should be appropriate for ${educationLevel} Grade/Semester ${grade}.
+    Make the questions highly engaging, analytical, challenging, and practical rather than purely theoretical. Use real-world scenarios or complex problem-solving contexts where appropriate.
     For multiple choice questions, provide exactly ${optionCount} options with one correct answer.
     Do not create image prompts, image URLs, diagrams, or visual aid metadata.
 

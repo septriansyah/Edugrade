@@ -123,23 +123,24 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-32 overflow-hidden flex items-center">
-        <div className="max-w-7xl mx-auto px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center relative z-10">
+        <div className="max-w-5xl mx-auto px-6 md:px-8 lg:px-12 relative z-10 text-center flex flex-col items-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col items-center"
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/5 border border-primary/10 rounded-full mb-8">
               <Sparkles size={16} className="text-primary" />
               <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">AI-CORE ENGINE V3.0</span>
             </div>
-            <h1 className="text-7xl lg:text-8xl font-black text-on-surface leading-[0.95] mb-10 tracking-tighter">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-on-surface leading-[0.95] mb-8 tracking-tighter">
               Revolusi <span className="text-primary italic">Evaluasi</span> Akademik.
             </h1>
-            <p className="text-2xl text-on-surface-variant/80 mb-12 max-w-xl leading-relaxed font-medium">
+            <p className="text-xl md:text-2xl text-on-surface-variant/80 mb-12 max-w-2xl leading-relaxed font-medium mx-auto">
               Otomasi pembuatan soal Taksonomi Bloom, analisis butir soal cerdas, dan manajemen kelas terintegrasi.
             </p>
-            <div className="flex flex-wrap gap-6 font-black tracking-widest uppercase text-xs">
+            <div className="flex flex-wrap justify-center gap-6 font-black tracking-widest uppercase text-xs">
               <Link
                 to="/auth"
                 className="bg-primary text-white py-5 px-10 rounded-[28px] shadow-2xl shadow-primary/25 hover:scale-105 transition-all flex items-center gap-4"
@@ -157,63 +158,22 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="relative"
-          >
-            <div className="glass p-5 rounded-[64px] border-white/40 shadow-2xl relative z-10">
-              <div className="rounded-[48px] overflow-hidden aspect-video shadow-inner">
-                <img
-                  src="https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop"
-                  alt="Dashboard Preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          {/* Background blobs */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-primary/5 rounded-full blur-[100px] -z-10" />
 
-              {/* Floating Mini Cards */}
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-10 -right-10 glass p-6 rounded-[32px] shadow-2xl border-white/40 z-20"
-              >
-                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 text-center">VALIDITY RATE</p>
-                <p className="text-3xl font-black text-on-surface tracking-tighter">98.4%</p>
-              </motion.div>
-
-              <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-10 -left-10 glass p-6 rounded-[32px] shadow-2xl border-white/40 z-20"
-              >
-                <div className="flex gap-1.5 mb-2">
-                  <div className="w-1.5 h-6 bg-primary/20 rounded-full" />
-                  <div className="w-1.5 h-10 bg-primary/40 rounded-full" />
-                  <div className="w-1.5 h-8 bg-primary rounded-full" />
-                </div>
-                <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">ANALYTICS</p>
-              </motion.div>
-            </div>
-
-            {/* Background blobs */}
-            <div className="absolute -top-24 -right-24 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -z-10" />
-            <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] bg-student-primary/10 rounded-full blur-[100px] -z-10" />
-
-            {/* Decorative Assets for Hero */}
-            <motion.img 
-              src={Asset1} 
-              animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }} 
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-16 -left-16 lg:-left-24 w-32 lg:w-40 h-32 lg:h-40 object-contain z-30 drop-shadow-2xl opacity-90 hidden md:block"
-            />
-            <motion.img 
-              src={Asset2} 
-              animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }} 
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute -bottom-12 -right-12 lg:-right-20 w-40 lg:w-48 h-40 lg:h-48 object-contain z-30 drop-shadow-2xl opacity-90 hidden md:block"
-            />
-          </motion.div>
+          {/* Decorative Assets for Hero */}
+          <motion.img 
+            src={Asset1} 
+            animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }} 
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-0 left-0 lg:-left-20 w-32 md:w-40 h-32 md:h-40 object-contain z-30 drop-shadow-2xl opacity-90 hidden md:block"
+          />
+          <motion.img 
+            src={Asset2} 
+            animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }} 
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-0 right-0 lg:-right-20 w-40 md:w-48 h-40 md:h-48 object-contain z-30 drop-shadow-2xl opacity-90 hidden md:block"
+          />
         </div>
       </section>
 
