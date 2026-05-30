@@ -9,10 +9,10 @@ import Asset3 from "/src/img/Asset 3.png";
 import Asset4 from "/src/img/Asset 4.png";
 import Asset5 from "/src/img/Asset 5.png";
 import Asset6 from "/src/img/Asset 6.png";
-import Dewa from "../img/Dewa.JPG";
-import Joy from "../img/Joy.JPG";
-import Nayla from "../img/Nayla.JPG";
-import Siti from "../img/Siti.JPG";
+import Dewa from "../img/Dewa.jpg";
+import Joy from "../img/Joy.jpg";
+import Nayla from "../img/Nayla.jpg";
+import Siti from "../img/Siti.jpg";
 import BgHero from "../img/BG_HERO.png";
 import BgSec5 from "../img/BG_SEC5.png";
 
