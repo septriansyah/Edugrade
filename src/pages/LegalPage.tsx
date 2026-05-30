@@ -1,6 +1,6 @@
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { ArrowLeft, ShieldCheck, FileText } from "lucide-react";
+
 import Logo from "@/src/img/Logo.svg";
 
 export default function LegalPage() {
@@ -24,7 +24,7 @@ export default function LegalPage() {
             onClick={() => navigate(-1)} 
             className="flex items-center gap-2 px-4 py-2 bg-on-surface/5 hover:bg-on-surface/10 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
         >
-            <ArrowLeft size={16} /> Kembali
+            <iconify-icon icon="lucide:arrow-left" width="16"  ></iconify-icon> Kembali
         </button>
       </header>
 
@@ -36,7 +36,7 @@ export default function LegalPage() {
             className="w-full max-w-4xl glass rounded-[48px] p-10 md:p-16 shadow-2xl border-white/60"
         >
             <div className="w-20 h-20 bg-primary/10 rounded-[28px] flex items-center justify-center mb-8">
-                {isPrivacy ? <ShieldCheck className="text-primary w-10 h-10" /> : <FileText className="text-primary w-10 h-10" />}
+                {isPrivacy ? <iconify-icon icon="lucide:shield-check" className="text-primary w-10 h-10" ></iconify-icon> : <iconify-icon icon="lucide:file-text" className="text-primary w-10 h-10" ></iconify-icon>}
             </div>
             
             <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-on-surface">

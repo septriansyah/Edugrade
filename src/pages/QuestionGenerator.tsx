@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, Save, Edit2, MoreVertical, Check, BookOpen, Loader2, SaveIcon, X, Plus, Trash2, Database, Eye, GraduationCap, UploadCloud, FileText, Send } from "lucide-react";
+
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
 import { auth, db, handleFirestoreError, OperationType } from "@/src/lib/firebase";
@@ -368,7 +368,7 @@ export default function QuestionGenerator() {
                     activeTab === "generate" ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105" : "text-on-surface-variant hover:bg-white/60"
                 )}
             >
-                <Sparkles size={20} />
+                <iconify-icon icon="lucide:sparkles" width="20"  ></iconify-icon>
                 Generator AI
             </button>
             <button 
@@ -378,7 +378,7 @@ export default function QuestionGenerator() {
                     activeTab === "bank" ? "bg-secondary text-white shadow-xl shadow-secondary/20 scale-105" : "text-on-surface-variant hover:bg-white/60"
                 )}
             >
-                <Database size={20} />
+                <iconify-icon icon="lucide:database" width="20"  ></iconify-icon>
                 Bank Soal
             </button>
         </div>
@@ -386,11 +386,11 @@ export default function QuestionGenerator() {
         {activeTab === "generate" ? (
           <>
             {/* Generator Controls */}
-            <section className="glass rounded-[56px] p-12 border-white/40 shadow-2xl relative overflow-hidden">
+            <section className="premium-card p-12 relative overflow-hidden">
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-6">
                    <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center">
-                      <Sparkles className="text-primary" size={28} />
+                      <iconify-icon icon="lucide:sparkles" width="28" className="text-primary"  ></iconify-icon>
                    </div>
                    <h1 className="text-5xl font-black tracking-tight text-primary italic">{typeParam === "exam" ? "AI Exam Generator" : "AI Generator"}</h1>
                 </div>
@@ -418,7 +418,7 @@ export default function QuestionGenerator() {
                             onChange={(e) => setTopic(e.target.value)}
                             className="w-full bg-white/50 border-2 border-white/40 focus:border-primary outline-none px-8 py-5 rounded-[28px] font-bold text-xl transition-all shadow-inner"
                           />
-                          <BookOpen className="absolute right-8 top-5.5 text-outline/40" size={24} />
+                          <iconify-icon icon="lucide:book-open" width="24" className="absolute right-8 top-5.5 text-outline/40"  ></iconify-icon>
                         </div>
                         
                         <div className="flex items-center gap-4">
@@ -436,9 +436,9 @@ export default function QuestionGenerator() {
                               fileName ? "border-primary bg-primary/5 text-primary" : "border-outline/20 hover:border-primary/40 text-on-surface-variant"
                             )}
                           >
-                            {fileName ? <FileText size={20} /> : <UploadCloud size={20} />}
+                            {fileName ? <iconify-icon icon="lucide:file-text" width="20"  ></iconify-icon> : <iconify-icon icon="lucide:upload-cloud" width="20"  ></iconify-icon>}
                             {fileName ? `${fileName}` : "Unggah File Materi (.txt)"}
-                            {fileName && <X size={16} className="ml-2 hover:text-red-500" onClick={(e) => { e.stopPropagation(); setFileName(""); setReferenceMaterial(""); }} />}
+                            {fileName && <iconify-icon icon="lucide:x" width="16" className="ml-2 hover:text-red-500" onClick={(e) => { e.stopPropagation(); setFileName(""); setReferenceMaterial(""); }}></iconify-icon>}
                           </button>
                         </div>
                         {referenceMaterial && (
@@ -574,7 +574,7 @@ export default function QuestionGenerator() {
                 <div className="mt-12 flex flex-col items-center md:flex-row justify-end gap-4 md:gap-6 pt-10 border-t border-white/30">
                    {generationError && (
                      <div className="w-full bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-center gap-4 text-red-600 mb-4 md:mb-0">
-                        <X className="shrink-0" size={20} />
+                        <iconify-icon icon="lucide:x" width="20" className="shrink-0"  ></iconify-icon>
                         <p className="text-sm font-bold">{generationError}</p>
                      </div>
                    )}
@@ -585,7 +585,7 @@ export default function QuestionGenerator() {
                       disabled={isGenerating || retryCountdown !== null || (!topic && !referenceMaterial)}
                       className="btn-glass-primary w-full sm:w-auto px-12 py-5 rounded-[24px] text-xl flex items-center gap-4 sm:min-w-[280px] justify-center transition-all disabled:opacity-50"
                     >
-                      {isGenerating ? <Loader2 className="animate-spin" size={28} /> : (retryCountdown !== null ? <span className="text-secondary">{retryCountdown}s</span> : <Sparkles size={28} />)}
+                      {isGenerating ? <iconify-icon icon="lucide:loader2" width="28" className="animate-spin"  ></iconify-icon> : (retryCountdown !== null ? <span className="text-secondary">{retryCountdown}s</span> : <iconify-icon icon="lucide:sparkles" width="28"  ></iconify-icon>)}
                       {isGenerating ? "Menganalisis..." : (retryCountdown !== null ? "Harap Tunggu..." : "Buat dengan AI")}
                     </button>
                    </div>
@@ -625,13 +625,13 @@ export default function QuestionGenerator() {
                            disabled={isPublishing}
                            className="flex-1 bg-on-surface text-white px-8 py-3 rounded-2xl font-black italic tracking-tight flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-all disabled:opacity-50 whitespace-nowrap"
                          >
-                            {isPublishing ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                            {isPublishing ? <iconify-icon icon="lucide:loader2" width="18" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:send" width="18"  ></iconify-icon>}
                             {typeParam === "exam" ? "Terbitkan Ujian" : "Terbitkan ke Kelas"}
                          </button>
                        </div>
                      )}
                      <button onClick={handleSaveAllToBank} className="w-full md:w-auto btn-glass-primary px-8 py-3 font-bold flex items-center justify-center gap-2 whitespace-nowrap">
-                        <SaveIcon size={18} />
+                        <iconify-icon icon="lucide:save" width="18"  ></iconify-icon>
                         Simpan Semua ke Bank
                      </button>
                   </div>
@@ -642,15 +642,15 @@ export default function QuestionGenerator() {
                 {isGenerating && (
                     <div className="space-y-8">
                         {[1, 2].map(i => (
-                            <div key={i} className="glass h-64 rounded-[48px] animate-pulse" />
+                            <div key={i} className="premium-card h-64 animate-pulse" />
                         ))}
                     </div>
                 )}
 
                 {!isGenerating && questions.length === 0 && (
-                    <div className="glass rounded-[56px] py-32 flex flex-col items-center text-center px-10">
+                    <div className="premium-card py-32 flex flex-col items-center text-center px-10">
                         <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-8">
-                            <Sparkles className="text-primary/10" size={48} />
+                            <iconify-icon icon="lucide:sparkles" width="48" className="text-primary/10"  ></iconify-icon>
                         </div>
                         <h3 className="text-3xl font-black mb-4">Mulai Membuat Soal</h3>
                         <p className="text-on-surface-variant max-w-sm text-lg font-medium">Gunakan panel di atas untuk menghasilkan soal berkualitas tinggi secara instan.</p>
@@ -682,12 +682,12 @@ export default function QuestionGenerator() {
              <div className="space-y-8">
                 {isLoadingBank ? (
                     <div className="flex justify-center py-20">
-                        <Loader2 className="animate-spin text-primary" size={48} />
+                        <iconify-icon icon="lucide:loader2" width="48" className="animate-spin text-primary"  ></iconify-icon>
                     </div>
                 ) : bankQuestions.length === 0 ? (
-                    <div className="glass rounded-[56px] py-32 flex flex-col items-center text-center px-10">
+                    <div className="premium-card py-32 flex flex-col items-center text-center px-10">
                         <div className="w-24 h-24 bg-secondary/5 rounded-full flex items-center justify-center mb-8">
-                            <Database className="text-secondary/10" size={48} />
+                            <iconify-icon icon="lucide:database" width="48" className="text-secondary/10"  ></iconify-icon>
                         </div>
                         <h3 className="text-3xl font-black mb-4">Bank Soal Kosong</h3>
                         <p className="text-on-surface-variant max-w-sm text-lg font-medium">Hasilkan soal menggunakan AI atau buat secara manual untuk mengisi bank soal Anda.</p>
@@ -723,12 +723,12 @@ export default function QuestionGenerator() {
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="relative w-full max-w-4xl glass rounded-[48px] shadow-3xl overflow-hidden flex flex-col max-h-[90vh]"
+                    className="relative w-full max-w-4xl premium-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                 >
                     <div className="p-8 border-b border-white/20 flex justify-between items-center bg-white/40">
                         <h3 className="text-3xl font-black italic tracking-tight text-primary">Edit Soal</h3>
                         <button onClick={() => setEditingQuestion(null)} className="w-12 h-12 rounded-full hover:bg-white/60 flex items-center justify-center transition-all">
-                            <X size={24} />
+                            <iconify-icon icon="lucide:x" width="24"  ></iconify-icon>
                         </button>
                     </div>
                     
@@ -842,7 +842,7 @@ export default function QuestionGenerator() {
                             onClick={() => handleUpdateQuestion(editingQuestion.type === "generated" ? questions[editingQuestion.index] : bankQuestions[editingQuestion.index])}
                             className="btn-glass-primary px-12 py-4 rounded-[20px] font-black flex items-center gap-3 text-lg"
                         >
-                            <SaveIcon size={20} />
+                            <iconify-icon icon="lucide:save" width="20"  ></iconify-icon>
                             Simpan Perubahan
                         </button>
                     </div>
@@ -885,12 +885,12 @@ function PreviewModal({ question, onClose }: { question: Question; onClose: () =
         <div className="p-8 border-b border-on-surface/5 flex justify-between items-center bg-white/80">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-              <Eye className="text-primary" size={20} />
+              <iconify-icon icon="lucide:eye" width="20" className="text-primary"  ></iconify-icon>
             </div>
             <h3 className="text-xl font-black uppercase tracking-widest text-on-surface-variant/40">Pratinjau Tampilan Siswa</h3>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-full hover:bg-on-surface/5 flex items-center justify-center transition-all">
-            <X size={20} />
+            <iconify-icon icon="lucide:x" width="20"  ></iconify-icon>
           </button>
         </div>
 
@@ -949,7 +949,7 @@ function PreviewModal({ question, onClose }: { question: Question; onClose: () =
                 animate={{ opacity: 1, x: 0 }}
                 className="flex items-center gap-3 bg-green-500/10 text-green-600 px-6 py-4 rounded-2xl"
               >
-                <Check size={18} strokeWidth={3} />
+                <iconify-icon icon="lucide:check" width="18"   ></iconify-icon>
                 <span className="font-black text-xs uppercase tracking-widest">
                   {question.type === "Multiple Choice" 
                     ? `Jawaban Benar: ${question.options?.find(o => o.isCorrect)?.label}` 
@@ -979,11 +979,11 @@ const QuestionItem: React.FC<{
   const [showExplanation, setShowExplanation] = useState(false);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass p-10 rounded-[48px] border-white/40 shadow-2xl shadow-on-surface/5 hover:border-primary/40 transition-all group relative">
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="premium-card-interactive p-10 group relative">
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
         <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                <FileText className="text-primary" size={24} />
+                <iconify-icon icon="lucide:file-text" width="24" className="text-primary"  ></iconify-icon>
             </div>
             <div>
                 <h4 className="text-lg font-black tracking-tight text-on-surface italic">Butir Soal</h4>
@@ -991,9 +991,9 @@ const QuestionItem: React.FC<{
             </div>
         </div>
         <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-           {onPreview && <button onClick={onPreview} className="p-3 bg-white/40 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all shadow-sm" title="Pratinjau"><Eye size={18} /></button>}
-           <button onClick={onEdit} className="p-3 bg-white/40 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all shadow-sm" title="Edit"><Edit2 size={18} /></button>
-           {onDelete && <button onClick={onDelete} className="p-3 bg-red-500/10 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-sm" title="Hapus"><Trash2 size={18} /></button>}
+           {onPreview && <button onClick={onPreview} className="p-3 bg-white/40 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all shadow-sm" title="Pratinjau"><iconify-icon icon="lucide:eye" width="18"  ></iconify-icon></button>}
+           <button onClick={onEdit} className="p-3 bg-white/40 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all shadow-sm" title="Edit"><iconify-icon icon="lucide:edit2" width="18"  ></iconify-icon></button>
+           {onDelete && <button onClick={onDelete} className="p-3 bg-red-500/10 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-sm" title="Hapus"><iconify-icon icon="lucide:trash2" width="18"  ></iconify-icon></button>}
            {onGenerateFollowup && (
              <button 
                onClick={onGenerateFollowup} 
@@ -1001,7 +1001,7 @@ const QuestionItem: React.FC<{
                className="flex items-center gap-3 px-6 py-3 bg-secondary text-white rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-secondary/20 disabled:opacity-50"
                title="Buat Soal Lanjutan"
              >
-               {isGeneratingFollowup ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
+               {isGeneratingFollowup ? <iconify-icon icon="lucide:loader2" width="18" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:plus" width="18"  ></iconify-icon>}
                <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Soal Lanjutan</span>
              </button>
            )}
@@ -1012,7 +1012,7 @@ const QuestionItem: React.FC<{
                className="flex items-center gap-3 px-6 py-3 bg-primary text-white rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
                title="Simpan ke Bank"
              >
-               {isSaving ? <Loader2 className="animate-spin" size={18} /> : <SaveIcon size={18} />}
+               {isSaving ? <iconify-icon icon="lucide:loader2" width="18" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:save" width="18"  ></iconify-icon>}
                <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Simpan ke Bank</span>
              </button>
            )}
@@ -1029,7 +1029,7 @@ const QuestionItem: React.FC<{
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-primary/5 p-6 rounded-[32px] border border-primary/10">
                     <div className="flex items-center gap-2 mb-4 text-primary">
-                        <GraduationCap size={16} />
+                        <iconify-icon icon="lucide:graduation-cap" width="16"  ></iconify-icon>
                         <span className="text-[10px] font-black uppercase tracking-widest">Spesifikasi Akademik</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -1048,7 +1048,7 @@ const QuestionItem: React.FC<{
             <div key={i} className={cn("p-6 rounded-[32px] border-2 flex items-center gap-6 transition-all", opt.isCorrect ? "bg-primary text-white border-primary shadow-xl shadow-primary/20" : "bg-white/40 border-white/60")}>
                 <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm transition-all shadow-sm", opt.isCorrect ? "bg-white/20 text-white" : "bg-on-surface/5 text-on-surface-variant/60")}>{opt.label}</div>
                 <span className={cn("text-lg font-bold transition-all", opt.isCorrect ? "text-white" : "text-on-surface")}>{opt.text}</span>
-                {opt.isCorrect && <Check size={20} className="ml-auto text-white" strokeWidth={4} />}
+                {opt.isCorrect && <iconify-icon icon="lucide:check" width="20"  className="ml-auto text-white"  ></iconify-icon>}
             </div>
             ))}
         </div>

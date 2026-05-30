@@ -47,6 +47,14 @@
     @apply bg-white/40 backdrop-blur-md border border-white/20 shadow-lg;
   }
   
+  .premium-card {
+    @apply bg-white border border-slate-100 shadow-[0_12px_32px_rgba(0,0,0,0.03)] rounded-[28px] transition-all duration-300;
+  }
+
+  .premium-card-interactive {
+    @apply bg-white border border-slate-100 shadow-[0_12px_32px_rgba(0,0,0,0.03)] rounded-[28px] hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 active:scale-[0.99] transition-all duration-300;
+  }
+  
   .glass-dark {
     @apply bg-black/10 backdrop-blur-md border border-white/10 shadow-lg;
   }

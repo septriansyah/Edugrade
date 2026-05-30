@@ -1,21 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { 
-  Download, 
-  BarChart3, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Eye, 
-  MoreVertical,
-  Search,
-  Loader2,
-  FileText,
-  X,
-  Save,
-  ArrowLeft,
-  Settings
-} from "lucide-react";
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
@@ -284,13 +270,13 @@ export default function BlankAnalysisEssay() {
         <div className="p-8 lg:p-12 max-w-xl mx-auto space-y-10 min-h-[85vh] flex flex-col justify-center">
           <div className="space-y-4 text-center">
             <div className="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center mx-auto text-secondary">
-              <Settings size={28} />
+              <iconify-icon icon="lucide:settings" width="28"  ></iconify-icon>
             </div>
             <h1 className="text-4xl font-black tracking-tight">Setup Analisis Mandiri Esai</h1>
             <p className="text-sm text-on-surface-variant font-medium">Inisialisasi paket soal esai kosong untuk mulai menganalisis dari kertas jawaban.</p>
           </div>
 
-          <form onSubmit={handleStartSetup} className="glass p-10 rounded-[44px] border-white/60 shadow-xl space-y-6">
+          <form onSubmit={handleStartSetup} className="premium-card p-10 space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Judul Analisis / Ujian</label>
               <input 
@@ -348,7 +334,7 @@ export default function BlankAnalysisEssay() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-secondary/20 rounded-xl flex items-center justify-center">
-                 <BarChart3 className="text-secondary" size={20} />
+                 <iconify-icon icon="lucide:bar-chart3" width="20" className="text-secondary"  ></iconify-icon>
               </div>
               <span className="text-sm font-black text-secondary uppercase tracking-[0.2em]">Analisis Mandiri Esai</span>
             </div>
@@ -363,7 +349,7 @@ export default function BlankAnalysisEssay() {
                 onClick={handleExportTxt}
                 className="flex-1 btn-glass px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all hover:scale-105"
             >
-              <Download size={20} />
+              <iconify-icon icon="lucide:download" width="20"  ></iconify-icon>
               Ekspor TXT
             </button>
             <button 
@@ -371,7 +357,7 @@ export default function BlankAnalysisEssay() {
                 disabled={isSaving || manualRows.length === 0}
                 className="flex-1 btn-glass-primary px-8 py-4 rounded-2xl flex items-center justify-center gap-3 shadow-secondary/20 bg-secondary text-white transition-all hover:scale-105 disabled:opacity-50"
             >
-              {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+              {isSaving ? <iconify-icon icon="lucide:loader2" width="20" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:save" width="20"  ></iconify-icon>}
               Simpan Permanen
             </button>
           </div>
@@ -405,7 +391,7 @@ export default function BlankAnalysisEssay() {
 
         {activeTab === "anates" ? (
           /* Spreadsheet Mode */
-          <div className="glass rounded-[56px] border-white/60 shadow-2xl p-10 space-y-10 bg-white/40">
+          <div className="premium-card p-10 space-y-10 bg-white/40">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-white/20">
               <div>
                 <h3 className="text-2xl font-black tracking-tight mb-1">Spreadsheet Skor Esai Mandiri</h3>
@@ -470,7 +456,7 @@ export default function BlankAnalysisEssay() {
                           className="text-error hover:bg-error/10 p-2 rounded-xl transition-all"
                           title="Hapus Siswa"
                         >
-                          <X size={16} />
+                          <iconify-icon icon="lucide:x" width="16"  ></iconify-icon>
                         </button>
                       </td>
                     </tr>
@@ -484,7 +470,7 @@ export default function BlankAnalysisEssay() {
                 onClick={() => setActiveTab("analysis")}
                 className="btn-glass-primary bg-secondary text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-bold text-xs uppercase tracking-widest shadow-secondary/20 hover:scale-105 transition-all border-none"
               >
-                <FileText size={16} />
+                <iconify-icon icon="lucide:file-text" width="16"  ></iconify-icon>
                 Lihat Hasil Analisis
               </button>
             </div>
@@ -506,7 +492,7 @@ export default function BlankAnalysisEssay() {
                 progress={isNaN(analytics?.mean) ? 0 : analytics?.mean} 
               />
               
-              <div className="glass p-10 rounded-[48px] border-white/60 md:col-span-2 flex items-center justify-between relative overflow-hidden group">
+              <div className="premium-card p-10 md:col-span-2 flex items-center justify-between relative overflow-hidden group">
                 <div className="relative z-10">
                   <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-6">Tingkat Kesulitan Soal Esai</p>
                   <div className="flex gap-10">
@@ -526,7 +512,7 @@ export default function BlankAnalysisEssay() {
             {/* Charts & Advanced Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               {/* Main Chart */}
-              <div className="lg:col-span-8 glass p-10 rounded-[56px] border-white/60 shadow-2xl shadow-on-surface/5">
+              <div className="lg:col-span-8 premium-card p-10">
                  <div className="flex justify-between items-center mb-12">
                     <h3 className="text-3xl font-black tracking-tight">Rerata Skor Esai per Nomor Soal</h3>
                     <div className="flex items-center gap-6">
@@ -555,25 +541,25 @@ export default function BlankAnalysisEssay() {
 
               {/* Summary Info */}
               <div className="lg:col-span-4 flex flex-col gap-8">
-                 <div className="glass p-10 rounded-[48px] border-white/60 bg-primary/5 flex flex-col justify-center">
+                 <div className="premium-card p-10 bg-slate-50/30 flex flex-col justify-center">
                     <h4 className="text-2xl font-black mb-4 tracking-tight">Karakteristik Analisis Esai</h4>
                     <p className="text-sm font-medium text-on-surface-variant leading-relaxed">
                       Analisis soal esai diukur berdasarkan performa sebaran nilai rata-rata siswa. Uji reliabilitas Alpha Cronbach digunakan untuk mendeteksi konsistensi internal instrumen penilaian esai ini.
                     </p>
                  </div>
 
-                 <div className="glass p-10 rounded-[48px] border-white/60 flex-1 flex flex-col">
+                 <div className="premium-card p-10 flex-1 flex flex-col">
                     <h4 className="text-xl font-black mb-10 tracking-tight text-on-surface-variant/40 uppercase tracking-widest text-[10px]">Ringkasan Daya Pembeda</h4>
                     <div className="space-y-8 flex-1">
-                       <SummaryItem icon={<CheckCircle2 className="text-green-600" />} label="Daya Beda Baik" count={`${analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-green-500/10" />
-                       <SummaryItem icon={<AlertTriangle className="text-yellow-600" />} label="Perlu Evaluasi Rubrik" count={`${analytics?.items?.filter((i:any) => i.status === "Revisi").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Revisi").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-yellow-500/10" />
+                       <SummaryItem icon={<iconify-icon icon="lucide:check-circle2" className="text-green-600" ></iconify-icon>} label="Daya Beda Baik" count={`${analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-green-500/10" />
+                       <SummaryItem icon={<iconify-icon icon="lucide:alert-triangle" className="text-yellow-600" ></iconify-icon>} label="Perlu Evaluasi Rubrik" count={`${analytics?.items?.filter((i:any) => i.status === "Revisi").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Revisi").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-yellow-500/10" />
                     </div>
                  </div>
               </div>
             </div>
 
             {/* Response Matrix */}
-            <div className="glass rounded-[56px] border-white/60 overflow-hidden shadow-2xl">
+            <div className="premium-card overflow-hidden">
                <div className="p-10 border-b border-white/40 flex justify-between items-center">
                   <h4 className="text-3xl font-black tracking-tight">Matriks Nilai Esai Siswa</h4>
                   <div className="flex gap-4">
@@ -616,13 +602,13 @@ export default function BlankAnalysisEssay() {
             </div>
 
             {/* Detailed Table */}
-            <div className="glass rounded-[56px] border-white/60 overflow-hidden shadow-2xl">
+            <div className="premium-card overflow-hidden">
                <div className="p-10 border-b border-white/40 flex flex-col md:flex-row justify-between items-center gap-6">
                   <h4 className="text-3xl font-black tracking-tight">Analisis Butir Detail (Esai)</h4>
                   <div className="flex gap-4 w-full md:w-auto">
                      <div className="relative flex-1 md:w-64 group">
                         <span className="absolute left-6 top-1/2 -translate-y-1/2 text-on-surface-variant/40 group-focus-within:text-primary transition-colors">
-                            <Search size={16} />
+                            <iconify-icon icon="lucide:search" width="16"  ></iconify-icon>
                         </span>
                         <input 
                             type="text" 
@@ -674,7 +660,7 @@ export default function BlankAnalysisEssay() {
 
 function StatBox({ label, value, tag, tagColor, progress }: any) {
     return (
-        <motion.div whileHover={{ y: -5 }} className="glass p-10 rounded-[48px] border-white/60 shadow-xl shadow-on-surface/5">
+        <motion.div className="premium-card-interactive p-10">
             <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">{label}</p>
             <h3 className="text-6xl font-black tracking-tighter mb-4 text-on-surface">{value}</h3>
             {tag && <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border", tagColor)}>{tag}</span>}
@@ -748,8 +734,8 @@ function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, recommendat
             </td>
             <td className="px-12 py-8 text-right">
                 <div className="flex gap-2 justify-end">
-                    <button className="p-3 bg-white/40 rounded-xl hover:text-primary transition-all backdrop-blur-md border border-white/60 shadow-sm"><Eye size={18} /></button>
-                    <button className="p-3 bg-white/40 rounded-xl hover:text-on-surface transition-all backdrop-blur-md border border-white/60 shadow-sm"><MoreVertical size={18} /></button>
+                    <button className="p-3 bg-white/40 rounded-xl hover:text-primary transition-all backdrop-blur-md border border-white/60 shadow-sm"><iconify-icon icon="lucide:eye" width="18"  ></iconify-icon></button>
+                    <button className="p-3 bg-white/40 rounded-xl hover:text-on-surface transition-all backdrop-blur-md border border-white/60 shadow-sm"><iconify-icon icon="lucide:more-vertical" width="18"  ></iconify-icon></button>
                 </div>
             </td>
         </tr>

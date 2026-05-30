@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, Sparkles, Database, FileText, CheckCircle, GraduationCap, Menu, X } from "lucide-react";
+
 import { motion, AnimatePresence } from "motion/react";
 import Logo from "/src/img/Logo.svg";
 import Asset1 from "/src/img/Asset 1.png";
@@ -9,6 +9,10 @@ import Asset3 from "/src/img/Asset 3.png";
 import Asset4 from "/src/img/Asset 4.png";
 import Asset5 from "/src/img/Asset 5.png";
 import Asset6 from "/src/img/Asset 6.png";
+import Dewa from "../img/Dewa.JPG";
+import Joy from "../img/Joy.JPG";
+import Nayla from "../img/Nayla.JPG";
+import Siti from "../img/Siti.JPG";
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -23,14 +27,14 @@ export default function LandingPage() {
               <img src={Logo} alt="Edugrade Logo" className="h-9 md:h-10 object-contain" />
             </Link>
           </div>
-          
+
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10">
             <Link to="/" className="font-extrabold text-primary border-b-4 border-primary pb-1">Beranda</Link>
             <Link to="/features" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Fitur AI</Link>
             <Link to="/pricing" className="text-on-surface-variant hover:text-primary transition-colors font-bold text-sm uppercase tracking-widest">Pricing</Link>
           </nav>
-          
+
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-3 md:gap-6">
             <Link to="/auth" className="font-black text-on-surface-variant hover:text-primary transition-colors text-xs md:text-sm uppercase tracking-[0.15em] md:tracking-[0.2em]">Login</Link>
@@ -50,11 +54,11 @@ export default function LandingPage() {
             >
               Mulai
             </Link>
-            <button 
+            <button
               onClick={() => setIsMobileMenuOpen(true)}
               className="p-2 text-on-surface hover:bg-on-surface/5 rounded-xl transition-all"
             >
-              <Menu size={24} />
+              <iconify-icon icon="lucide:menu" width="24"  ></iconify-icon>
             </button>
           </div>
         </div>
@@ -81,35 +85,35 @@ export default function LandingPage() {
               <div className="flex justify-between items-center mb-12">
                 <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-on-surface/5 rounded-xl transition-all">
-                  <X size={20} />
+                  <iconify-icon icon="lucide:x" width="20"  ></iconify-icon>
                 </button>
               </div>
 
               <nav className="flex flex-col gap-6">
-                <Link 
-                  to="/" 
+                <Link
+                  to="/"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="font-extrabold text-primary text-lg"
                 >
                   Beranda
                 </Link>
-                <Link 
-                  to="/features" 
+                <Link
+                  to="/features"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="font-bold text-on-surface-variant hover:text-primary text-lg transition-colors"
                 >
                   Fitur AI
                 </Link>
-                <Link 
-                  to="/pricing" 
+                <Link
+                  to="/pricing"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="font-bold text-on-surface-variant hover:text-primary text-lg transition-colors"
                 >
                   Pricing
                 </Link>
                 <hr className="border-outline-variant/30 my-2" />
-                <Link 
-                  to="/auth" 
+                <Link
+                  to="/auth"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="font-bold text-on-surface hover:text-primary text-lg transition-colors"
                 >
@@ -131,7 +135,7 @@ export default function LandingPage() {
             className="flex flex-col items-center"
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/5 border border-primary/10 rounded-full mb-8">
-              <Sparkles size={16} className="text-primary" />
+              <iconify-icon icon="lucide:sparkles" width="16" className="text-primary" ></iconify-icon>
               <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">AI-CORE ENGINE V3.0</span>
             </div>
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-on-surface leading-[0.95] mb-8 tracking-tighter">
@@ -146,14 +150,14 @@ export default function LandingPage() {
                 className="bg-primary text-white py-5 px-10 rounded-[28px] shadow-2xl shadow-primary/25 hover:scale-105 transition-all flex items-center gap-4"
               >
                 Mulai Sebagai Guru
-                <ArrowRight size={20} />
+                <iconify-icon icon="lucide:arrow-right" width="20"  ></iconify-icon>
               </Link>
               <Link
                 to="/auth"
                 className="btn-glass py-5 px-10 rounded-[28px] flex items-center gap-4"
               >
                 Gabung Kelas
-                <Users size={20} />
+                <iconify-icon icon="lucide:users" width="20"  ></iconify-icon>
               </Link>
             </div>
           </motion.div>
@@ -162,123 +166,69 @@ export default function LandingPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-primary/5 rounded-full blur-[100px] -z-10" />
 
           {/* Decorative Assets for Hero */}
-          <motion.img 
-            src={Asset1} 
-            animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }} 
+          <motion.img
+            src={Asset1}
+            animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             className="absolute top-0 left-0 lg:-left-20 w-32 md:w-40 h-32 md:h-40 object-contain z-30 drop-shadow-2xl opacity-90 hidden md:block"
           />
-          <motion.img 
-            src={Asset2} 
-            animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }} 
+          <motion.img
+            src={Asset2}
+            animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             className="absolute bottom-0 right-0 lg:-right-20 w-40 md:w-48 h-40 md:h-48 object-contain z-30 drop-shadow-2xl opacity-90 hidden md:block"
           />
         </div>
       </section>
 
-      {/* Features Bento Grid */}
+      {/* Tim Pengembang Section */}
       <section className="py-24 bg-surface-container-low">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative">
-          <div className="text-center mb-16 relative z-10">
-            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold tracking-widest">FITUR UNGGULAN</span>
-            <h2 className="text-4xl font-bold mt-4">Platform Cerdas untuk Guru Masa Depan</h2>
+          <div className="text-center mb-20 relative z-10">
+            <span className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-black uppercase tracking-[0.2em]">Tim Pengembang</span>
+            <h2 className="text-4xl lg:text-5xl font-black tracking-tight mt-6 text-on-surface">Di Balik Layar <span className="text-primary italic">Edugrade</span></h2>
           </div>
-          
+
           <motion.img src={Asset3} animate={{ y: [0, -10, 0] }} transition={{ duration: 5, repeat: Infinity }} className="absolute -top-10 left-0 lg:left-10 w-24 lg:w-32 h-24 lg:h-32 object-contain opacity-70 z-0 pointer-events-none hidden md:block" />
           <motion.img src={Asset4} animate={{ y: [0, 15, 0] }} transition={{ duration: 6, repeat: Infinity, delay: 0.5 }} className="absolute top-20 right-0 lg:right-10 w-28 lg:w-36 h-28 lg:h-36 object-contain opacity-70 z-0 pointer-events-none hidden md:block" />
 
-          <div className="grid grid-cols-12 gap-6">
-            {/* AI Generator */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="col-span-12 lg:col-span-8 bg-white p-10 rounded-[32px] border border-outline-variant border-b-4 border-b-primary shadow-sm flex flex-col md:flex-row gap-8 items-center"
-            >
-              <div className="flex-1">
-                <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6">
-                  <Sparkles size={32} />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Smart AI Generator</h3>
-                <p className="text-on-surface-variant leading-relaxed">
-                  Kelebihan utama: Buat soal essay atau pilihan ganda secara instan berdasarkan persentase level Taksonomi Bloom (C1-C6). Cukup masukkan topik, biarkan AI yang menghemat berjam-jam waktu kerja Anda.
-                </p>
-              </div>
-              <div className="flex-1 w-full p-6 bg-surface rounded-2xl border border-outline-variant">
-                <div className="flex gap-2 mb-4">
-                  <div className="w-3 h-3 rounded-full bg-error" />
-                  <div className="w-3 h-3 rounded-full bg-tertiary" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                </div>
-                <div className="space-y-3 opacity-40">
-                  <div className="h-4 bg-primary/20 rounded w-3/4" />
-                  <div className="h-4 bg-primary/10 rounded w-1/2" />
-                  <div className="h-4 bg-primary/15 rounded w-5/6" />
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Bank Soal */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="col-span-12 lg:col-span-4 bg-primary text-white p-10 rounded-[32px] shadow-xl relative overflow-hidden group"
-            >
-              <div className="relative z-10">
-                <Database size={48} className="mb-6 opacity-80" />
-                <h3 className="text-2xl font-bold mb-4">Bank Soal Komunitas</h3>
-                <p className="opacity-80 leading-relaxed">
-                  Keunggulannya: Bagikan dan temukan ribuan referensi soal berkualitas dari sesama pendidik di seluruh Indonesia, memperkaya bank soal Anda tanpa batas secara kolaboratif.
-                </p>
-              </div>
-              <Users className="absolute -bottom-8 -right-8 text-white/10 w-48 h-48 group-hover:scale-110 transition-transform" />
-            </motion.div>
-
-            {/* Analysis Pro */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="col-span-12 lg:col-span-5 bg-white p-10 rounded-[32px] border border-outline-variant shadow-sm"
-            >
-              <FileText size={48} className="text-secondary mb-6" />
-              <h3 className="text-2xl font-bold mb-4">Analisis Butir Soal Pro</h3>
-              <p className="text-on-surface-variant mb-8 leading-relaxed">
-                Kelebihan sistem: Hitung otomatis Indeks Kesukaran, Daya Pembeda, Efektivitas Pengecoh, serta Validitas dan Reliabilitas soal secara real-time tanpa rumus Excel yang rumit.
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-surface rounded-2xl text-center border border-outline-variant/30">
-                  <span className="text-xs font-bold text-on-surface-variant block mb-1">Reliabilitas</span>
-                  <span className="text-2xl font-bold text-secondary">0.86</span>
-                </div>
-                <div className="p-4 bg-surface rounded-2xl text-center border border-outline-variant/30">
-                  <span className="text-xs font-bold text-on-surface-variant block mb-1">Validitas</span>
-                  <span className="text-2xl font-bold text-green-600">Sangat Tinggi</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Question Generator */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="col-span-12 lg:col-span-7 bg-white p-10 rounded-[32px] border border-outline-variant shadow-sm overflow-hidden"
-            >
-              <div>
-                <div className="w-12 h-12 bg-tertiary-container shadow-inner rounded-xl flex items-center justify-center mb-6">
-                  <FileText className="text-tertiary" size={24} />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Generator Soal DeepSeek</h3>
-                <p className="text-on-surface-variant mb-6 leading-relaxed">
-                  Keunggulan utama: Hasilkan soal pilihan ganda dan esai secara instan yang sangat presisi, relevan, lengkap dengan opsi jawaban dan pembahasannya.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <CheckCircle className="text-primary" size={18} />
-                    <span>Kontrol jumlah opsi pilihan ganda</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <CheckCircle className="text-primary" size={18} />
-                    <span>Dapat memakai materi teks sebagai referensi</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <DeveloperCard
+              name="Dewa Ahmad Septriansyah"
+              role="UI UX Designer"
+              avatarInitials="DA"
+              bgGradient="from-violet-500/10 to-indigo-500/10"
+              iconColor="text-violet-600"
+              badgeBg="bg-violet-500/10"
+              imageUrl={Dewa}
+            />
+            <DeveloperCard
+              name="Siti Agisna"
+              role="Backend"
+              avatarInitials="SA"
+              bgGradient="from-pink-500/10 to-rose-500/10"
+              iconColor="text-pink-600"
+              badgeBg="bg-pink-500/10"
+              imageUrl={Siti}
+            />
+            <DeveloperCard
+              name="Nayla Tiani Putri"
+              role="Quality Assurance"
+              avatarInitials="NT"
+              bgGradient="from-amber-500/10 to-orange-500/10"
+              iconColor="text-amber-600"
+              badgeBg="bg-amber-500/10"
+              imageUrl={Nayla}
+            />
+            <DeveloperCard
+              name="Joy Christine"
+              role="Frontend Developer"
+              avatarInitials="JC"
+              bgGradient="from-blue-500/10 to-sky-500/10"
+              iconColor="text-blue-600"
+              badgeBg="bg-blue-500/10"
+              imageUrl={Joy}
+            />
           </div>
         </div>
       </section>
@@ -298,7 +248,7 @@ export default function LandingPage() {
             <div className="glass p-10 rounded-[44px] border-white/60 shadow-xl flex flex-col justify-between hover:scale-[1.02] transition-all bg-white/40">
               <div className="space-y-6">
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                  <Sparkles size={24} />
+                  <iconify-icon icon="lucide:sparkles" width="24"  ></iconify-icon>
                 </div>
                 <h3 className="text-2xl font-black tracking-tight">Generator Soal Cerdas</h3>
                 <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
@@ -310,7 +260,7 @@ export default function LandingPage() {
             <div className="glass p-10 rounded-[44px] border-white/60 shadow-xl flex flex-col justify-between hover:scale-[1.02] transition-all bg-white/40">
               <div className="space-y-6">
                 <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
-                  <GraduationCap size={24} />
+                  <iconify-icon icon="lucide:graduation-cap" width="24"  ></iconify-icon>
                 </div>
                 <h3 className="text-2xl font-black tracking-tight">Koreksi & Rekomendasi Nilai AI</h3>
                 <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
@@ -322,7 +272,7 @@ export default function LandingPage() {
             <div className="glass p-10 rounded-[44px] border-white/60 shadow-xl flex flex-col justify-between hover:scale-[1.02] transition-all bg-white/40">
               <div className="space-y-6">
                 <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-600">
-                  <CheckCircle size={24} />
+                  <iconify-icon icon="lucide:check-circle" width="24"  ></iconify-icon>
                 </div>
                 <h3 className="text-2xl font-black tracking-tight">Analisis Butir & Pengecoh</h3>
                 <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
@@ -339,7 +289,7 @@ export default function LandingPage() {
       <section className="py-24 relative overflow-hidden">
         <motion.img src={Asset5} animate={{ y: [0, 20, 0], rotate: [0, 10, 0] }} transition={{ duration: 8, repeat: Infinity }} className="absolute top-10 left-10 lg:left-40 w-32 h-32 object-contain opacity-60 drop-shadow-xl z-0 pointer-events-none hidden md:block" />
         <motion.img src={Asset6} animate={{ y: [0, -20, 0], rotate: [0, -10, 0] }} transition={{ duration: 7, repeat: Infinity, delay: 1 }} className="absolute bottom-10 right-10 lg:right-40 w-40 h-40 object-contain opacity-60 drop-shadow-xl z-0 pointer-events-none hidden md:block" />
-        
+
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <h2 className="text-5xl font-bold mb-12">Siap Memulai Transformasi Digital Kelas Anda?</h2>
           <div className="bg-primary/5 p-10 rounded-[40px] border-2 border-primary/10 flex flex-col md:flex-row items-center justify-between gap-8">
@@ -389,5 +339,69 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function DeveloperCard({
+  name,
+  role,
+  avatarInitials,
+  bgGradient,
+  iconColor,
+  badgeBg,
+  imageUrl,
+  description
+}: {
+  name: string;
+  role: string;
+  avatarInitials: string;
+  bgGradient: string;
+  iconColor: string;
+  badgeBg: string;
+  imageUrl?: string;
+  description?: string;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -8 }}
+      className="premium-card overflow-hidden flex flex-col group hover:shadow-[0_32px_64px_rgba(0,0,0,0.08)] hover:border-slate-200/80 transition-all duration-300"
+    >
+      {/* Photo Container - Large aspect 4:5 (IG Ratio) stretching to borders */}
+      <div className="relative w-full aspect-[4/5] overflow-hidden bg-slate-100">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
+        ) : (
+          <div className={`w-full h-full flex items-center justify-center font-black text-4xl bg-gradient-to-br ${bgGradient} ${iconColor}`}>
+            {avatarInitials}
+          </div>
+        )}
+      </div>
+
+      {/* Content Container - Left Aligned */}
+      <div className="p-6 md:p-8 flex flex-col flex-grow text-left">
+        {/* Badge / Pill */}
+        <div className="flex mb-4">
+          <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${badgeBg} ${iconColor}`}>
+            {role}
+          </span>
+        </div>
+
+        {/* Developer Name */}
+        <h3 className="text-xl font-black text-on-surface tracking-tight mb-2 leading-tight group-hover:text-primary transition-colors">
+          {name}
+        </h3>
+
+        {/* Bio / Description */}
+        {description && (
+          <p className="text-xs text-on-surface-variant/80 font-medium leading-relaxed mt-2">
+            {description}
+          </p>
+        )}
+      </div>
+    </motion.div>
   );
 }

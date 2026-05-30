@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Users, GraduationCap, ClipboardList, ArrowRight, Loader2, X, School, Zap, CheckCircle2, Clock, AlertCircle, Lightbulb, TrendingDown, Target, ZapIcon, Search } from "lucide-react";
+
 import Layout from "@/src/components/Layout";
 import CreateClassModal from "@/src/components/CreateClassModal";
 import { cn } from "@/src/lib/utils";
@@ -134,7 +134,7 @@ export default function TeacherDashboard() {
             onClick={() => setIsModalOpen(true)}
             className="btn-glass-primary py-5 px-10 rounded-[28px] text-xl flex items-center gap-4 shadow-2xl shadow-primary/20"
           >
-            <Plus size={28} strokeWidth={3} />
+            <iconify-icon icon="lucide:plus" width="28"   ></iconify-icon>
             Buat Kelas Baru
           </motion.button>
         </div>
@@ -142,21 +142,21 @@ export default function TeacherDashboard() {
         {/* Bento Summary Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <StatCard 
-            icon={<ClipboardList size={32} className="text-secondary" />} 
+            icon={<iconify-icon icon="lucide:clipboard-list" width="32"  className="text-secondary" ></iconify-icon>} 
             label="Tugas Aktif" 
             value={activeAssignmentsCount.toString()} 
             bgColor="bg-secondary/10" 
             delay={0.1}
           />
           <StatCard 
-            icon={<Users size={32} className="text-blue-500" />} 
+            icon={<iconify-icon icon="lucide:users" width="32"  className="text-blue-500" ></iconify-icon>} 
             label="Total Siswa" 
             value={totalStudentsCount.toString()} 
             bgColor="bg-blue-500/10" 
             delay={0.2}
           />
           <StatCard 
-            icon={<GraduationCap size={32} className="text-primary" />} 
+            icon={<iconify-icon icon="lucide:graduation-cap" width="32"  className="text-primary" ></iconify-icon>} 
             label="Kelas Diampu" 
             value={classes.length.toString()} 
             bgColor="bg-primary/10" 
@@ -173,18 +173,18 @@ export default function TeacherDashboard() {
             </div>
             <button className="text-primary font-bold flex items-center gap-2 hover:underline text-lg">
               Lihat Semua
-              <ArrowRight size={20} />
+              <iconify-icon icon="lucide:arrow-right" width="20"  ></iconify-icon>
             </button>
           </div>
 
           {isLoading ? (
             <div className="flex justify-center py-20">
-              <Loader2 className="animate-spin text-primary" size={60} />
+              <iconify-icon icon="lucide:loader2" width="60" className="animate-spin text-primary"  ></iconify-icon>
             </div>
           ) : classes.length === 0 ? (
             <div className="glass rounded-[48px] p-20 flex flex-col items-center text-center">
               <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-8">
-                 <School className="text-primary/20" size={48} />
+                 <iconify-icon icon="lucide:school" width="48" className="text-primary/20"  ></iconify-icon>
               </div>
               <h3 className="text-2xl font-bold mb-4">Belum Ada Kelas</h3>
               <p className="text-on-surface-variant max-w-sm mb-10">Klik tombol di atas untuk mulai membuat kelas pertama Anda.</p>
@@ -221,11 +221,11 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          <div className="glass rounded-[48px] overflow-hidden border-white/40 shadow-2xl">
+          <div className="premium-card overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-white/40 bg-white/40">
+                  <tr className="border-b border-slate-100 bg-slate-50/50">
                     <th className="px-10 py-6 text-xs font-black uppercase tracking-widest text-on-surface-variant/60">Nama Siswa</th>
                     <th className="px-10 py-6 text-xs font-black uppercase tracking-widest text-on-surface-variant/60">Kelas</th>
                     <th className="px-10 py-6 text-xs font-black uppercase tracking-widest text-on-surface-variant/60">Tugas Terakhir</th>
@@ -233,7 +233,7 @@ export default function TeacherDashboard() {
                     <th className="px-10 py-6 text-xs font-black uppercase tracking-widest text-on-surface-variant/60">Skor</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/20">
+                <tbody className="divide-y divide-slate-100/60">
                   {recentActivity.length > 0 ? (
                     recentActivity.map((activity) => (
                       <ProgressRow 
@@ -244,7 +244,7 @@ export default function TeacherDashboard() {
                         status={activity.status} 
                         score={activity.score.toString()} 
                         statusColor={activity.status === "Selesai" ? "text-green-500" : "text-blue-500"} 
-                        statusIcon={activity.status === "Selesai" ? <CheckCircle2 size={16} /> : <Clock size={16} />} 
+                        statusIcon={activity.status === "Selesai" ? <iconify-icon icon="lucide:check-circle2" width="16"  ></iconify-icon> : <iconify-icon icon="lucide:clock" width="16"  ></iconify-icon>} 
                       />
                     ))
                   ) : (
@@ -278,9 +278,9 @@ function ClassCard({ id, title, subject, joinCode, studentCount, delay }: any) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="glass rounded-[44px] overflow-hidden group border-white/60 shadow-xl"
+      className="premium-card overflow-hidden group hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300"
     >
-      <div className="relative h-44 bg-primary/5 flex flex-col items-center justify-center border-b border-white/30 gap-3">
+      <div className="relative h-44 bg-slate-50/50 flex flex-col items-center justify-center border-b border-slate-100 gap-3">
         <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center font-black text-primary text-xl uppercase">
             {title.charAt(0)}
         </div>
@@ -291,21 +291,21 @@ function ClassCard({ id, title, subject, joinCode, studentCount, delay }: any) {
       </div>
       <div className="p-8">
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white/40 p-5 rounded-3xl border border-white/60">
-            <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Kode</p>
+          <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100/60">
+            <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest mb-1">Kode</p>
             <p className="text-xl font-black text-primary tracking-widest">{joinCode}</p>
           </div>
-          <div className="bg-white/40 p-5 rounded-3xl border border-white/60">
-            <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Siswa</p>
+          <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100/60">
+            <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest mb-1">Siswa</p>
             <p className="text-xl font-black text-secondary">{studentCount}</p>
           </div>
         </div>
         <Link 
           to={`/class/${id}`}
-          className="w-full py-5 bg-on-surface text-surface rounded-[24px] font-bold hover:bg-on-surface-variant transition-all text-lg active:scale-95 flex items-center justify-center gap-2"
+          className="w-full py-5 bg-on-surface text-surface rounded-2xl font-bold hover:bg-on-surface-variant transition-all text-lg active:scale-95 flex items-center justify-center gap-2"
         >
           Buka Manajemen Kelas
-          <ArrowRight size={20} />
+          <iconify-icon icon="lucide:arrow-right" width="20"  ></iconify-icon>
         </Link>
       </div>
     </motion.div>
@@ -314,7 +314,7 @@ function ClassCard({ id, title, subject, joinCode, studentCount, delay }: any) {
 
 function ProgressRow({ name, className, assignment, status, score, statusColor, statusIcon }: any) {
     return (
-        <tr className="hover:bg-white/20 transition-colors">
+        <tr className="hover:bg-slate-50/50 transition-colors">
             <td className="px-10 py-8">
                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center font-black text-primary">
@@ -349,13 +349,12 @@ function StatCard({ icon, label, value, bgColor, delay }: any) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      whileHover={{ y: -8 }}
-      className="glass p-8 rounded-[44px] border-white/40 shadow-xl shadow-on-surface/5 group"
+      className="premium-card-interactive p-8 group"
     >
-      <div className={cn("w-20 h-20 rounded-[28px] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500", bgColor)}>
+      <div className={cn("w-20 h-20 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500", bgColor)}>
         {icon}
       </div>
-      <p className="text-on-surface-variant/60 font-black uppercase tracking-widest text-xs mb-2">{label}</p>
+      <p className="text-on-surface-variant/40 font-black uppercase tracking-widest text-xs mb-2">{label}</p>
       <h3 className="text-6xl font-black tracking-tight">{value}</h3>
     </motion.div>
   );

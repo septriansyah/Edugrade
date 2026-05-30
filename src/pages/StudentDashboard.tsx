@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Clock, ArrowRight, Dna, History, Calculator, Search, Bell, Sparkles, Users, Loader2, Key, Plus, FileText, ClipboardList, Video, BookOpen, Link2 } from "lucide-react";
+
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
@@ -242,7 +242,7 @@ export default function StudentDashboard() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
-                 <Sparkles className="text-primary" size={20} />
+                 <iconify-icon icon="lucide:sparkles" width="20" className="text-primary"  ></iconify-icon>
               </div>
               <span className="text-sm font-black text-primary uppercase tracking-[0.2em]">Siswa Portal</span>
             </div>
@@ -258,14 +258,14 @@ export default function StudentDashboard() {
                   placeholder="KODE KELAS" 
                   className="w-full bg-white/40 backdrop-blur-md border-2 border-white/60 focus:border-primary outline-none px-6 py-4 rounded-[24px] font-black tracking-widest placeholder:text-outline/40 uppercase transition-all"
                 />
-                <Key className="absolute right-6 top-4.5 text-outline/40" size={20} />
+                <iconify-icon icon="lucide:key" width="20" className="absolute right-6 top-4.5 text-outline/40"  ></iconify-icon>
              </div>
              <button 
                 onClick={handleJoinClass}
                 disabled={isJoining || !joinCode}
                 className="btn-glass-primary px-8 flex items-center justify-center gap-3 disabled:opacity-50"
              >
-                {isJoining ? <Loader2 className="animate-spin" size={24} /> : <Plus size={24} />}
+                {isJoining ? <iconify-icon icon="lucide:loader2" width="24" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:plus" width="24"  ></iconify-icon>}
                 Gabung
              </button>
           </div>
@@ -273,10 +273,10 @@ export default function StudentDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <QuickStat label="Pelajaran" value={classes.length.toString()} icon={<Calculator size={24} />} delay={0.1} />
-          <QuickStat label="Tugas Selesai" value={assignments.filter(a => a.status === 'graded').length.toString()} icon={<History size={24} />} delay={0.2} />
-          <QuickStat label="Rata-rata Nilai" value={averageScore.toString()} icon={<Sparkles size={24} />} delay={0.3} color="bg-primary/20 text-primary" />
-          <QuickStat label="Tugas" value={assignments.length.toString()} icon={<Users size={24} />} delay={0.4} />
+          <QuickStat label="Pelajaran" value={classes.length.toString()} icon={<iconify-icon icon="lucide:calculator" width="24"  ></iconify-icon>} delay={0.1} />
+          <QuickStat label="Tugas Selesai" value={assignments.filter(a => a.status === 'graded').length.toString()} icon={<iconify-icon icon="lucide:history" width="24"  ></iconify-icon>} delay={0.2} />
+          <QuickStat label="Rata-rata Nilai" value={averageScore.toString()} icon={<iconify-icon icon="lucide:sparkles" width="24"  ></iconify-icon>} delay={0.3} color="bg-primary/20 text-primary" />
+          <QuickStat label="Tugas" value={assignments.length.toString()} icon={<iconify-icon icon="lucide:users" width="24"  ></iconify-icon>} delay={0.4} />
         </div>
 
         {/* Content Tabs/Grid */}
@@ -286,9 +286,9 @@ export default function StudentDashboard() {
             <section className="space-y-8">
               <h2 className="text-3xl font-black tracking-tight">Tugas Mendatang</h2>
               {assignments.length === 0 ? (
-                <div className="glass rounded-[48px] p-16 flex flex-col items-center text-center">
+                <div className="premium-card p-16 flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-on-surface/5 rounded-full flex items-center justify-center mb-6">
-                    <ClipboardList className="text-on-surface-variant/20" size={32} />
+                    <iconify-icon icon="lucide:clipboard-list" width="32" className="text-on-surface-variant/20"  ></iconify-icon>
                   </div>
                   <h3 className="text-xl font-bold">Belum ada tugas</h3>
                   <p className="text-on-surface-variant text-sm mt-2">Tetap pantau kelas Anda untuk tugas terbaru.</p>
@@ -301,11 +301,11 @@ export default function StudentDashboard() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.1 }}
-                      className="glass rounded-[40px] p-6 md:p-8 border-white/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 group hover:shadow-2xl transition-all"
+                      className="premium-card p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 group hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300"
                     >
                       <div className="flex items-center gap-5 md:gap-6 flex-1 w-full">
                         <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
-                          <FileText className="text-primary" size={24} />
+                          <iconify-icon icon="lucide:file-text" width="24" className="text-primary"  ></iconify-icon>
                         </div>
                         <div className="min-w-0">
                           <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 truncate">
@@ -313,7 +313,7 @@ export default function StudentDashboard() {
                           </p>
                           <h3 className="text-lg md:text-xl font-black tracking-tight group-hover:text-primary transition-colors truncate">{assignment.title}</h3>
                           <div className="flex items-center gap-2 mt-1 text-on-surface-variant/60">
-                            <Clock size={12} className="shrink-0" />
+                            <iconify-icon icon="lucide:clock" width="12"  className="shrink-0" ></iconify-icon>
                             <span className="text-xs font-medium truncate">Tenggat: {assignment.dueDate?.toDate ? assignment.dueDate.toDate().toLocaleDateString() : assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'Tidak ada'}</span>
                           </div>
                         </div>
@@ -333,7 +333,7 @@ export default function StudentDashboard() {
                           className="w-full md:w-auto px-8 py-4 bg-on-surface text-surface rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-on-surface-variant transition-all whitespace-nowrap"
                         >
                           Buka Tugas
-                          <ArrowRight size={18} />
+                          <iconify-icon icon="lucide:arrow-right" width="18"  ></iconify-icon>
                         </Link>
                       </div>
                     </motion.div>
@@ -346,12 +346,12 @@ export default function StudentDashboard() {
               <h2 className="text-3xl font-black tracking-tight">Kelas Saya</h2>
               {isLoading ? (
                 <div className="flex justify-center py-24">
-                  <Loader2 className="animate-spin text-primary" size={60} />
+                  <iconify-icon icon="lucide:loader2" width="60" className="animate-spin text-primary"  ></iconify-icon>
                 </div>
               ) : classes.length === 0 ? (
-                <div className="glass rounded-[48px] p-20 flex flex-col items-center text-center">
+                <div className="premium-card p-20 flex flex-col items-center text-center">
                   <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-8">
-                    <Search className="text-primary/20" size={48} />
+                    <iconify-icon icon="lucide:search" width="48" className="text-primary/20"  ></iconify-icon>
                   </div>
                   <h3 className="text-2xl font-bold">Belum ada kelas diikuti</h3>
                   <p className="text-on-surface-variant font-medium mt-2">Gunakan fitur join di atas untuk masuk ke kelas.</p>
@@ -364,7 +364,7 @@ export default function StudentDashboard() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.1 }}
-                      className="glass rounded-[44px] p-8 border-white/60 hover:shadow-2xl transition-all group"
+                      className="premium-card-interactive p-8 group"
                     >
                       <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
                         <span className="text-3xl font-black text-primary uppercase">{cls.name.charAt(0)}</span>
@@ -380,11 +380,11 @@ export default function StudentDashboard() {
 
           {/* Activity Feed */}
           <div className="lg:col-span-4 space-y-8">
-             <div className="glass rounded-[48px] p-10 border-white/60">
+             <div className="premium-card p-10">
                 <div className="flex justify-between items-center mb-10">
                    <h3 className="text-2xl font-black tracking-tight">Timeline</h3>
                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Bell size={16} className="text-primary" />
+                      <iconify-icon icon="lucide:bell" width="16"  className="text-primary" ></iconify-icon>
                    </div>
                 </div>
                 <div className="space-y-8">
@@ -408,23 +408,23 @@ export default function StudentDashboard() {
              </div>
 
              {/* GMeet/Meetings Section */}
-             <div className="glass rounded-[48px] p-10 border-white/60">
+             <div className="premium-card p-10">
                 <div className="flex justify-between items-center mb-8">
                    <h3 className="text-2xl font-black tracking-tight">Link Meeting Kelas</h3>
                    <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
-                      <Video size={16} className="text-red-500" />
+                      <iconify-icon icon="lucide:video" width="16"  className="text-red-500" ></iconify-icon>
                    </div>
                 </div>
                 <div className="space-y-6">
                    {meetings.length > 0 ? (
                       meetings.slice(0, 3).map(m => (
-                        <div key={m.id} className="p-5 bg-white/40 border border-white/60 rounded-3xl hover:shadow-lg transition-all space-y-4">
+                        <div key={m.id} className="p-5 bg-slate-50/50 border border-slate-100 rounded-2xl hover:shadow-lg transition-all space-y-4">
                           <div className="flex justify-between items-center">
                             <span className="px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20">
                               {m.platform || "GMeet"}
                             </span>
                             <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 flex items-center gap-1">
-                              <Clock size={10} />
+                              <iconify-icon icon="lucide:clock" width="10"  ></iconify-icon>
                               {m.startTime ? new Date(m.startTime).toLocaleDateString() : "Setiap Saat"}
                             </span>
                           </div>
@@ -451,19 +451,19 @@ export default function StudentDashboard() {
              </div>
 
              {/* Materials Section */}
-             <div className="glass rounded-[48px] p-10 border-white/60">
+             <div className="premium-card p-10">
                 <div className="flex justify-between items-center mb-8">
                    <h3 className="text-2xl font-black tracking-tight">Materi Terbaru</h3>
                    <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                      <BookOpen size={16} className="text-secondary" />
+                      <iconify-icon icon="lucide:book-open" width="16"  className="text-secondary" ></iconify-icon>
                     </div>
                  </div>
                  <div className="space-y-6">
                     {materials.length > 0 ? (
                        materials.slice(0, 3).map(m => (
-                         <div key={m.id} className="p-5 bg-white/40 border border-white/60 rounded-3xl hover:shadow-lg transition-all flex items-start gap-4">
+                         <div key={m.id} className="p-5 bg-slate-50/50 border border-slate-100 rounded-2xl hover:shadow-lg transition-all flex items-start gap-4">
                            <div className="w-10 h-10 bg-secondary/10 rounded-2xl flex items-center justify-center shrink-0">
-                             {m.type === "file" ? <FileText className="text-secondary" size={20} /> : <Link2 className="text-secondary" size={20} />}
+                             {m.type === "file" ? <iconify-icon icon="lucide:file-text" width="20" className="text-secondary"  ></iconify-icon> : <iconify-icon icon="lucide:link2" width="20" className="text-secondary"  ></iconify-icon>}
                            </div>
                            <div className="flex-1 min-w-0">
                              <p className="text-[10px] font-black text-secondary uppercase tracking-widest">
@@ -477,7 +477,7 @@ export default function StudentDashboard() {
                                rel="noreferrer"
                                className="mt-3 inline-flex items-center gap-1 text-[10px] font-black text-secondary uppercase tracking-widest hover:underline"
                              >
-                               Buka Materi <ArrowRight size={10} />
+                               Buka Materi <iconify-icon icon="lucide:arrow-right" width="10"  ></iconify-icon>
                              </a>
                            </div>
                          </div>
@@ -526,10 +526,9 @@ function QuickStat({ label, value, icon, delay, color }: any) {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay }}
-      whileHover={{ y: -5 }}
-      className={cn("glass p-8 rounded-[40px] border-white/40 shadow-xl shadow-on-surface/5 flex flex-col items-center text-center group", color)}
+      className={cn("premium-card-interactive p-8 flex flex-col items-center text-center group", color)}
     >
-      <div className="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center mb-6 text-on-surface-variant group-hover:scale-110 transition-transform">
+      <div className="w-12 h-12 bg-slate-50/50 rounded-2xl flex items-center justify-center mb-6 text-on-surface-variant group-hover:scale-110 transition-transform">
         {icon}
       </div>
       <p className="text-[10px] font-black uppercase text-on-surface-variant/40 tracking-[0.2em] mb-1">{label}</p>

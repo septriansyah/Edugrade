@@ -1,17 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { 
-  BarChart3, 
-  Search, 
-  ChevronRight, 
-  ClipboardList, 
-  Users, 
-  Clock,
-  Loader2,
-  FileText,
-  Trash2
-} from "lucide-react";
+
 import Layout from "@/src/components/Layout";
 import { db, auth } from "@/src/lib/firebase";
 import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
@@ -97,7 +87,7 @@ export default function ItemAnalysisList() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
-                 <BarChart3 className="text-primary" size={20} />
+                 <iconify-icon icon="lucide:bar-chart3" width="20" className="text-primary"  ></iconify-icon>
               </div>
               <span className="text-sm font-black text-primary uppercase tracking-[0.2em]">Data & Insight</span>
             </div>
@@ -121,7 +111,7 @@ export default function ItemAnalysisList() {
                   className="flex items-center gap-3 p-3 hover:bg-primary/5 rounded-2xl transition-all group/item"
                 >
                   <div className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center group-hover/item:bg-primary group-hover/item:text-white transition-all">
-                    <BarChart3 size={16} />
+                    <iconify-icon icon="lucide:bar-chart3" width="16"  ></iconify-icon>
                   </div>
                   <div className="text-left">
                     <p className="text-xs font-black text-on-surface">Pilihan Ganda (PG)</p>
@@ -133,7 +123,7 @@ export default function ItemAnalysisList() {
                   className="flex items-center gap-3 p-3 hover:bg-secondary/5 rounded-2xl transition-all group/item"
                 >
                   <div className="w-8 h-8 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center group-hover/item:bg-secondary group-hover/item:text-white transition-all">
-                    <ClipboardList size={16} />
+                    <iconify-icon icon="lucide:clipboard-list" width="16"  ></iconify-icon>
                   </div>
                   <div className="text-left">
                     <p className="text-xs font-black text-on-surface">Soal Esai</p>
@@ -148,7 +138,7 @@ export default function ItemAnalysisList() {
         {/* Search & Stats */}
         <div className="flex flex-col md:flex-row gap-6 items-center">
            <div className="relative flex-1 group w-full">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/30 group-focus-within:text-primary transition-colors" size={20} />
+              <iconify-icon icon="lucide:search" width="20" className="absolute left-6 top-1/2 -translate-y-1/2 text-primary/30 group-focus-within:text-primary transition-colors"  ></iconify-icon>
               <input 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -156,13 +146,13 @@ export default function ItemAnalysisList() {
                 placeholder="Cari judul tugas atau mata pelajaran..." 
               />
            </div>
-           <div className="glass px-10 py-5 rounded-[24px] border-white/60 flex items-center gap-4 shrink-0 shadow-xl shadow-on-surface/5">
+           <div className="premium-card px-10 py-5 flex items-center gap-4 shrink-0">
               <div className="text-right">
                  <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest leading-none">Total Paket</p>
                  <p className="text-2xl font-black text-on-surface">{assignments.length}</p>
               </div>
               <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                 <ClipboardList size={20} className="text-primary" />
+                 <iconify-icon icon="lucide:clipboard-list" width="20"  className="text-primary" ></iconify-icon>
               </div>
            </div>
         </div>
@@ -170,7 +160,7 @@ export default function ItemAnalysisList() {
         {/* List Section */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-4">
-             <Loader2 className="animate-spin text-primary" size={48} />
+             <iconify-icon icon="lucide:loader2" width="48" className="animate-spin text-primary"  ></iconify-icon>
              <p className="font-bold text-on-surface-variant">Memuat daftar tugas...</p>
           </div>
         ) : filteredAssignments.length > 0 ? (
@@ -182,18 +172,18 @@ export default function ItemAnalysisList() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
               >
-                <div className="glass group block rounded-[44px] border-white/60 shadow-xl hover:shadow-2xl transition-all relative overflow-hidden bg-white/30">
+                <div className="premium-card group block overflow-hidden relative hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300">
                   <div className="p-10 relative">
                     <button 
                       onClick={(e) => handleDeleteAssignment(a.id, e)}
                       className="absolute top-8 right-8 p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all z-10 shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100"
                       title="Hapus Tugas"
                     >
-                      <Trash2 size={16} />
+                      <iconify-icon icon="lucide:trash2" width="16"  ></iconify-icon>
                     </button>
 
                     <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
-                      <FileText className="text-primary" size={28} />
+                      <iconify-icon icon="lucide:file-text" width="28" className="text-primary"  ></iconify-icon>
                     </div>
                     <h3 className="text-2xl font-black mb-2 tracking-tight group-hover:text-primary transition-colors leading-tight pr-12">{a.title}</h3>
                     <p className="text-sm font-bold text-on-surface-variant/60 mb-6">{a.subject}</p>
@@ -225,7 +215,7 @@ export default function ItemAnalysisList() {
                     </div>
                     
                     {/* Direct Links */}
-                    <div className="flex flex-col gap-3 pt-6 border-t border-on-surface/5">
+                    <div className="flex flex-col gap-3 pt-6 border-t border-slate-100">
                       {(() => {
                         const qs = a.questions || [];
                         const pg = qs.filter((q: any) => q.type === "Multiple Choice").length;
@@ -238,7 +228,7 @@ export default function ItemAnalysisList() {
                                 className="w-full bg-primary text-white py-3 px-5 rounded-xl font-black tracking-wider text-[10px] uppercase flex items-center justify-between hover:brightness-110 transition-all shadow-md shadow-primary/10"
                               >
                                 <span>Analisis PG</span>
-                                <ChevronRight size={14} />
+                                <iconify-icon icon="lucide:chevron-right" width="14"  ></iconify-icon>
                               </Link>
                             )}
                             {essay > 0 && (
@@ -247,7 +237,7 @@ export default function ItemAnalysisList() {
                                 className="w-full bg-secondary text-white py-3 px-5 rounded-xl font-black tracking-wider text-[10px] uppercase flex items-center justify-between hover:brightness-110 transition-all shadow-md shadow-secondary/10"
                               >
                                 <span>Analisis Esai</span>
-                                <ChevronRight size={14} />
+                                <iconify-icon icon="lucide:chevron-right" width="14"  ></iconify-icon>
                               </Link>
                             )}
                             {pg > 0 && essay > 0 && (
@@ -264,16 +254,16 @@ export default function ItemAnalysisList() {
                     </div>
                   </div>
                   <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none group-hover:scale-150 transition-transform">
-                    <BarChart3 size={100} />
+                    <iconify-icon icon="lucide:bar-chart3" width="100"  ></iconify-icon>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
         ) : (
-          <div className="glass rounded-[56px] p-20 flex flex-col items-center text-center border-white/60 bg-white/40">
+          <div className="premium-card p-20 flex flex-col items-center text-center">
             <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-8">
-               <ClipboardList className="text-primary/20" size={48} />
+               <iconify-icon icon="lucide:clipboard-list" width="48" className="text-primary/20"  ></iconify-icon>
             </div>
             <h3 className="text-2xl font-bold mb-4">Tugas Tidak Ditemukan</h3>
             <p className="text-on-surface-variant max-w-sm font-medium">Anda belum memiliki tugas atau belum ada tugas yang sesuai dengan pencarian.</p>

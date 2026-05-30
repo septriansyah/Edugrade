@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { CheckCircle2, Sparkles, Zap, ShieldCheck, Loader2, Crown, Menu, X } from "lucide-react";
+
 import Logo from "@/src/img/Logo.svg";
 import Asset1 from "@/src/img/Asset 1.png";
 import Asset2 from "@/src/img/Asset 2.png";
@@ -155,7 +155,7 @@ export default function PricingPage() {
               onClick={() => setIsMobileMenuOpen(true)}
               className="p-2 text-on-surface hover:bg-on-surface/5 rounded-xl transition-all"
             >
-              <Menu size={24} />
+              <iconify-icon icon="lucide:menu" width="24"  ></iconify-icon>
             </button>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function PricingPage() {
               <div className="flex justify-between items-center mb-12">
                 <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-on-surface/5 rounded-xl transition-all">
-                  <X size={20} />
+                  <iconify-icon icon="lucide:x" width="20"  ></iconify-icon>
                 </button>
               </div>
 
@@ -241,7 +241,7 @@ export default function PricingPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
-                className="w-full max-w-md glass rounded-[48px] p-10 border-white/60 shadow-xl flex flex-col h-full bg-white/40"
+                className="w-full max-w-md premium-card p-10 flex flex-col h-full"
             >
                 <div className="mb-8">
                     <h3 className="text-2xl font-black mb-2 text-on-surface">Gratis</h3>
@@ -274,10 +274,10 @@ export default function PricingPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="w-full max-w-md glass rounded-[48px] p-10 border-2 border-primary shadow-2xl shadow-primary/20 flex flex-col h-full relative overflow-hidden bg-primary/5"
+                className="w-full max-w-md premium-card p-10 border-2 border-primary flex flex-col h-full relative overflow-hidden bg-primary/5"
             >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-[100px] -mr-8 -mt-8 flex items-center justify-center">
-                    <Crown className="text-primary w-10 h-10 ml-6 mt-6" />
+                    <iconify-icon icon="lucide:crown" className="text-primary w-10 h-10 ml-6 mt-6" ></iconify-icon>
                 </div>
 
                 <div className="mb-8 relative z-10">
@@ -305,7 +305,7 @@ export default function PricingPage() {
                         disabled
                         className="w-full py-5 bg-green-500 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-green-500/20 flex items-center justify-center gap-2"
                     >
-                        <CheckCircle2 size={18} /> Premium Aktif
+                        <iconify-icon icon="lucide:check-circle2" width="18"  ></iconify-icon> Premium Aktif
                     </button>
                 ) : (
                     <button 
@@ -313,7 +313,7 @@ export default function PricingPage() {
                         disabled={isProcessing}
                         className="w-full py-5 bg-primary text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:brightness-110 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2"
                     >
-                        {isProcessing ? <Loader2 className="animate-spin" size={18} /> : <Zap size={18} fill="currentColor" />}
+                        {isProcessing ? <iconify-icon icon="lucide:loader2" width="18" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:zap" width="18"  fill="currentColor" ></iconify-icon>}
                         {isProcessing ? "Memproses..." : "Beli Sekarang"}
                     </button>
                 )}
@@ -332,7 +332,7 @@ export default function PricingPage() {
                   className="bg-white rounded-[40px] p-10 max-w-md w-full shadow-2xl text-center border border-primary/20"
               >
                   <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle2 className="text-green-500 w-12 h-12" />
+                      <iconify-icon icon="lucide:check-circle2" className="text-green-500 w-12 h-12" ></iconify-icon>
                   </div>
                   <h3 className="text-3xl font-black tracking-tight mb-4 text-on-surface">Pembayaran Berhasil!</h3>
                   <p className="text-on-surface-variant font-medium mb-8">Terima kasih, akun Anda kini telah diupgrade ke Premium Pro. Anda memiliki akses penuh ke fitur AI Fix dan 1000 Token AI Generator.</p>
@@ -361,7 +361,7 @@ function FeatureItem({ text, disabled = false, active = false }: { text: string,
                 </div>
             ) : (
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${active ? 'bg-primary/20' : 'bg-secondary/20'}`}>
-                    <CheckCircle2 className={`${active ? 'text-primary' : 'text-secondary'}`} size={14} />
+                    <iconify-icon icon="lucide:check-circle2" width="14" className={`${active ? 'text-primary' : 'text-secondary'}`}  ></iconify-icon>
                 </div>
             )}
             <span className="font-bold text-sm text-on-surface">{text}</span>

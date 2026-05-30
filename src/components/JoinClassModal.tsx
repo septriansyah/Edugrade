@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Key, Plus, Loader2 } from "lucide-react";
+
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { collection, query, where, getDocs, doc, updateDoc, arrayUnion } from "firebase/firestore";
 
@@ -75,7 +75,7 @@ export default function JoinClassModal({ isOpen, onClose, onJoined }: JoinClassM
               onClick={onClose}
               className="absolute right-6 top-6 p-2 hover:bg-surface rounded-full transition-colors"
             >
-              <X size={20} className="text-outline" />
+              <iconify-icon icon="lucide:x" width="20"  className="text-outline" ></iconify-icon>
             </button>
             
             <h3 className="text-3xl font-black mb-2 tracking-tight">Gabung Kelas</h3>
@@ -93,7 +93,7 @@ export default function JoinClassModal({ isOpen, onClose, onJoined }: JoinClassM
                     placeholder="CONTOH: X7Y2Z9" 
                     className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary outline-none px-8 py-5 rounded-[24px] font-black text-2xl tracking-widest uppercase transition-all"
                   />
-                  <Key className="absolute right-6 top-1/2 -translate-y-1/2 text-outline/30" size={24} />
+                  <iconify-icon icon="lucide:key" width="24" className="absolute right-6 top-1/2 -translate-y-1/2 text-outline/30"  ></iconify-icon>
                 </div>
               </div>
               
@@ -102,7 +102,7 @@ export default function JoinClassModal({ isOpen, onClose, onJoined }: JoinClassM
                 disabled={isJoining || !joinCode}
                 className="w-full bg-primary text-white py-5 rounded-[24px] font-bold shadow-2xl shadow-primary/30 hover:brightness-110 active:scale-95 transition-all text-xl flex items-center justify-center gap-4 disabled:opacity-50"
               >
-                {isJoining ? <Loader2 className="animate-spin" size={24} /> : <Plus size={24} />}
+                {isJoining ? <iconify-icon icon="lucide:loader2" width="24" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:plus" width="24"  ></iconify-icon>}
                 GABUNG SEKARANG
               </button>
             </form>

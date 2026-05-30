@@ -1,19 +1,6 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { 
-  Home, 
-  Users, 
-  Sparkles, 
-  Search, 
-  Plus, 
-  HelpCircle, 
-  LogOut, 
-  Bell, 
-  Settings,
-  GraduationCap,
-  Menu,
-  X
-} from "lucide-react";
+
 import { cn } from "@/src/lib/utils";
 import Logo from "@/src/img/Logo.svg";
 import { motion, AnimatePresence } from "motion/react";
@@ -84,7 +71,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
           <nav className={cn("flex-1 space-y-3", isInClass && "flex flex-col items-center")}>
             <SidebarItem 
               to={userType === "teacher" ? "/dashboard" : "/student/dashboard"} 
-              icon={<Home size={22} />} 
+              icon={<iconify-icon icon="lucide:home" width="22"  ></iconify-icon>} 
               label="Dashboard" 
               active={location.pathname === "/dashboard" || location.pathname === "/student/dashboard"} 
               slim={isInClass}
@@ -93,14 +80,14 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
               <>
                 <SidebarItem 
                   to="/analytics" 
-                  icon={<Search size={22} />} 
+                  icon={<iconify-icon icon="lucide:search" width="22"  ></iconify-icon>} 
                   label="Butir Soal" 
                   active={location.pathname.startsWith("/analytics")} 
                   slim={isInClass}
                 />
                 <SidebarItem 
                   to="/generator" 
-                  icon={<Sparkles size={22} />} 
+                  icon={<iconify-icon icon="lucide:sparkles" width="22"  ></iconify-icon>} 
                   label="Bank Soal" 
                   active={location.pathname.startsWith("/generator")} 
                   slim={isInClass}
@@ -110,7 +97,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
               <>
                 <SidebarItem 
                   to="/assignments" 
-                  icon={<GraduationCap size={22} />} 
+                  icon={<iconify-icon icon="lucide:graduation-cap" width="22"  ></iconify-icon>} 
                   label="Tugas & Ujian" 
                   active={location.pathname === "/assignments" || location.pathname.includes("/assignment/")} 
                   slim={isInClass}
@@ -155,13 +142,13 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
                   isInClass ? "w-14 h-14 rounded-2xl p-0" : "w-full py-4 rounded-[20px]"
               )}
             >
-              <Plus size={20} />
+              <iconify-icon icon="lucide:plus" width="20"  ></iconify-icon>
               {!isInClass && <span className="text-xs font-black uppercase tracking-widest">{userType === "teacher" ? "Buat Kelas" : "Gabung Kelas"}</span>}
             </button>
             <div className="h-4" />
             <SidebarItem 
               to="/auth" 
-              icon={<LogOut size={22} />} 
+              icon={<iconify-icon icon="lucide:log-out" width="22"  ></iconify-icon>} 
               label="Keluar" 
               variant="error"
               onClick={handleSignOut}
@@ -204,19 +191,17 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
                 onClick={handleAction}
                 className="hidden md:flex btn-glass-primary px-4 py-2.5 rounded-xl items-center gap-2 text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-primary/10 whitespace-nowrap"
               >
-                <Plus size={16} /> <span className="hidden sm:inline">Gabung Kelas</span><span className="sm:hidden">Gabung</span>
+                <iconify-icon icon="lucide:plus" width="16"  ></iconify-icon> <span className="hidden sm:inline">Gabung Kelas</span><span className="sm:hidden">Gabung</span>
               </button>
             )}
 
-            {userType === "student" && (
-              <button 
-                onClick={handleSignOut}
-                className="text-on-surface-variant hover:text-error hover:bg-error/5 p-3 rounded-2xl transition-all"
-                title="Keluar"
-              >
-                <LogOut size={22} />
-              </button>
-            )}
+            <button 
+              onClick={handleSignOut}
+              className="text-on-surface-variant hover:text-error hover:bg-error/5 p-3 rounded-2xl transition-all"
+              title="Keluar"
+            >
+              <iconify-icon icon="lucide:log-out" width="22"  ></iconify-icon>
+            </button>
             
             <div className="flex items-center gap-4 pl-4 sm:pl-6 border-l border-white/20">
                 <div className="text-right hidden sm:block">
@@ -288,19 +273,19 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-outline-variant/30 px-6 py-2 flex justify-around items-center z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] pb-safe">
           <MobileNavItem 
             to="/dashboard" 
-            icon={<Home size={20} />} 
+            icon={<iconify-icon icon="lucide:home" width="20"  ></iconify-icon>} 
             label="Dashboard" 
             active={location.pathname === "/dashboard"} 
           />
           <MobileNavItem 
             to="/analytics" 
-            icon={<Search size={20} />} 
+            icon={<iconify-icon icon="lucide:search" width="20"  ></iconify-icon>} 
             label="Butir Soal" 
             active={location.pathname.startsWith("/analytics")} 
           />
           <MobileNavItem 
             to="/generator" 
-            icon={<Sparkles size={20} />} 
+            icon={<iconify-icon icon="lucide:sparkles" width="20"  ></iconify-icon>} 
             label="Bank Soal" 
             active={location.pathname.startsWith("/generator")} 
           />
@@ -309,7 +294,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
             className="flex flex-col items-center gap-1 text-on-surface-variant/60 hover:text-primary transition-colors"
           >
             <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
-              <Plus size={20} />
+              <iconify-icon icon="lucide:plus" width="20"  ></iconify-icon>
             </div>
           </button>
         </div>
@@ -320,13 +305,13 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-lg border-t border-outline-variant/30 px-6 py-2 flex justify-around items-center z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] pb-safe">
           <MobileNavItem 
             to="/student/dashboard" 
-            icon={<Home size={20} />} 
+            icon={<iconify-icon icon="lucide:home" width="20"  ></iconify-icon>} 
             label="Dashboard" 
             active={location.pathname === "/student/dashboard"} 
           />
           <MobileNavItem 
             to="/assignments" 
-            icon={<GraduationCap size={20} />} 
+            icon={<iconify-icon icon="lucide:graduation-cap" width="20"  ></iconify-icon>} 
             label="Tugas & Ujian" 
             active={location.pathname === "/assignments" || location.pathname.includes("/assignment/")} 
           />
@@ -335,7 +320,7 @@ export default function Layout({ children, userType = "teacher" }: LayoutProps) 
             className="flex flex-col items-center gap-1 text-on-surface-variant/60 hover:text-primary transition-colors"
           >
             <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
-              <Plus size={20} />
+              <iconify-icon icon="lucide:plus" width="20"  ></iconify-icon>
             </div>
           </button>
         </div>

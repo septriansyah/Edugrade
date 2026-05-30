@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Send, Link as LinkIcon, FileText, Loader2, MessageSquare } from "lucide-react";
+
 import { auth, db, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { cn } from "@/src/lib/utils";
@@ -79,14 +79,14 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
         <div className="p-8 border-b border-on-surface/5 flex justify-between items-center bg-white/60">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                <FileText className="text-primary" size={20} />
+                <iconify-icon icon="lucide:file-text" width="20" className="text-primary"  ></iconify-icon>
              </div>
              <h3 className="text-2xl font-black italic tracking-tight text-primary">
                {editMaterial ? "Ubah Materi" : "Kirim Materi"}
              </h3>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-full hover:bg-on-surface/5 flex items-center justify-center transition-all">
-            <X size={24} />
+            <iconify-icon icon="lucide:x" width="24"  ></iconify-icon>
           </button>
         </div>
 
@@ -111,7 +111,7 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
                 placeholder="Tuliskan petunjuk atau pesan tambahan..."
                 className="w-full bg-white/50 border-2 border-white/40 focus:border-primary outline-none px-6 py-4 rounded-2xl font-bold text-lg min-h-[120px] pr-12"
               />
-              <MessageSquare className="absolute right-6 top-6 text-outline/20" size={24} />
+              <iconify-icon icon="lucide:message-square" width="24" className="absolute right-6 top-6 text-outline/20"  ></iconify-icon>
             </div>
           </div>
 
@@ -124,7 +124,7 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
                     type === "link" ? "bg-primary text-white border-primary shadow-lg" : "bg-white/40 border-white/40 text-on-surface-variant hover:border-primary/20"
                 )}
              >
-                <LinkIcon size={20} />
+                <iconify-icon icon="lucide:link" width="20"  ></iconify-icon>
                 <span className="font-bold">Tautan / URL</span>
              </button>
              <button 
@@ -135,7 +135,7 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
                     type === "file" ? "bg-primary text-white border-primary shadow-lg" : "bg-white/40 border-white/40 text-on-surface-variant hover:border-primary/20"
                 )}
              >
-                <FileText size={20} />
+                <iconify-icon icon="lucide:file-text" width="20"  ></iconify-icon>
                 <span className="font-bold">File (Buka URL)</span>
              </button>
           </div>
@@ -158,7 +158,7 @@ export default function CreateMaterialModal({ isOpen, onClose, onCreated, classI
                 disabled={isSubmitting}
                 className="bg-primary text-white px-12 py-4 rounded-2xl font-black italic tracking-tight flex items-center gap-3 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
              >
-                {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+                {isSubmitting ? <iconify-icon icon="lucide:loader2" width="20" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:send" width="20"  ></iconify-icon>}
                 {editMaterial ? "Simpan Perubahan" : "Kirim Materi"}
              </button>
           </div>

@@ -1,35 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { 
-  Users, 
-  ClipboardList, 
-  Sparkles, 
-  CheckCircle2, 
-  GraduationCap,
-  LayoutDashboard,
-  Plus,
-  ArrowLeft,
-  Settings,
-  MoreVertical,
-  Zap,
-  FileText,
-  Clock,
-  ChevronRight,
-  TrendingUp,
-  BrainCircuit,
-  MessageSquare,
-  FileCheck,
-  Loader2,
-  Search,
-  BookOpen,
-  Video,
-  Link as LinkIcon,
-  File,
-  Pencil,
-  Trash2,
-  Copy
-} from "lucide-react";
+
 import { cn } from "@/src/lib/utils";
 import Layout from "@/src/components/Layout";
 import CreateAssignmentModal from "@/src/components/CreateAssignmentModal";
@@ -202,27 +174,27 @@ export default function ClassroomManagement() {
               className="flex items-center gap-4 px-5 py-3 rounded-2xl transition-all hover:bg-primary/10 bg-primary/5 border border-primary/10 group w-fit"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                <Zap size={20} />
+                <iconify-icon icon="lucide:zap" width="20"  ></iconify-icon>
               </div>
               <div className="text-left pr-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-0.5">Kode Kelas</p>
                 <p className="font-mono font-bold text-base text-on-surface tracking-wider">{classroom?.joinCode}</p>
               </div>
-              <Copy size={18} className="text-primary/40 group-hover:text-primary transition-colors" />
+              <iconify-icon icon="lucide:copy" width="18"  className="text-primary/40 group-hover:text-primary transition-colors" ></iconify-icon>
             </button>
           </div>
 
           <nav className="max-w-6xl mx-auto flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <ClassNavButton active={activeTab === "overview"} onClick={() => setActiveTab("overview")} icon={<LayoutDashboard size={18} />} label="Ringkasan" />
-            <ClassNavButton active={activeTab === "assignments"} onClick={() => setActiveTab("assignments")} icon={<ClipboardList size={18} />} label="Tugas" />
-            <ClassNavButton active={activeTab === "exams"} onClick={() => setActiveTab("exams")} icon={<FileText size={18} />} label="Ujian (Paper Mode)" />
-            <ClassNavButton active={activeTab === "materials"} onClick={() => setActiveTab("materials")} icon={<BookOpen size={18} />} label="Materi" />
-            <ClassNavButton active={activeTab === "meetings"} onClick={() => setActiveTab("meetings")} icon={<Video size={18} />} label="Pertemuan Virtual" />
-            <ClassNavButton active={activeTab === "students"} onClick={() => setActiveTab("students")} icon={<Users size={18} />} label="Siswa" />
+            <ClassNavButton active={activeTab === "overview"} onClick={() => setActiveTab("overview")} icon={<iconify-icon icon="lucide:layout-dashboard" width="18"  ></iconify-icon>} label="Ringkasan" />
+            <ClassNavButton active={activeTab === "assignments"} onClick={() => setActiveTab("assignments")} icon={<iconify-icon icon="lucide:clipboard-list" width="18"  ></iconify-icon>} label="Tugas" />
+            <ClassNavButton active={activeTab === "exams"} onClick={() => setActiveTab("exams")} icon={<iconify-icon icon="lucide:file-text" width="18"  ></iconify-icon>} label="Ujian (Paper Mode)" />
+            <ClassNavButton active={activeTab === "materials"} onClick={() => setActiveTab("materials")} icon={<iconify-icon icon="lucide:book-open" width="18"  ></iconify-icon>} label="Materi" />
+            <ClassNavButton active={activeTab === "meetings"} onClick={() => setActiveTab("meetings")} icon={<iconify-icon icon="lucide:video" width="18"  ></iconify-icon>} label="Pertemuan Virtual" />
+            <ClassNavButton active={activeTab === "students"} onClick={() => setActiveTab("students")} icon={<iconify-icon icon="lucide:users" width="18"  ></iconify-icon>} label="Siswa" />
             <div className="w-px h-6 bg-on-surface-variant/20 mx-2 shrink-0 hidden md:block" />
-            <ClassNavButton active={activeTab === "generator"} onClick={() => setActiveTab("generator")} icon={<Sparkles size={18} />} label="Generator AI" />
-            <ClassNavButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} icon={<CheckCircle2 size={18} />} label="Review" />
-            <ClassNavButton active={activeTab === "grading"} onClick={() => setActiveTab("grading")} icon={<FileCheck size={18} />} label="Nilai" />
+            <ClassNavButton active={activeTab === "generator"} onClick={() => setActiveTab("generator")} icon={<iconify-icon icon="lucide:sparkles" width="18"  ></iconify-icon>} label="Generator AI" />
+            <ClassNavButton active={activeTab === "reviews"} onClick={() => setActiveTab("reviews")} icon={<iconify-icon icon="lucide:check-circle2" width="18"  ></iconify-icon>} label="Review" />
+            <ClassNavButton active={activeTab === "grading"} onClick={() => setActiveTab("grading")} icon={<iconify-icon icon="lucide:file-check" width="18"  ></iconify-icon>} label="Nilai" />
           </nav>
         </div>
 
@@ -431,24 +403,24 @@ function OverviewSection({ classroom, setActiveTab, assignments, materials, meet
              onClick={onCreateAssignment}
              className="w-full md:w-auto px-6 py-4 md:py-3 bg-on-surface text-surface rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-on-surface-variant transition-all"
            >
-              <Plus size={18} />
+              <iconify-icon icon="lucide:plus" width="18"  ></iconify-icon>
               Tugas Baru
            </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <StatCard icon={<Users size={24} className="text-blue-500" />} label="Total Siswa" value={students.length} trend="Terdaftar" />
-        <StatCard icon={<ClipboardList size={24} className="text-primary" />} label="Tugas" value={assignments.length} trend="Aktif" />
-        <StatCard icon={<BookOpen size={24} className="text-secondary" />} label="Materi" value={materials.length} trend="Dibagikan" />
-        <StatCard icon={<Video size={24} className="text-red-500" />} label="Pertemuan" value={meetings.length} trend="Sesi virtual" />
+        <StatCard icon={<iconify-icon icon="lucide:users" width="24"  className="text-blue-500" ></iconify-icon>} label="Total Siswa" value={students.length} trend="Terdaftar" />
+        <StatCard icon={<iconify-icon icon="lucide:clipboard-list" width="24"  className="text-primary" ></iconify-icon>} label="Tugas" value={assignments.length} trend="Aktif" />
+        <StatCard icon={<iconify-icon icon="lucide:book-open" width="24"  className="text-secondary" ></iconify-icon>} label="Materi" value={materials.length} trend="Dibagikan" />
+        <StatCard icon={<iconify-icon icon="lucide:video" width="24"  className="text-red-500" ></iconify-icon>} label="Pertemuan" value={meetings.length} trend="Sesi virtual" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="glass rounded-[48px] p-10 border-white/60">
+        <div className="premium-card p-10">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xl font-black flex items-center gap-3">
-               <Clock size={20} className="text-primary" />
+               <iconify-icon icon="lucide:clock" width="20"  className="text-primary" ></iconify-icon>
                Aktivitas Terbaru
             </h3>
             <button onClick={() => setActiveTab("reviews")} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Lihat Semua</button>
@@ -475,21 +447,21 @@ function OverviewSection({ classroom, setActiveTab, assignments, materials, meet
                           <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">{sub.assignmentTitle} • {sub.createdAt?.toDate().toLocaleDateString()}</p>
                        </div>
                     </div>
-                    <ChevronRight size={18} className="text-on-surface-variant/20 group-hover:text-primary transition-colors" />
+                    <iconify-icon icon="lucide:chevron-right" width="18"  className="text-on-surface-variant/20 group-hover:text-primary transition-colors" ></iconify-icon>
                  </Link>
                ))
              ) : (
                <div className="text-center py-10 opacity-40">
-                  <Clock size={40} className="mx-auto mb-4" />
+                  <iconify-icon icon="lucide:clock" width="40"  className="mx-auto mb-4" ></iconify-icon>
                   <p className="text-sm font-bold">Belum ada aktivitas</p>
                </div>
              )}
           </div>
         </div>
         
-        <div className="glass rounded-[48px] p-10 border-white/60">
+        <div className="premium-card p-10">
           <h3 className="text-xl font-black mb-8 flex items-center gap-3">
-             <Video size={20} className="text-red-500" />
+             <iconify-icon icon="lucide:video" width="20"  className="text-red-500" ></iconify-icon>
              Sesi Terjadwal
           </h3>
           <div className="space-y-4">
@@ -526,17 +498,17 @@ function MaterialsSection({ classroom, materials, onCreate, onEdit, onDelete }: 
             onClick={onCreate}
             className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2 bg-secondary"
           >
-             <Plus size={18} />
+             <iconify-icon icon="lucide:plus" width="18"  ></iconify-icon>
              Bagikan Materi
           </button>
        </div>
        
        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {materials.map((m: any) => (
-            <div key={m.id} className="glass rounded-[40px] p-8 border-white/60 hover:shadow-2xl transition-all group">
+            <div key={m.id} className="premium-card p-8 hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300 group">
               <div className="flex justify-between items-start mb-6">
                 <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center">
-                  {m.type === "file" ? <File className="text-secondary" size={24} /> : <LinkIcon className="text-secondary" size={24} />}
+                  {m.type === "file" ? <iconify-icon icon="lucide:file" width="24" className="text-secondary"  ></iconify-icon> : <iconify-icon icon="lucide:link" width="24" className="text-secondary"  ></iconify-icon>}
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 p-0.5 shadow-sm">
@@ -545,14 +517,14 @@ function MaterialsSection({ classroom, materials, onCreate, onEdit, onDelete }: 
                       className="p-2 hover:bg-secondary/10 text-secondary rounded-lg transition-colors"
                       title="Ubah"
                     >
-                      <Pencil size={14} />
+                      <iconify-icon icon="lucide:pencil" width="14"  ></iconify-icon>
                     </button>
                     <button 
                       onClick={() => onDelete(m.id)}
                       className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                       title="Hapus"
                     >
-                      <Trash2 size={14} />
+                      <iconify-icon icon="lucide:trash2" width="14"  ></iconify-icon>
                     </button>
                   </div>
                   <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-widest">{m.createdAt?.toDate?.() ? m.createdAt.toDate().toLocaleDateString() : "Baru saja"}</p>
@@ -572,8 +544,8 @@ function MaterialsSection({ classroom, materials, onCreate, onEdit, onDelete }: 
             </div>
           ))}
           {materials.length === 0 && (
-            <div className="md:col-span-2 py-20 text-center glass rounded-[40px] border-dashed border-2">
-              <BookOpen size={48} className="mx-auto text-on-surface-variant/20 mb-4" />
+            <div className="md:col-span-2 py-20 text-center premium-card border-dashed border-2 border-slate-200">
+              <iconify-icon icon="lucide:book-open" width="48"  className="mx-auto text-on-surface-variant/20 mb-4" ></iconify-icon>
               <p className="text-on-surface-variant/40 font-black uppercase tracking-widest text-sm">Belum ada materi dibagikan</p>
             </div>
           )}
@@ -591,16 +563,16 @@ function MeetingsSection({ classroom, meetings, onCreate, onEdit, onDelete }: an
             onClick={onCreate}
             className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2 bg-red-500"
           >
-             <Plus size={18} />
+             <iconify-icon icon="lucide:plus" width="18"  ></iconify-icon>
              Jadwalkan Meeting
           </button>
        </div>
        
        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {meetings.map((m: any) => (
-            <div key={m.id} className="glass rounded-[40px] p-8 border-white/60 hover:shadow-2xl transition-all group relative overflow-hidden">
+            <div key={m.id} className="premium-card p-8 hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300 group relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5">
-                <Video size={100} />
+                <iconify-icon icon="lucide:video" width="100"  ></iconify-icon>
               </div>
               <div className="flex justify-between items-start mb-6 relative z-10">
                 <div className="px-4 py-1.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20">
@@ -613,18 +585,18 @@ function MeetingsSection({ classroom, meetings, onCreate, onEdit, onDelete }: an
                       className="p-2 hover:bg-secondary/10 text-secondary rounded-lg transition-colors"
                       title="Ubah"
                     >
-                      <Pencil size={14} />
+                      <iconify-icon icon="lucide:pencil" width="14"  ></iconify-icon>
                     </button>
                     <button 
                       onClick={() => onDelete(m.id)}
                       className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                       title="Hapus"
                     >
-                      <Trash2 size={14} />
+                      <iconify-icon icon="lucide:trash2" width="14"  ></iconify-icon>
                     </button>
                   </div>
                   <div className="flex items-center gap-2 text-on-surface-variant/40">
-                    <Clock size={14} />
+                    <iconify-icon icon="lucide:clock" width="14"  ></iconify-icon>
                     <span className="text-[10px] font-black uppercase tracking-widest">
                       {m.startTime ? new Date(m.startTime).toLocaleString() : "Setiap Saat"}
                     </span>
@@ -652,8 +624,8 @@ function MeetingsSection({ classroom, meetings, onCreate, onEdit, onDelete }: an
             </div>
           ))}
           {meetings.length === 0 && (
-            <div className="md:col-span-2 py-20 text-center glass rounded-[40px] border-dashed border-2">
-              <Video size={48} className="mx-auto text-on-surface-variant/20 mb-4" />
+            <div className="md:col-span-2 py-20 text-center premium-card border-dashed border-2 border-slate-200">
+              <iconify-icon icon="lucide:video" width="48"  className="mx-auto text-on-surface-variant/20 mb-4" ></iconify-icon>
               <p className="text-on-surface-variant/40 font-black uppercase tracking-widest text-sm">Belum ada jadwal meeting</p>
             </div>
           )}
@@ -671,17 +643,17 @@ function AssignmentsSection({ classroom, assignments, onCreate, onEdit, onDelete
             onClick={onCreate}
             className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2"
           >
-             <Plus size={18} />
+             <iconify-icon icon="lucide:plus" width="18"  ></iconify-icon>
              Tugas Baru
           </button>
        </div>
        
        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {assignments.map((a: any) => (
-            <div key={a.id} className="glass rounded-[40px] p-8 border-white/60 hover:shadow-2xl transition-all group">
+            <div key={a.id} className="premium-card p-8 hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300 group">
               <div className="flex justify-between items-start mb-6">
                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <FileText className="text-primary" size={24} />
+                  <iconify-icon icon="lucide:file-text" width="24" className="text-primary"  ></iconify-icon>
                 </div>
                 <div className="flex items-center bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 p-0.5 shadow-sm">
                   <button 
@@ -689,14 +661,14 @@ function AssignmentsSection({ classroom, assignments, onCreate, onEdit, onDelete
                     className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors"
                     title="Ubah"
                   >
-                    <Pencil size={14} />
+                    <iconify-icon icon="lucide:pencil" width="14"  ></iconify-icon>
                   </button>
                   <button 
                     onClick={() => onDelete(a.id)}
                     className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                     title="Hapus"
                   >
-                    <Trash2 size={14} />
+                    <iconify-icon icon="lucide:trash2" width="14"  ></iconify-icon>
                   </button>
                 </div>
               </div>
@@ -705,7 +677,7 @@ function AssignmentsSection({ classroom, assignments, onCreate, onEdit, onDelete
               
               {a.dueDate && (
                 <div className="flex items-center gap-2 mb-6 text-on-surface-variant/40">
-                  <Clock size={14} />
+                  <iconify-icon icon="lucide:clock" width="14"  ></iconify-icon>
                   <span className="text-[10px] font-black uppercase tracking-widest">
                     Tenggat: {a.dueDate?.toDate?.() ? a.dueDate.toDate().toLocaleString() : new Date(a.dueDate).toLocaleString()}
                   </span>
@@ -735,15 +707,15 @@ function ExamsSection({ classroom, exams, onCreate, onEdit, onDelete }: any) {
             onClick={onCreate}
             className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2"
           >
-             <Plus size={18} />
+             <iconify-icon icon="lucide:plus" width="18"  ></iconify-icon>
              Ujian Baru
           </button>
        </div>
        
        {exams.length === 0 ? (
-          <div className="glass rounded-[40px] p-20 flex flex-col items-center text-center">
+          <div className="premium-card p-20 flex flex-col items-center text-center">
              <div className="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center mb-6">
-                <FileText className="text-primary/40" size={32} />
+                <iconify-icon icon="lucide:file-text" width="32" className="text-primary/40"  ></iconify-icon>
              </div>
              <h3 className="text-xl font-bold mb-2">Belum ada ujian</h3>
              <p className="text-on-surface-variant/60 max-w-sm mb-6">Buat ujian baru secara manual atau gunakan bantuan AI Generator.</p>
@@ -752,10 +724,10 @@ function ExamsSection({ classroom, exams, onCreate, onEdit, onDelete }: any) {
        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              {exams.map((a: any) => (
-               <div key={a.id} className="glass rounded-[40px] p-8 border-white/60 hover:shadow-2xl transition-all group">
+               <div key={a.id} className="premium-card p-8 hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300 group">
                  <div className="flex justify-between items-start mb-6">
                    <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center">
-                     <FileText className="text-secondary" size={24} />
+                     <iconify-icon icon="lucide:file-text" width="24" className="text-secondary"  ></iconify-icon>
                    </div>
                    <div className="flex items-center bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 p-0.5 shadow-sm">
                      <button 
@@ -763,14 +735,14 @@ function ExamsSection({ classroom, exams, onCreate, onEdit, onDelete }: any) {
                        className="p-2 hover:bg-primary/10 text-primary rounded-lg transition-colors"
                        title="Ubah"
                      >
-                       <Pencil size={14} />
+                       <iconify-icon icon="lucide:pencil" width="14"  ></iconify-icon>
                      </button>
                      <button 
                        onClick={() => onDelete(a.id)}
                        className="p-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                        title="Hapus"
                      >
-                       <Trash2 size={14} />
+                       <iconify-icon icon="lucide:trash2" width="14"  ></iconify-icon>
                      </button>
                    </div>
                  </div>
@@ -779,7 +751,7 @@ function ExamsSection({ classroom, exams, onCreate, onEdit, onDelete }: any) {
                  
                  {a.dueDate && (
                    <div className="flex items-center gap-2 mb-6 text-on-surface-variant/40">
-                     <Clock size={14} />
+                     <iconify-icon icon="lucide:clock" width="14"  ></iconify-icon>
                      <span className="text-[10px] font-black uppercase tracking-widest">
                        Tenggat: {a.dueDate?.toDate?.() ? a.dueDate.toDate().toLocaleString() : new Date(a.dueDate).toLocaleString()}
                      </span>
@@ -819,7 +791,7 @@ function ReviewSection({ classroom, assignments, submissions, students, isLoadin
   }, [submissions, students, assignments, filter, classroom]);
 
   if (isLoading) {
-    return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary" size={40} /></div>;
+    return <div className="flex justify-center py-20"><iconify-icon icon="lucide:loader2" width="40" className="animate-spin text-primary"  ></iconify-icon></div>;
   }
 
   return (
@@ -838,7 +810,7 @@ function ReviewSection({ classroom, assignments, submissions, students, isLoadin
        <div className="space-y-6">
           {enrichedSubmissions.length > 0 ? (
             enrichedSubmissions.map((sub: any) => (
-                <div key={sub.id} className="glass rounded-[40px] p-6 md:p-8 border-white/60 flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-2xl transition-all group">
+                <div key={sub.id} className="premium-card p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300 group">
                    <div className="flex items-center gap-6">
                       <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-on-surface/5 overflow-hidden border-2 border-white flex items-center justify-center">
                          {sub.studentPhoto ? (
@@ -867,8 +839,8 @@ function ReviewSection({ classroom, assignments, submissions, students, isLoadin
                 </div>
             ))
           ) : (
-            <div className="text-center py-32 rounded-[48px] border-2 border-dashed border-on-surface/10">
-                <CheckCircle2 className="mx-auto text-on-surface-variant/20 mb-4" size={40} />
+            <div className="text-center py-32 premium-card border-2 border-dashed border-slate-200">
+                <iconify-icon icon="lucide:check-circle2" width="40" className="mx-auto text-on-surface-variant/20 mb-4"  ></iconify-icon>
                 <p className="text-on-surface-variant/40 font-bold uppercase tracking-widest text-xs">Belum ada pengumpulan {filter === "pending" ? "yang menunggu" : "yang sudah dinilai"}</p>
             </div>
           )}
@@ -917,10 +889,10 @@ function StudentsSection({ students, assignments, submissions, onRefresh, isLoad
                 className="p-3 bg-on-surface/5 hover:bg-on-surface/10 rounded-2xl transition-all flex items-center justify-center disabled:opacity-50"
                 title="Muat ulang data"
              >
-                <Clock size={20} className={cn(isLoading && "animate-spin")} />
+                <iconify-icon icon="lucide:clock" width="20"  className={cn(isLoading && "animate-spin")} ></iconify-icon>
              </button>
              <div className="relative group flex-grow sm:flex-grow-0">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 group-focus-within:text-primary transition-colors" size={18} />
+                <iconify-icon icon="lucide:search" width="18" className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 group-focus-within:text-primary transition-colors"  ></iconify-icon>
                 <input 
                   type="text"
                   placeholder="Cari siswa..."
@@ -949,7 +921,7 @@ function StudentsSection({ students, assignments, submissions, onRefresh, isLoad
               const progress = assignments.length > 0 ? Math.round((studentSubmissions.length / assignments.length) * 100) : 0;
               
               return (
-                <div key={s.id} className="glass p-6 md:p-8 rounded-[40px] border-white/60 hover:shadow-2xl transition-all group relative overflow-hidden">
+                 <div key={s.id} className="premium-card p-6 md:p-8 hover:shadow-[0_24px_48px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-slate-200/80 transition-all duration-300 group relative overflow-hidden">
                    <div className="flex items-center gap-5 relative z-10">
                       <div className="w-16 h-16 rounded-2xl bg-on-surface/5 border-2 border-white overflow-hidden shadow-sm flex items-center justify-center">
                          {s.photoURL ? (
@@ -982,15 +954,15 @@ function StudentsSection({ students, assignments, submissions, onRefresh, isLoad
                    </div>
 
                    <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
-                      <Users size={80} />
+                      <iconify-icon icon="lucide:users" width="80"  ></iconify-icon>
                    </div>
                 </div>
               );
             })}
          </div>
        ) : (
-         <div className="text-center py-32 rounded-[48px] border-2 border-dashed border-on-surface/10 bg-on-surface/[0.02]">
-            <Users className="mx-auto text-on-surface-variant/20 mb-6" size={48} />
+          <div className="text-center py-32 premium-card border-2 border-dashed border-slate-200 bg-slate-50/20">
+            <iconify-icon icon="lucide:users" width="48" className="mx-auto text-on-surface-variant/20 mb-6"  ></iconify-icon>
             <h3 className="text-xl font-bold">Siswa tidak ditemukan</h3>
             <p className="text-on-surface-variant/40 font-medium max-w-xs mx-auto mt-2">Coba ubah filter atau kata kunci pencarian.</p>
             <button 
@@ -1012,7 +984,7 @@ function GradingSection({ classroom, students, assignments, submissions }: any) 
           <h2 className="text-3xl font-black tracking-tight">Buku Nilai</h2>
           <button className="px-6 py-3 bg-secondary/10 text-secondary border border-secondary/20 rounded-xl text-xs font-black uppercase tracking-widest">Ekspor</button>
        </div>
-       <div className="glass rounded-[48px] overflow-hidden border-white/60">
+       <div className="premium-card overflow-hidden">
           <table className="w-full text-left border-collapse">
              <thead>
                 <tr className="bg-on-surface/5">
@@ -1051,11 +1023,11 @@ function GradingSection({ classroom, students, assignments, submissions }: any) 
 
 function GeneratorSection({ classroom }: any) {
   return (
-    <div className="glass rounded-[56px] p-16 border-white/60 flex flex-col items-center text-center space-y-8 relative overflow-hidden bg-primary/5">
-       <Sparkles className="text-primary/20 w-32 h-32 absolute -top-10 -right-10 rotate-12" />
+    <div className="premium-card p-16 flex flex-col items-center text-center space-y-8 relative overflow-hidden bg-slate-50/30">
+       <iconify-icon icon="lucide:sparkles" className="text-primary/20 w-32 h-32 absolute -top-10 -right-10 rotate-12" ></iconify-icon>
        
        <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-xl shadow-primary/10 relative z-10">
-          <Sparkles className="text-primary" size={48} />
+          <iconify-icon icon="lucide:sparkles" width="48" className="text-primary"  ></iconify-icon>
        </div>
        
        <div className="space-y-4 relative z-10 max-w-2xl">
@@ -1070,7 +1042,7 @@ function GeneratorSection({ classroom }: any) {
             to={`/generator?classId=${classroom?.id}`}
             className="flex-1 bg-primary text-white py-5 rounded-[24px] font-black tracking-widest text-xs uppercase flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-primary/20"
           >
-             <Zap size={18} fill="currentColor" />
+             <iconify-icon icon="lucide:zap" width="18"  fill="currentColor" ></iconify-icon>
              Buka Generator AI
           </Link>
           <button className="flex-1 btn-glass px-8 py-5 rounded-[24px] font-black tracking-widest text-xs uppercase border-white/60">
@@ -1083,8 +1055,8 @@ function GeneratorSection({ classroom }: any) {
 
 function StatCard({ icon, label, value, trend }: any) {
   return (
-    <div className="glass rounded-[40px] p-8 border-white/60">
-      <div className="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-white/80">
+    <div className="premium-card p-8">
+      <div className="w-12 h-12 bg-slate-50/50 rounded-2xl flex items-center justify-center mb-6 border border-slate-100/60">
         {icon}
       </div>
       <div>

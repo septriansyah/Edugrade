@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Calendar, Video, Link as LinkIcon, Loader2, Plus, Sparkles } from "lucide-react";
+
 import { auth, db, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { cn } from "@/src/lib/utils";
@@ -97,14 +97,14 @@ export default function CreateMeetingModal({ isOpen, onClose, onCreated, classId
         <div className="p-8 border-b border-on-surface/5 flex justify-between items-center bg-white/60">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center">
-                <Video className="text-secondary" size={20} />
+                <iconify-icon icon="lucide:video" width="20" className="text-secondary"  ></iconify-icon>
              </div>
              <h3 className="text-2xl font-black italic tracking-tight text-secondary">
                {editMeeting ? "Ubah Meeting" : "Jadwalkan Meeting"}
              </h3>
           </div>
           <button onClick={onClose} className="w-10 h-10 rounded-full hover:bg-on-surface/5 flex items-center justify-center transition-all">
-            <X size={24} />
+            <iconify-icon icon="lucide:x" width="24"  ></iconify-icon>
           </button>
         </div>
 
@@ -131,7 +131,7 @@ export default function CreateMeetingModal({ isOpen, onClose, onCreated, classId
                       platform === "gmeet" ? "bg-secondary text-white border-secondary shadow-lg" : "bg-white/40 border-white/40 text-on-surface-variant hover:border-secondary/20"
                   )}
                >
-                  <Video size={20} />
+                  <iconify-icon icon="lucide:video" width="20"  ></iconify-icon>
                   <span className="font-bold">Google Meet</span>
                </button>
                <button 
@@ -142,7 +142,7 @@ export default function CreateMeetingModal({ isOpen, onClose, onCreated, classId
                       platform === "zoom" ? "bg-secondary text-white border-secondary shadow-lg" : "bg-white/40 border-white/40 text-on-surface-variant hover:border-secondary/20"
                   )}
                >
-                  <Video size={20} />
+                  <iconify-icon icon="lucide:video" width="20"  ></iconify-icon>
                   <span className="font-bold">Zoom</span>
                </button>
             </div>
@@ -157,7 +157,7 @@ export default function CreateMeetingModal({ isOpen, onClose, onCreated, classId
                         onClick={generateGMeetLink}
                         className="text-[10px] font-black text-secondary hover:underline flex items-center gap-2"
                     >
-                        <Sparkles size={12} />
+                        <iconify-icon icon="lucide:sparkles" width="12"  ></iconify-icon>
                         Buat Link Otomatis
                     </button>
                 )}
@@ -170,7 +170,7 @@ export default function CreateMeetingModal({ isOpen, onClose, onCreated, classId
                   placeholder="https://meet.google.com/..."
                   className="w-full bg-white/50 border-2 border-white/40 focus:border-secondary outline-none px-6 py-4 rounded-2xl font-bold text-lg pr-12"
                 />
-                <LinkIcon className="absolute right-6 top-4.5 text-outline/20" size={24} />
+                <iconify-icon icon="lucide:link" width="24" className="absolute right-6 top-4.5 text-outline/20"  ></iconify-icon>
              </div>
           </div>
 
@@ -183,7 +183,7 @@ export default function CreateMeetingModal({ isOpen, onClose, onCreated, classId
                 onChange={(e) => setStartTime(e.target.value)}
                 className="w-full bg-white/50 border-2 border-white/40 focus:border-secondary outline-none px-6 py-4 rounded-2xl font-bold text-lg pr-12"
               />
-              <Calendar className="absolute right-6 top-4.5 text-outline/20 pointer-events-none" size={24} />
+              <iconify-icon icon="lucide:calendar" width="24" className="absolute right-6 top-4.5 text-outline/20 pointer-events-none"  ></iconify-icon>
             </div>
           </div>
 
@@ -194,7 +194,7 @@ export default function CreateMeetingModal({ isOpen, onClose, onCreated, classId
                 disabled={isSubmitting}
                 className="bg-secondary text-white px-12 py-4 rounded-2xl font-black italic tracking-tight flex items-center gap-3 shadow-xl shadow-secondary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
              >
-                {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
+                {isSubmitting ? <iconify-icon icon="lucide:loader2" width="20" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:plus" width="20"  ></iconify-icon>}
                 {editMeeting ? "Simpan Perubahan" : "Jadwalkan Meeting"}
               </button>
           </div>

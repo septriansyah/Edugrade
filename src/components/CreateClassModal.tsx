@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Zap, Loader2, ZapIcon } from "lucide-react";
+
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 
@@ -94,7 +94,7 @@ export default function CreateClassModal({ isOpen, onClose, onCreated }: CreateC
               onClick={onClose}
               className="absolute right-6 top-6 md:right-8 md:top-8 p-3 hover:bg-surface rounded-full transition-colors"
             >
-              <X size={24} className="text-outline" />
+              <iconify-icon icon="lucide:x" width="24"  className="text-outline" ></iconify-icon>
             </button>
             
             <h3 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">Buat Kelas Baru</h3>
@@ -170,7 +170,7 @@ export default function CreateClassModal({ isOpen, onClose, onCreated }: CreateC
                     onClick={generateJoinCode}
                     className="p-4 md:p-5 bg-surface-container-low rounded-[20px] md:rounded-[24px] hover:bg-surface-container-high transition-colors text-primary"
                   >
-                    <ZapIcon size={24} />
+                    <iconify-icon icon="lucide:zap" width="24"  ></iconify-icon>
                   </button>
                 </div>
               </div>
@@ -180,7 +180,7 @@ export default function CreateClassModal({ isOpen, onClose, onCreated }: CreateC
                 disabled={isCreating}
                 className="w-full bg-primary text-white py-4 md:py-5 rounded-[20px] md:rounded-[24px] font-bold shadow-2xl shadow-primary/30 hover:brightness-110 active:scale-95 transition-all text-lg md:text-xl flex items-center justify-center gap-4 disabled:opacity-50"
               >
-                {isCreating ? <Loader2 className="animate-spin" size={24} /> : <Zap size={24} fill="currentColor" />}
+                {isCreating ? <iconify-icon icon="lucide:loader2" width="24" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:zap" width="24"  fill="currentColor" ></iconify-icon>}
                 KONFIRMASI & TERBITKAN
               </button>
             </form>

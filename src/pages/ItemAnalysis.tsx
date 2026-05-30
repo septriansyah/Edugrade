@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { 
-  BarChart3, 
-  ArrowLeft,
-  FileText,
-  Loader2,
-  ChevronRight,
-  ClipboardList,
-  Layers
-} from "lucide-react";
+
 import Layout from "@/src/components/Layout";
 import { db, auth } from "@/src/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -62,7 +54,7 @@ export default function ItemAnalysis() {
     return (
       <Layout userType="teacher">
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-           <Loader2 className="animate-spin text-primary" size={48} />
+           <iconify-icon icon="lucide:loader2" width="48" className="animate-spin text-primary"  ></iconify-icon>
            <p className="font-bold text-on-surface-variant">Memuat data analisis...</p>
         </div>
       </Layout>
@@ -90,7 +82,7 @@ export default function ItemAnalysis() {
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-3xl mb-4 text-primary">
-            <Layers size={32} />
+            <iconify-icon icon="lucide:layers" width="32"  ></iconify-icon>
           </div>
           <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-on-surface">
             Pilih Tipe <span className="text-primary italic">Analisis</span>
@@ -111,7 +103,7 @@ export default function ItemAnalysis() {
             <div className="p-10 flex flex-col h-full justify-between">
               <div>
                 <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
-                  <BarChart3 className="text-primary" size={28} />
+                  <iconify-icon icon="lucide:bar-chart3" width="28" className="text-primary"  ></iconify-icon>
                 </div>
                 <h3 className="text-2xl font-black mb-2 tracking-tight group-hover:text-primary transition-colors leading-tight">Analisis Pilihan Ganda</h3>
                 <p className="text-sm font-bold text-on-surface-variant/60 mb-8">{pgCount} Butir Soal PG</p>
@@ -120,10 +112,10 @@ export default function ItemAnalysis() {
                 </p>
               </div>
               
-              <div className="flex items-center justify-between pt-8 border-t border-on-surface/5 mt-8">
+              <div className="flex items-center justify-between pt-8 border-t border-slate-100 mt-8">
                  <span className="text-xs font-black text-primary uppercase tracking-widest">Buka Analisis PG</span>
                  <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                    <ChevronRight size={20} />
+                    <iconify-icon icon="lucide:chevron-right" width="20"  ></iconify-icon>
                  </div>
               </div>
             </div>
@@ -138,7 +130,7 @@ export default function ItemAnalysis() {
             <div className="p-10 flex flex-col h-full justify-between">
               <div>
                 <div className="w-14 h-14 bg-secondary/5 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
-                  <ClipboardList className="text-secondary" size={28} />
+                  <iconify-icon icon="lucide:clipboard-list" width="28" className="text-secondary"  ></iconify-icon>
                 </div>
                 <h3 className="text-2xl font-black mb-2 tracking-tight group-hover:text-secondary transition-colors leading-tight">Analisis Esai</h3>
                 <p className="text-sm font-bold text-on-surface-variant/60 mb-8">{essayCount} Butir Soal Esai</p>
@@ -147,10 +139,10 @@ export default function ItemAnalysis() {
                 </p>
               </div>
               
-              <div className="flex items-center justify-between pt-8 border-t border-on-surface/5 mt-8">
+              <div className="flex items-center justify-between pt-8 border-t border-slate-100 mt-8">
                  <span className="text-xs font-black text-secondary uppercase tracking-widest">Buka Analisis Esai</span>
                  <div className="w-10 h-10 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-all">
-                    <ChevronRight size={20} />
+                    <iconify-icon icon="lucide:chevron-right" width="20"  ></iconify-icon>
                  </div>
               </div>
             </div>
@@ -160,7 +152,7 @@ export default function ItemAnalysis() {
         {/* Back Link */}
         <div className="text-center pt-4">
           <Link to="/analytics" className="inline-flex items-center gap-2 text-sm font-black text-on-surface-variant hover:text-primary transition-colors">
-            <ArrowLeft size={16} /> Kembali ke Daftar Tugas
+            <iconify-icon icon="lucide:arrow-left" width="16"  ></iconify-icon> Kembali ke Daftar Tugas
           </Link>
         </div>
       </div>

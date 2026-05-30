@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ClipboardList, Loader2, Calendar, Sparkles, FileUp, ListChecks } from "lucide-react";
+
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { cn } from "@/src/lib/utils";
@@ -138,7 +138,7 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
               onClick={onClose}
               className="absolute right-6 top-6 md:right-8 md:top-8 p-3 hover:bg-surface rounded-full transition-colors"
             >
-              <X size={24} className="text-outline" />
+              <iconify-icon icon="lucide:x" width="24"  className="text-outline" ></iconify-icon>
             </button>
             
             <h3 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">
@@ -156,14 +156,14 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
                       onClick={() => setMethod("manual")} 
                       className={cn("flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3", method === "manual" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant/40")}
                    >
-                      <FileUp size={18} /> Manual / File
+                      <iconify-icon icon="lucide:file-up" width="18"  ></iconify-icon> Manual / File
                    </button>
                    <button 
                       type="button" 
                       onClick={() => setMethod("ai")} 
                       className={cn("flex-1 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3", method === "ai" ? "bg-white shadow-sm text-primary" : "text-on-surface-variant/40")}
                    >
-                      <Sparkles size={18} /> Generator AI
+                      <iconify-icon icon="lucide:sparkles" width="18"  ></iconify-icon> Generator AI
                    </button>
                 </div>
               )}
@@ -216,7 +216,7 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
                         onChange={(e) => setDueDate(e.target.value)}
                         className="w-full bg-surface-container-low border-2 border-transparent focus:border-primary outline-none px-6 py-4 rounded-[20px] font-bold text-lg transition-all pr-12"
                       />
-                      <Calendar className="absolute right-6 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={20} />
+                      <iconify-icon icon="lucide:calendar" width="20" className="absolute right-6 top-1/2 -translate-y-1/2 text-on-surface-variant/40"  ></iconify-icon>
                     </div>
                   </div>
 
@@ -235,7 +235,7 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
               {(method === "ai" && !editAssignment) && (
                 <div className="p-8 bg-primary/5 rounded-[32px] border border-primary/10 flex items-center gap-6">
                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm">
-                      <Sparkles className="text-primary" size={32} />
+                      <iconify-icon icon="lucide:sparkles" width="32" className="text-primary"  ></iconify-icon>
                    </div>
                    <div>
                       <p className="text-sm font-bold">Lanjutkan dengan AI</p>
@@ -252,7 +252,7 @@ export default function CreateAssignmentModal({ isOpen, onClose, onCreated, clas
                   (method === "ai" && !editAssignment) ? "bg-on-surface text-white" : "bg-primary text-white shadow-primary/30"
                 )}
               >
-                {isCreating ? <Loader2 className="animate-spin" size={24} /> : ((method === "ai" && !editAssignment) ? <Sparkles size={24} /> : <ClipboardList size={24} />)}
+                {isCreating ? <iconify-icon icon="lucide:loader2" width="24" className="animate-spin"  ></iconify-icon> : ((method === "ai" && !editAssignment) ? <iconify-icon icon="lucide:sparkles" width="24"  ></iconify-icon> : <iconify-icon icon="lucide:clipboard-list" width="24"  ></iconify-icon>)}
                 {editAssignment ? "SIMPAN PERUBAHAN" : (method === "ai" ? "LANJUT KE GENERATOR" : (isExam ? "TERBITKAN UJIAN" : "TERBITKAN TUGAS"))}
               </button>
             </form>

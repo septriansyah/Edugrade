@@ -1,25 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { 
-  Download, 
-  RefreshCw, 
-  BarChart3, 
-  CheckCircle2, 
-  AlertTriangle, 
-  XCircle, 
-  Wand2, 
-  Eye, 
-  Sparkles, 
-  Zap, 
-  MoreVertical,
-  Search,
-  Loader2,
-  FileText,
-  X,
-  Save,
-  ArrowLeft
-} from "lucide-react";
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
@@ -454,7 +436,7 @@ export default function ItemAnalysisPG() {
     return (
       <Layout userType="teacher">
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-           <Loader2 className="animate-spin text-primary" size={48} />
+           <iconify-icon icon="lucide:loader2" width="48" className="animate-spin text-primary"  ></iconify-icon>
            <p className="font-bold text-on-surface-variant">Menghitung analisis data PG...</p>
         </div>
       </Layout>
@@ -478,13 +460,13 @@ export default function ItemAnalysisPG() {
         {/* Back Button & Header */}
         <div className="space-y-4">
           <Link to="/analytics" className="inline-flex items-center gap-2 text-sm font-black text-primary uppercase tracking-widest hover:translate-x-[-4px] transition-transform">
-            <ArrowLeft size={16} /> Kembali ke Daftar
+            <iconify-icon icon="lucide:arrow-left" width="16"  ></iconify-icon> Kembali ke Daftar
           </Link>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
-                   <BarChart3 className="text-primary" size={20} />
+                   <iconify-icon icon="lucide:bar-chart3" width="20" className="text-primary"  ></iconify-icon>
                 </div>
                 <span className="text-sm font-black text-primary uppercase tracking-[0.2em]">Analisis Soal PG</span>
               </div>
@@ -500,14 +482,14 @@ export default function ItemAnalysisPG() {
                   disabled={pgQuestions.length === 0}
                   className="flex-1 btn-glass px-8 py-4 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all hover:scale-105 disabled:opacity-50"
               >
-                <Download size={20} />
+                <iconify-icon icon="lucide:download" width="20"  ></iconify-icon>
                 Ekspor .TXT
               </button>
               <button 
                   onClick={fetchData}
                   className="flex-1 btn-glass-primary px-8 py-4 rounded-2xl flex items-center justify-center gap-3 shadow-primary/20 transition-all hover:scale-105"
               >
-                <RefreshCw size={20} />
+                <iconify-icon icon="lucide:refresh-cw" width="20"  ></iconify-icon>
                 Recalculate
               </button>
             </div>
@@ -542,9 +524,9 @@ export default function ItemAnalysisPG() {
 
         {activeTab === "analysis" ? (
           pgQuestions.length === 0 ? (
-            <div className="glass rounded-[48px] p-16 text-center max-w-2xl mx-auto space-y-6">
+            <div className="premium-card p-16 text-center max-w-2xl mx-auto space-y-6">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                <AlertTriangle size={40} className="text-primary" />
+                <iconify-icon icon="lucide:alert-triangle" width="40"  className="text-primary" ></iconify-icon>
               </div>
               <h3 className="text-2xl font-black tracking-tight">Tidak Ada Soal PG</h3>
               <p className="text-on-surface-variant text-sm font-medium leading-relaxed">
@@ -552,9 +534,9 @@ export default function ItemAnalysisPG() {
               </p>
             </div>
           ) : !submissions.length ? (
-            <div className="glass rounded-[48px] p-16 flex flex-col items-center text-center max-w-2xl mx-auto space-y-8">
+            <div className="premium-card p-16 flex flex-col items-center text-center max-w-2xl mx-auto space-y-8">
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-                <BarChart3 size={40} className="text-primary" />
+                <iconify-icon icon="lucide:bar-chart3" width="40"  className="text-primary" ></iconify-icon>
               </div>
               <div>
                 <h3 className="text-2xl font-black tracking-tight mb-2">Belum Ada Data Jawaban</h3>
@@ -566,7 +548,7 @@ export default function ItemAnalysisPG() {
                 onClick={() => setActiveTab("anates")}
                 className="btn-glass-primary px-8 py-4 rounded-2xl flex items-center gap-3 font-bold"
               >
-                <Sparkles size={20} />
+                <iconify-icon icon="lucide:sparkles" width="20"  ></iconify-icon>
                 Buka Mode Input Manual (Anates)
               </button>
             </div>
@@ -615,7 +597,7 @@ export default function ItemAnalysisPG() {
                   />
                 </div>
                 
-                <div className="glass p-8 rounded-[48px] border-white/60 col-span-2 md:col-span-4 lg:col-span-2 flex items-center justify-between relative overflow-hidden group">
+                <div className="premium-card p-8 col-span-2 md:col-span-4 lg:col-span-2 flex items-center justify-between relative overflow-hidden group">
                   <div className="relative z-10 w-full">
                     <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">Distribusi Tingkat Kesukaran</p>
                     <div className="flex justify-between items-center w-full gap-4">
@@ -635,7 +617,7 @@ export default function ItemAnalysisPG() {
               {/* Charts & Advanced Analysis */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 {/* Main Chart */}
-                <div className="lg:col-span-8 glass p-10 rounded-[56px] border-white/60 shadow-2xl shadow-on-surface/5">
+                <div className="lg:col-span-8 premium-card p-10">
                    <div className="flex justify-between items-center mb-12">
                       <h3 className="text-3xl font-black tracking-tight">Index Kesukaran Soal (TK)</h3>
                       <div className="flex items-center gap-6">
@@ -664,19 +646,19 @@ export default function ItemAnalysisPG() {
 
                 {/* Side AI Recap */}
                 <div className="lg:col-span-4 flex flex-col gap-8">
-                   <div className="glass p-10 rounded-[48px] border-white/60 flex-1 flex flex-col">
+                   <div className="premium-card p-10 flex-1 flex flex-col">
                       <h4 className="text-xl font-black mb-10 tracking-tight text-on-surface-variant/40 uppercase tracking-widest text-[10px]">Ringkasan Kelayakan</h4>
                       <div className="space-y-8 flex-1">
-                         <SummaryItem icon={<CheckCircle2 className="text-green-600" />} label="Sangat Layak" count={`${analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-green-500/10" />
-                         <SummaryItem icon={<AlertTriangle className="text-yellow-600" />} label="Perlu Revisi" count={`${analytics?.items?.filter((i:any) => i.status === "Revisi" || i.status === "Layak").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Revisi" || i.status === "Layak").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-yellow-500/10" />
-                         <SummaryItem icon={<XCircle className="text-error" />} label="Buang" count={`${analytics?.items?.filter((i:any) => i.status === "Buang").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Buang").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-error/10" />
+                         <SummaryItem icon={<iconify-icon icon="lucide:check-circle2" className="text-green-600" ></iconify-icon>} label="Sangat Layak" count={`${analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Sangat Layak").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-green-500/10" />
+                         <SummaryItem icon={<iconify-icon icon="lucide:alert-triangle" className="text-yellow-600" ></iconify-icon>} label="Perlu Revisi" count={`${analytics?.items?.filter((i:any) => i.status === "Revisi" || i.status === "Layak").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Revisi" || i.status === "Layak").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-yellow-500/10" />
+                         <SummaryItem icon={<iconify-icon icon="lucide:x-circle" className="text-error" ></iconify-icon>} label="Buang" count={`${analytics?.items?.filter((i:any) => i.status === "Buang").length || 0} Soal`} percent={`${Math.round((analytics?.items?.filter((i:any) => i.status === "Buang").length || 0) / (analytics?.items?.length || 1) * 100)}%`} color="bg-error/10" />
                       </div>
                    </div>
                 </div>
               </div>
 
               {/* Response Matrix */}
-              <div className="glass rounded-[56px] border-white/60 overflow-hidden shadow-2xl">
+              <div className="premium-card overflow-hidden">
                  <div className="p-10 border-b border-white/40 flex justify-between items-center">
                     <h4 className="text-3xl font-black tracking-tight">Matriks Pilihan Jawaban</h4>
                     <div className="flex gap-4">
@@ -736,13 +718,13 @@ export default function ItemAnalysisPG() {
               </div>
 
               {/* Detailed Table */}
-              <div className="glass rounded-[56px] border-white/60 overflow-hidden shadow-2xl">
+              <div className="premium-card overflow-hidden">
                  <div className="p-10 border-b border-white/40 flex flex-col md:flex-row justify-between items-center gap-6">
                     <h4 className="text-3xl font-black tracking-tight">Analisis Butir Detail</h4>
                     <div className="flex gap-4 w-full md:w-auto">
                        <div className="relative flex-1 md:w-64 group">
                           <span className="absolute left-6 top-1/2 -translate-y-1/2 text-on-surface-variant/40 group-focus-within:text-primary transition-colors">
-                              <Search size={16} />
+                              <iconify-icon icon="lucide:search" width="16"  ></iconify-icon>
                           </span>
                           <input 
                               type="text" 
@@ -797,7 +779,7 @@ export default function ItemAnalysisPG() {
           )
         ) : (
           /* Render Manual Grid */
-          <div className="glass rounded-[56px] border-white/60 shadow-2xl p-10 space-y-10">
+          <div className="premium-card p-10 space-y-10">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-white/20">
               <div>
                 <h3 className="text-2xl font-black tracking-tight mb-1">Input Jawaban Manual PG (Mode Anates)</h3>
@@ -815,7 +797,7 @@ export default function ItemAnalysisPG() {
                   disabled={isSavingManual}
                   className="btn-glass-primary px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2"
                 >
-                  {isSavingManual ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
+                  {isSavingManual ? <iconify-icon icon="lucide:loader2" width="14" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:save" width="14"  ></iconify-icon>}
                   Simpan & Hitung
                 </button>
               </div>
@@ -886,7 +868,7 @@ export default function ItemAnalysisPG() {
                           className="text-error hover:bg-error/10 p-2 rounded-xl transition-all"
                           title="Hapus Siswa"
                         >
-                          <X size={16} />
+                          <iconify-icon icon="lucide:x" width="16"  ></iconify-icon>
                         </button>
                       </td>
                     </tr>
@@ -905,17 +887,17 @@ export default function ItemAnalysisPG() {
                 <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-[40px] p-10 w-full max-w-2xl relative z-10 shadow-2xl overflow-hidden">
                     <div className="flex justify-between items-center mb-8">
                         <div className="flex items-center gap-3">
-                            <Sparkles className="text-primary" />
+                            <iconify-icon icon="lucide:sparkles" className="text-primary" ></iconify-icon>
                             <h3 className="text-2xl font-black tracking-tight">Perbaikan Soal PG oleh AI</h3>
                         </div>
-                        <button onClick={() => setRefinedQuestion(null)}><X /></button>
+                        <button onClick={() => setRefinedQuestion(null)}><iconify-icon icon="lucide:x" ></iconify-icon></button>
                     </div>
 
                     <div className="space-y-8 max-h-[60vh] overflow-y-auto pr-4 scrollbar-hide">
                         {refinedQuestion.revisionNotes && (
                             <div className="bg-primary/5 p-6 rounded-[24px] border border-primary/10">
                                 <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
-                                    <Sparkles size={12} /> Analisis Revisi AI
+                                    <iconify-icon icon="lucide:sparkles" width="12"  ></iconify-icon> Analisis Revisi AI
                                 </p>
                                 <p className="text-sm font-medium text-on-surface-variant leading-relaxed">
                                     {refinedQuestion.revisionNotes}
@@ -933,14 +915,14 @@ export default function ItemAnalysisPG() {
                                 {refinedQuestion.options?.map((opt: any) => (
                                     <div key={opt.label} className={cn("p-4 rounded-2xl border-2 flex items-center justify-between", opt.isCorrect ? "bg-green-500/10 border-green-500/20 text-green-700" : "bg-on-surface/5 border-transparent")}>
                                         <span className="font-bold">{opt.label}. {opt.text}</span>
-                                        {opt.isCorrect && <CheckCircle2 size={16} />}
+                                        {opt.isCorrect && <iconify-icon icon="lucide:check-circle2" width="16"  ></iconify-icon>}
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
 
-                    <div className="flex gap-4 pt-8 mt-4 border-t border-on-surface/5">
+                    <div className="flex gap-4 pt-8 mt-4 border-t border-slate-100">
                         <button onClick={() => setRefinedQuestion(null)} className="flex-1 py-4 font-black uppercase text-[10px] tracking-widest border-2 border-on-surface/10 rounded-2xl hover:bg-on-surface/5 transition-colors">Batal</button>
                         <button onClick={applyFix} className="flex-1 py-4 bg-primary text-white font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:brightness-110 transition-all">Terapkan Perbaikan</button>
                     </div>
@@ -954,7 +936,7 @@ export default function ItemAnalysisPG() {
 
 function StatBox({ label, value, tag, tagColor, progress }: any) {
     return (
-        <motion.div whileHover={{ y: -5 }} className="glass p-10 rounded-[48px] border-white/60 shadow-xl shadow-on-surface/5">
+        <motion.div className="premium-card-interactive p-10">
             <p className="text-[10px] font-black text-on-surface-variant/40 uppercase tracking-[0.2em] mb-4">{label}</p>
             <h3 className="text-6xl font-black tracking-tighter mb-4 text-on-surface">{value}</h3>
             {tag && <span className={cn("px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border", tagColor)}>{tag}</span>}
@@ -1046,12 +1028,12 @@ function TableRow({ no, snippet, difficulty, diffColor, dp, dpColor, validity, v
                             onClick={onFix}
                             className="bg-primary text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 group-hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                         >
-                            {isFixing ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} fill="currentColor" />} AI FIX
+                            {isFixing ? <iconify-icon icon="lucide:loader2" width="14" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:zap" width="14"  fill="currentColor" ></iconify-icon>} AI FIX
                         </button>
                     ) : (
-                        <button className="p-3 bg-white/40 rounded-xl hover:text-primary transition-all backdrop-blur-md border border-white/60 shadow-sm"><Eye size={18} /></button>
+                        <button className="p-3 bg-white/40 rounded-xl hover:text-primary transition-all backdrop-blur-md border border-white/60 shadow-sm"><iconify-icon icon="lucide:eye" width="18"  ></iconify-icon></button>
                     )}
-                    <button className="p-3 bg-white/40 rounded-xl hover:text-on-surface transition-all backdrop-blur-md border border-white/60 shadow-sm"><MoreVertical size={18} /></button>
+                    <button className="p-3 bg-white/40 rounded-xl hover:text-on-surface transition-all backdrop-blur-md border border-white/60 shadow-sm"><iconify-icon icon="lucide:more-vertical" width="18"  ></iconify-icon></button>
                 </div>
             </td>
         </tr>

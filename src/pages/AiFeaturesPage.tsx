@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, Cpu, CheckCircle2, Zap, BarChart3, Clock, GraduationCap, Users, Award, ShieldCheck, Menu, X } from "lucide-react";
+
 import { motion, AnimatePresence } from "motion/react";
 import Logo from "/src/img/Logo.svg";
 import Asset1 from "/src/img/Asset 1.png";
@@ -54,7 +54,7 @@ export default function AiFeaturesPage() {
               onClick={() => setIsMobileMenuOpen(true)}
               className="p-2 text-on-surface hover:bg-on-surface/5 rounded-xl transition-all"
             >
-              <Menu size={24} />
+              <iconify-icon icon="lucide:menu" width="24"  ></iconify-icon>
             </button>
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function AiFeaturesPage() {
               <div className="flex justify-between items-center mb-12">
                 <img src={Logo} alt="Edugrade Logo" className="h-8 object-contain" />
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-on-surface/5 rounded-xl transition-all">
-                  <X size={20} />
+                  <iconify-icon icon="lucide:x" width="20"  ></iconify-icon>
                 </button>
               </div>
 
@@ -130,7 +130,7 @@ export default function AiFeaturesPage() {
             transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/5 border border-primary/10 rounded-full"
           >
-            <Sparkles size={16} className="text-primary animate-pulse" />
+            <iconify-icon icon="lucide:sparkles" width="16"  className="text-primary animate-pulse" ></iconify-icon>
             <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Teknologi AI Edugrade v3.0</span>
           </motion.div>
           
@@ -171,7 +171,7 @@ export default function AiFeaturesPage() {
               className="space-y-6"
             >
               <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                <Cpu size={28} />
+                <iconify-icon icon="lucide:cpu" width="28"  ></iconify-icon>
               </div>
               <h2 className="text-3xl md:text-4xl font-black tracking-tight text-on-surface">Generator Soal Berbasis Taksonomi Bloom</h2>
               <p className="text-on-surface-variant text-lg leading-relaxed font-medium">
@@ -180,14 +180,14 @@ export default function AiFeaturesPage() {
               
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={20} className="text-primary shrink-0 mt-1" />
+                  <iconify-icon icon="lucide:check-circle2" width="20"  className="text-primary shrink-0 mt-1" ></iconify-icon>
                   <div>
                     <span className="font-bold text-on-surface block">Efisiensi Waktu Hingga 90%</span>
                     <span className="text-on-surface-variant text-sm font-medium">Buat paket soal lengkap dengan kunci jawaban dan pembahasan dalam hitungan detik, bukan jam.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={20} className="text-primary shrink-0 mt-1" />
+                  <iconify-icon icon="lucide:check-circle2" width="20"  className="text-primary shrink-0 mt-1" ></iconify-icon>
                   <div>
                     <span className="font-bold text-on-surface block">Standar Kualitas HOTS</span>
                     <span className="text-on-surface-variant text-sm font-medium">AI memastikan pertanyaan menantang keterampilan berpikir kritis siswa secara proporsional.</span>
@@ -270,7 +270,7 @@ export default function AiFeaturesPage() {
               className="space-y-6"
             >
               <div className="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
-                <Award size={28} />
+                <iconify-icon icon="lucide:award" width="28"  ></iconify-icon>
               </div>
               <h2 className="text-3xl md:text-4xl font-black tracking-tight text-on-surface">Koreksi & Rekomendasi Nilai Esai Cerdas</h2>
               <p className="text-on-surface-variant text-lg leading-relaxed font-medium">
@@ -279,14 +279,14 @@ export default function AiFeaturesPage() {
               
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={20} className="text-secondary shrink-0 mt-1" />
+                  <iconify-icon icon="lucide:check-circle2" width="20"  className="text-secondary shrink-0 mt-1" ></iconify-icon>
                   <div>
                     <span className="font-bold text-on-surface block">Pencocokan Kata Kunci Semantik</span>
                     <span className="text-on-surface-variant text-sm font-medium">AI tidak hanya mencari kata yang sama persis, tetapi juga memahami konsep dan arti jawaban siswa secara kontekstual.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={20} className="text-secondary shrink-0 mt-1" />
+                  <iconify-icon icon="lucide:check-circle2" width="20"  className="text-secondary shrink-0 mt-1" ></iconify-icon>
                   <div>
                     <span className="font-bold text-on-surface block">Rekomendasi yang Dapat Disesuaikan</span>
                     <span className="text-on-surface-variant text-sm font-medium">Guru memegang kendali penuh. AI memberikan rekomendasi skor dan masukan, lalu Guru dapat menyesuaikan atau langsung mengonfirmasinya.</span>
@@ -306,7 +306,7 @@ export default function AiFeaturesPage() {
               className="space-y-6"
             >
               <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-600">
-                <BarChart3 size={28} />
+                <iconify-icon icon="lucide:bar-chart3" width="28"  ></iconify-icon>
               </div>
               <h2 className="text-3xl md:text-4xl font-black tracking-tight text-on-surface">Analisis Butir Soal & Pengecoh Otomatis</h2>
               <p className="text-on-surface-variant text-lg leading-relaxed font-medium">
@@ -315,14 +315,14 @@ export default function AiFeaturesPage() {
               
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={20} className="text-green-600 shrink-0 mt-1" />
+                  <iconify-icon icon="lucide:check-circle2" width="20"  className="text-green-600 shrink-0 mt-1" ></iconify-icon>
                   <div>
                     <span className="font-bold text-on-surface block">Validitas & Reliabilitas Seketika</span>
                     <span className="text-on-surface-variant text-sm font-medium">Sistem secara otomatis menghitung koefisien korelasi skor butir dengan skor total untuk mengetahui kevalidan dan keandalan soal.</span>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={20} className="text-green-600 shrink-0 mt-1" />
+                  <iconify-icon icon="lucide:check-circle2" width="20"  className="text-green-600 shrink-0 mt-1" ></iconify-icon>
                   <div>
                     <span className="font-bold text-on-surface block">Tingkat Kesukaran & Daya Pembeda</span>
                     <span className="text-on-surface-variant text-sm font-medium">Mengelompokkan soal secara otomatis menjadi sangat mudah, sedang, atau sukar serta mengukur kemampuan membedakan siswa pandai dan kurang pandai.</span>
@@ -398,15 +398,15 @@ export default function AiFeaturesPage() {
               </h3>
               <ul className="space-y-4 text-sm font-medium text-on-surface">
                 <li className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className="text-primary shrink-0" />
+                  <iconify-icon icon="lucide:check-circle2" width="16"  className="text-primary shrink-0" ></iconify-icon>
                   <span>Soal berkualitas tinggi siap pakai dalam 1 menit.</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className="text-primary shrink-0" />
+                  <iconify-icon icon="lucide:check-circle2" width="16"  className="text-primary shrink-0" ></iconify-icon>
                   <span>AI merekomendasikan nilai esai dengan analisis kata kunci.</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className="text-primary shrink-0" />
+                  <iconify-icon icon="lucide:check-circle2" width="16"  className="text-primary shrink-0" ></iconify-icon>
                   <span>Statistik analisis butir soal terhitung otomatis instan.</span>
                 </li>
               </ul>
@@ -431,7 +431,7 @@ export default function AiFeaturesPage() {
               className="inline-flex items-center gap-3 bg-primary text-white py-4 px-10 rounded-2xl font-bold shadow-xl shadow-primary/25 hover:scale-105 transition-all text-lg"
             >
               Mulai Gratis Sekarang
-              <ArrowRight size={20} />
+              <iconify-icon icon="lucide:arrow-right" width="20"  ></iconify-icon>
             </Link>
           </div>
         </div>

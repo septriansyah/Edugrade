@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { Dna, FileQuestion, FileText, Save, Zap, Send, Info, Bell, Loader2, ArrowLeft, ArrowRight, Check, MessageSquare, ShieldCheck, User, Plus, GraduationCap, Upload, Cpu, AlertCircle, Users, RefreshCw } from "lucide-react";
+
 import Layout from "@/src/components/Layout";
 import { cn } from "@/src/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
@@ -805,7 +805,7 @@ export default function AssignmentDetail() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-surface">
-         <Loader2 className="animate-spin text-primary" size={48} />
+         <iconify-icon icon="lucide:loader2" width="48" className="animate-spin text-primary"  ></iconify-icon>
          <p className="font-bold text-on-surface-variant">Memuat data...</p>
       </div>
     );
@@ -816,7 +816,7 @@ export default function AssignmentDetail() {
       <Layout userType="student">
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center space-y-6">
           <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center shadow-lg">
-            <ShieldCheck size={40} />
+            <iconify-icon icon="lucide:shield-check" width="40"  ></iconify-icon>
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-black text-on-surface">Akses Ditolak</h1>
@@ -839,7 +839,7 @@ export default function AssignmentDetail() {
             <div className="flex justify-between items-center bg-white/50 backdrop-blur-xl p-8 rounded-[40px] border border-white sticky top-10 z-50">
                <div className="flex items-center gap-4">
                   <button onClick={() => setViewMode("standard")} className="p-3 hover:bg-on-surface/5 rounded-2xl transition-all">
-                     <ArrowLeft size={24} />
+                     <iconify-icon icon="lucide:arrow-left" width="24"  ></iconify-icon>
                   </button>
                   <div>
                     <h1 className="text-2xl font-black tracking-tight">{assignment?.title || "Ujian"}</h1>
@@ -939,7 +939,7 @@ export default function AssignmentDetail() {
             <div className="flex justify-between items-start border-b-2 border-on-surface pb-12 mb-16">
                <div className="flex items-center gap-6">
                   <div className="w-16 h-16 bg-on-surface text-surface rounded-2xl flex items-center justify-center">
-                     <GraduationCap size={32} />
+                     <iconify-icon icon="lucide:graduation-cap" width="32"  ></iconify-icon>
                   </div>
                   <div>
                     <input 
@@ -1045,7 +1045,7 @@ export default function AssignmentDetail() {
                   }} 
                   className="bg-primary text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2"
                >
-                  <Upload size={20} />
+                  <iconify-icon icon="lucide:upload" width="20"  ></iconify-icon>
                   Download .DOCX (Word)
                </button>
                <button onClick={() => setViewMode("standard")} className="px-8 py-4 bg-on-surface/5 rounded-2xl font-bold">Kembali ke Pratinjau</button>
@@ -1064,7 +1064,7 @@ export default function AssignmentDetail() {
         {/* Breadcrumb & Navigation */}
         <div className="flex justify-between items-center px-4">
            <Link to={userRole === "student" ? "/student/dashboard" : (assignment?.classId ? `/class/${assignment.classId}?tab=${assignment?.type === "exam" ? "exams" : "reviews"}` : "/dashboard")} className="flex items-center gap-2 text-primary font-black uppercase text-xs tracking-widest hover:translate-x-[-10px] transition-all">
-              <ArrowLeft size={16} />
+              <iconify-icon icon="lucide:arrow-left" width="16"  ></iconify-icon>
               Kembali ke {userRole === "student" ? "Dashboard" : "Kelas"}
            </Link>
            <div className="flex gap-4">
@@ -1088,7 +1088,7 @@ export default function AssignmentDetail() {
             {userRole === "teacher" && (
               <div className="flex flex-wrap gap-3 mt-4">
                 <div className="flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-xl border border-secondary/20">
-                    <User size={14} className="text-secondary" />
+                    <iconify-icon icon="lucide:user" width="14"  className="text-secondary" ></iconify-icon>
                     <span className="text-xs font-bold text-secondary">
                         {studentIdParam ? `Menilai Tugas: ${studentData?.displayName || "Memuat..."}` : "Mode Pratinjau (Sebagai Pengajar)"}
                     </span>
@@ -1103,7 +1103,7 @@ export default function AssignmentDetail() {
                                 : "bg-white text-secondary border-secondary/20 hover:bg-secondary/5"
                         )}
                     >
-                        <Zap size={12} />
+                        <iconify-icon icon="lucide:zap" width="12"  ></iconify-icon>
                         {isOcrMode ? "Lihat Daftar Soal" : "Koreksi Lembar Jawaban (OCR)"}
                     </button>
                 )}
@@ -1163,7 +1163,7 @@ export default function AssignmentDetail() {
                      <div className="flex justify-between items-center pb-6 border-b border-on-surface/5">
                         <div className="flex items-center gap-3">
                            <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center">
-                              <Zap className="text-secondary" size={20} />
+                              <iconify-icon icon="lucide:zap" width="20" className="text-secondary"  ></iconify-icon>
                            </div>
                            <div>
                               <h3 className="text-2xl font-black italic text-secondary leading-none">Asisten Koreksi OCR</h3>
@@ -1182,7 +1182,7 @@ export default function AssignmentDetail() {
                      {!ocrImage ? (
                         <div className="flex-1 flex flex-col items-center justify-center border-4 border-dashed border-secondary/20 rounded-[32px] p-12 bg-secondary/5 text-center min-h-[350px]">
                            <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mb-6">
-                              <Upload className="text-secondary" size={32} />
+                              <iconify-icon icon="lucide:upload" width="32" className="text-secondary"  ></iconify-icon>
                            </div>
                            <h4 className="text-xl font-black mb-2">Unggah Foto Lembar Jawaban</h4>
                            <p className="text-sm text-on-surface-variant/75 max-w-sm mb-8 leading-relaxed">Format yang didukung: JPG, PNG, atau scan PDF. Pastikan lembar jawaban rata dan mendapat pencahayaan yang cukup.</p>
@@ -1216,7 +1216,7 @@ export default function AssignmentDetail() {
                                     isOcrScanning && "brightness-50 blur-[1px]"
                                  )}>
                                     <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-4 border border-red-500/20">
-                                       <FileText size={32} />
+                                       <iconify-icon icon="lucide:file-text" width="32"  ></iconify-icon>
                                     </div>
                                     <h5 className="font-black text-on-surface truncate max-w-[200px] leading-tight mb-1">{uploadedFileName || "dokumen_ujian.pdf"}</h5>
                                     <span className="text-[9px] font-black text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/15 uppercase tracking-widest">Dokumen PDF</span>
@@ -1234,7 +1234,7 @@ export default function AssignmentDetail() {
                               
                               {isOcrScanning ? (
                                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-6 space-y-4 text-white text-center rounded-3xl">
-                                    <Loader2 className="animate-spin text-secondary" size={40} />
+                                    <iconify-icon icon="lucide:loader2" width="40" className="animate-spin text-secondary"  ></iconify-icon>
                                     <div>
                                        <p className="font-black uppercase tracking-widest text-xs">Sedang Menganalisis...</p>
                                        <p className="text-[10px] uppercase text-white/60 tracking-wider mt-2">
@@ -1252,7 +1252,7 @@ export default function AssignmentDetail() {
                                        onClick={simulateOcr}
                                        className="bg-secondary text-white px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-secondary/20 hover:scale-105 transition-all flex items-center gap-2"
                                     >
-                                       <Zap size={14} /> Mulai Koreksi OCR
+                                       <iconify-icon icon="lucide:zap" width="14"  ></iconify-icon> Mulai Koreksi OCR
                                     </button>
                                     <button 
                                        type="button"
@@ -1278,13 +1278,13 @@ export default function AssignmentDetail() {
                            {/* OCR Results & verification */}
                            <div className="glass rounded-3xl p-6 border-white/60 flex flex-col">
                               <h4 className="text-lg font-black tracking-tight mb-4 flex items-center gap-2">
-                                 <Cpu size={18} className="text-secondary" />
+                                 <iconify-icon icon="lucide:cpu" width="18"  className="text-secondary" ></iconify-icon>
                                  Hasil Pembacaan OCR
                               </h4>
                               
                               {!isOcrCompleted ? (
                                  <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-on-surface-variant/40">
-                                    <AlertCircle size={40} className="mb-4" />
+                                    <iconify-icon icon="lucide:alert-circle" width="40"  className="mb-4" ></iconify-icon>
                                     <p className="text-sm font-medium">Silakan lakukan scan lembar jawaban terlebih dahulu untuk memunculkan hasil pemeriksaan.</p>
                                  </div>
                               ) : (
@@ -1402,7 +1402,7 @@ export default function AssignmentDetail() {
                                                             onClick={() => handleReevaluateEssay(idx, q)}
                                                             className="text-[9px] font-black uppercase text-secondary hover:underline flex items-center gap-1"
                                                          >
-                                                            <RefreshCw size={10} /> Koreksi Ulang dengan AI
+                                                            <iconify-icon icon="lucide:refresh-cw" width="10"  ></iconify-icon> Koreksi Ulang dengan AI
                                                          </button>
                                                       </div>
                                                    )}
@@ -1418,7 +1418,7 @@ export default function AssignmentDetail() {
                                        disabled={isSavingFeedback}
                                        className="mt-auto w-full bg-secondary text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-secondary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                                     >
-                                       {isSavingFeedback ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                                       {isSavingFeedback ? <iconify-icon icon="lucide:loader2" width="16" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:save" width="16"  ></iconify-icon>}
                                        Simpan Hasil Scan OCR
                                     </button>
                                  </div>
@@ -1430,7 +1430,7 @@ export default function AssignmentDetail() {
                ) : assignment?.method === 'manual' ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center space-y-8">
                    <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center">
-                      <FileText className="text-primary" size={48} />
+                      <iconify-icon icon="lucide:file-text" width="48" className="text-primary"  ></iconify-icon>
                    </div>
                    <div>
                       <h3 className="text-3xl font-black mb-4">Tugas Manual / File</h3>
@@ -1443,7 +1443,7 @@ export default function AssignmentDetail() {
                        rel="noreferrer"
                        className="bg-primary text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center gap-3 hover:scale-105 transition-all text-center"
                      >
-                       <FileText size={24} />
+                       <iconify-icon icon="lucide:file-text" width="24"  ></iconify-icon>
                        Unduh File Soal
                      </a>
                    )}
@@ -1511,7 +1511,7 @@ export default function AssignmentDetail() {
                           <div className="p-5 bg-primary/5 border border-primary/10 rounded-2xl space-y-3">
                             <div className="flex justify-between items-center">
                               <span className="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-1.5">
-                                <Cpu size={14} /> Rekomendasi Nilai AI (Soal Ini)
+                                <iconify-icon icon="lucide:cpu" width="14"  ></iconify-icon> Rekomendasi Nilai AI (Soal Ini)
                               </span>
                               <span className="text-lg font-black text-primary">
                                 {aiEssayGrading?.[currentQuestionIndex]?.score !== undefined 
@@ -1549,7 +1549,7 @@ export default function AssignmentDetail() {
                        className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm font-black text-primary uppercase tracking-widest bg-primary/5 p-4 sm:p-0 rounded-2xl disabled:opacity-20 transition-all"
                      >
                         Soal Berikutnya
-                        <ArrowRight size={16} />
+                        <iconify-icon icon="lucide:arrow-right" width="16"  ></iconify-icon>
                      </button>
                   </div>
                 </>
@@ -1561,14 +1561,14 @@ export default function AssignmentDetail() {
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                className={cn(
-                   "glass rounded-[48px] p-10 border-white/60 shadow-xl overflow-hidden relative",
+                   "premium-card p-10 overflow-hidden relative",
                    userRole === "teacher" ? "bg-secondary/5" : "bg-primary/5"
                )}
             >
                <div className="flex justify-between items-center mb-8 relative z-10">
                   <div className="flex items-center gap-3">
                      <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", userRole === "teacher" ? "bg-secondary/20 text-secondary" : "bg-primary/20 text-primary")}>
-                        <MessageSquare size={20} />
+                        <iconify-icon icon="lucide:message-square" width="20"  ></iconify-icon>
                      </div>
                      <h4 className="text-xl font-black tracking-tight">Feedback Pengajar</h4>
                   </div>
@@ -1581,7 +1581,7 @@ export default function AssignmentDetail() {
                   <div className="space-y-6 relative z-10">
                     {!studentIdParam ? (
                         <div className="p-8 bg-on-surface/5 rounded-[32px] border-2 border-dashed border-outline-variant/20 flex flex-col items-center text-center">
-                            <Info className="text-on-surface-variant/40 mb-4" size={32} />
+                            <iconify-icon icon="lucide:info" width="32" className="text-on-surface-variant/40 mb-4"  ></iconify-icon>
                             <p className="text-sm font-bold text-on-surface-variant/60 uppercase tracking-widest">
                                 Pilih siswa dari menu Review untuk memberikan nilai dan feedback.
                             </p>
@@ -1594,7 +1594,7 @@ export default function AssignmentDetail() {
                                     disabled={isAIGrading || retryCountdown !== null}
                                     className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-primary/20 transition-all disabled:opacity-50"
                                 >
-                                    {isAIGrading ? <Loader2 className="animate-spin" size={14} /> : (retryCountdown !== null ? <span className="text-secondary">{retryCountdown}s</span> : <Zap size={14} fill="currentColor" />)}
+                                    {isAIGrading ? <iconify-icon icon="lucide:loader2" width="14" className="animate-spin"  ></iconify-icon> : (retryCountdown !== null ? <span className="text-secondary">{retryCountdown}s</span> : <iconify-icon icon="lucide:zap" width="14"  fill="currentColor" ></iconify-icon>)}
                                     {isAIGrading ? "Menilai otomatis..." : (retryCountdown !== null ? "Harap Tunggu" : "Nilai Otomatis dengan AI")}
                                 </button>
                             </div>
@@ -1628,7 +1628,7 @@ export default function AssignmentDetail() {
     
                             {currentQuestion?.type === "Essay" && currentQuestion?.explanation && (
                                 <div className="bg-primary/5 border border-primary/10 p-6 rounded-[32px] space-y-2 mb-6">
-                                    <h5 className="text-sm font-black text-primary uppercase tracking-widest flex items-center gap-2"><Check size={16} /> Kunci Jawaban / Panduan</h5>
+                                    <h5 className="text-sm font-black text-primary uppercase tracking-widest flex items-center gap-2"><iconify-icon icon="lucide:check" width="16"  ></iconify-icon> Kunci Jawaban / Panduan</h5>
                                     <p className="text-sm text-on-surface font-medium leading-relaxed">{currentQuestion.explanation}</p>
                                 </div>
                             )}
@@ -1645,7 +1645,7 @@ export default function AssignmentDetail() {
                                     disabled={isSavingFeedback}
                                     className="bg-secondary text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-secondary/20 disabled:opacity-50"
                                 >
-                                    {isSavingFeedback ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                                    {isSavingFeedback ? <iconify-icon icon="lucide:loader2" width="16" className="animate-spin"  ></iconify-icon> : <iconify-icon icon="lucide:save" width="16"  ></iconify-icon>}
                                     {isSavingFeedback ? "Menyimpan..." : "Simpan Feedback"}
                                 </button>
                             </div>
@@ -1660,14 +1660,14 @@ export default function AssignmentDetail() {
                         </div>
                     ) : (
                         <div className="bg-on-surface/5 p-8 rounded-[32px] border-2 border-dashed border-on-surface/10 flex items-center gap-4">
-                            <Info size={20} className="text-on-surface-variant/40" />
+                            <iconify-icon icon="lucide:info" width="20"  className="text-on-surface-variant/40" ></iconify-icon>
                             <p className="text-sm font-bold text-on-surface-variant/40 uppercase tracking-widest">Belum ada feedback dari pengajar.</p>
                         </div>
                     )}
                   </div>
                )}
                <div className={cn("absolute -bottom-12 -right-12 w-48 h-48 opacity-10", userRole === "teacher" ? "text-secondary" : "text-primary")}>
-                  <MessageSquare size={192} />
+                  <iconify-icon icon="lucide:message-square" width="192"  ></iconify-icon>
                </div>
             </motion.div>
           </div>
@@ -1693,7 +1693,7 @@ export default function AssignmentDetail() {
               <div className="glass p-10 rounded-[48px] border-white/60 shadow-xl flex flex-col">
                 <div className="flex justify-between items-center mb-10">
                   <h4 className="text-xl font-black tracking-tight">{userRole === "teacher" ? "Jawaban Siswa" : "Input Digital"}</h4>
-                  <FileText className="text-primary/20" size={24} />
+                  <iconify-icon icon="lucide:file-text" width="24" className="text-primary/20"  ></iconify-icon>
                 </div>
                 <textarea 
                   className={cn(
@@ -1714,7 +1714,7 @@ export default function AssignmentDetail() {
                 )}
                 {userRole === "teacher" && (
                   <div className="flex items-center gap-3 px-6 py-4 bg-primary/5 rounded-2xl border border-primary/10">
-                      <ShieldCheck className="text-primary" size={18} />
+                      <iconify-icon icon="lucide:shield-check" width="18" className="text-primary"  ></iconify-icon>
                       <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-tight">Jawaban ini telah diverifikasi oleh pemeriksaan integritas AI</span>
                   </div>
                 )}
@@ -1732,13 +1732,13 @@ export default function AssignmentDetail() {
               >
                   {isSubmitting ? (
                       <>
-                          <Loader2 className="animate-spin" size={24} />
+                          <iconify-icon icon="lucide:loader2" width="24" className="animate-spin"  ></iconify-icon>
                           Mengirim...
                       </>
                   ) : (
                       <>
                           Kumpulkan
-                          <Send size={24} />
+                          <iconify-icon icon="lucide:send" width="24"  ></iconify-icon>
                       </>
                   )}
               </button>
@@ -1764,7 +1764,7 @@ export default function AssignmentDetail() {
                                     <span className="font-black text-on-surface">{essayScore !== "" ? `${essayScore}/100` : "0/100"}</span>
                                 ) : (
                                     <div className="flex items-center gap-2">
-                                        {isAutoGradingEssays && <Loader2 className="animate-spin text-primary shrink-0" size={14} />}
+                                        {isAutoGradingEssays && <iconify-icon icon="lucide:loader2" width="14" className="animate-spin text-primary shrink-0"  ></iconify-icon>}
                                         <input 
                                             type="number" 
                                             placeholder="0-100"
@@ -1788,7 +1788,7 @@ export default function AssignmentDetail() {
                                   isSavingFeedback ? "opacity-50 cursor-wait" : "hover:scale-105 active:scale-95"
                               )}
                           >
-                              {isSavingFeedback ? <Loader2 className="animate-spin" size={16} /> : null}
+                              {isSavingFeedback ? <iconify-icon icon="lucide:loader2" width="16" className="animate-spin"  ></iconify-icon> : null}
                               Finalisasi Nilai
                           </button>
                       </div>
@@ -1809,7 +1809,7 @@ function ExamTeacherDashboard({ classroom, classStudents, submissions, id, setVi
        <div className="glass rounded-[40px] p-8 md:p-12 border-white/60 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-secondary/5 to-primary/5">
           <div className="space-y-2">
              <div className="flex items-center gap-2 text-secondary">
-                <FileText size={20} />
+                <iconify-icon icon="lucide:file-text" width="20"  ></iconify-icon>
                 <span className="text-xs font-black uppercase tracking-widest">Mode Ujian Kertas (Paper Mode)</span>
              </div>
              <h2 className="text-3xl font-black tracking-tight">Lembar Jawaban Kertas (LJK) & Scan OCR</h2>
@@ -1821,12 +1821,12 @@ function ExamTeacherDashboard({ classroom, classStudents, submissions, id, setVi
              onClick={() => setViewMode("paper")}
              className="btn-primary flex items-center gap-2 shrink-0 py-4 px-8 shadow-xl shadow-primary/20"
           >
-             <GraduationCap size={20} />
+             <iconify-icon icon="lucide:graduation-cap" width="20"  ></iconify-icon>
              Cetak Soal Ujian
           </button>
        </div>
 
-       <div className="glass rounded-[40px] border-white/60 shadow-2xl p-8 md:p-12">
+       <div className="premium-card p-8 md:p-12">
           <div className="flex justify-between items-center mb-8 border-b border-on-surface/5 pb-6">
              <div>
                 <h3 className="text-2xl font-black tracking-tight text-on-surface">Daftar Siswa & Pemeriksaan</h3>
@@ -1839,7 +1839,7 @@ function ExamTeacherDashboard({ classroom, classStudents, submissions, id, setVi
 
           {classStudents.length === 0 ? (
              <div className="text-center py-12 text-on-surface-variant/40">
-                <User size={32} className="mx-auto mb-4" />
+                <iconify-icon icon="lucide:user" width="32"  className="mx-auto mb-4" ></iconify-icon>
                 <p className="font-bold text-sm">Tidak ada siswa yang terdaftar di kelas ini.</p>
              </div>
           ) : (
@@ -1853,7 +1853,7 @@ function ExamTeacherDashboard({ classroom, classStudents, submissions, id, setVi
                       <div key={student.id} className="p-6 bg-white/40 border border-white/65 rounded-[32px] hover:shadow-lg transition-all flex justify-between items-center gap-4">
                          <div className="flex items-center gap-4 min-w-0">
                             <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center shrink-0 text-secondary">
-                               <User size={24} />
+                               <iconify-icon icon="lucide:user" width="24"  ></iconify-icon>
                             </div>
                             <div className="min-w-0">
                                <h4 className="font-black text-lg text-on-surface truncate leading-none mb-1.5">{student.displayName || "Siswa"}</h4>
@@ -1878,7 +1878,7 @@ function ExamTeacherDashboard({ classroom, classStudents, submissions, id, setVi
                                className="p-3 bg-secondary text-white rounded-xl shadow-lg shadow-secondary/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
                                title="Mulai Scan LJK"
                             >
-                               <Zap size={18} fill="currentColor" />
+                               <iconify-icon icon="lucide:zap" width="18"  fill="currentColor" ></iconify-icon>
                             </Link>
                          </div>
                       </div>
@@ -1911,9 +1911,9 @@ const OptionItem: React.FC<{ letter: string, text: string, isActive?: boolean, i
                 isWrong ? "text-red-600" : "",
                 isActive && !isCorrect && !isWrong ? "text-primary" : ""
             )}>
-                {isCorrect ? <Check size={14} strokeWidth={4} /> : 
+                {isCorrect ? <iconify-icon icon="lucide:check" width="14"   ></iconify-icon> : 
                  isWrong ? <span className="text-red-600">X</span> :
-                 isActive ? <Check size={14} strokeWidth={4} /> : letter}
+                 isActive ? <iconify-icon icon="lucide:check" width="14"   ></iconify-icon> : letter}
             </div>
             <span className={cn(
                 "text-xs md:text-sm font-bold transition-all line-clamp-2 md:line-clamp-none",
