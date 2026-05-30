@@ -13,6 +13,8 @@ import Dewa from "../img/Dewa.JPG";
 import Joy from "../img/Joy.JPG";
 import Nayla from "../img/Nayla.JPG";
 import Siti from "../img/Siti.JPG";
+import BgHero from "../img/BG_HERO.png";
+import BgSec5 from "../img/BG_SEC5.png";
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -126,7 +128,13 @@ export default function LandingPage() {
       </AnimatePresence>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-32 overflow-hidden flex items-center">
+      <section className="relative min-h-[calc(100vh-6rem)] py-20 overflow-hidden flex items-center z-0">
+        {/* Background Image */}
+        <img 
+          src={BgHero} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-10" 
+        />
         <div className="max-w-5xl mx-auto px-6 md:px-8 lg:px-12 relative z-10 text-center flex flex-col items-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -234,7 +242,13 @@ export default function LandingPage() {
       </section>
 
       {/* AI Capabilities Showcase Section */}
-      <section className="py-24 bg-surface relative overflow-hidden">
+      <section className="py-24 bg-surface relative overflow-hidden z-0">
+        {/* Background Image */}
+        <img 
+          src={BgSec5} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-10" 
+        />
         <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10 space-y-16">
           <div className="text-center space-y-4">
             <span className="px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-black uppercase tracking-[0.2em]">Kekuatan AI Edugrade</span>

@@ -1,9 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Loyola Pro';
+  src: url('./font/Loyola Pro.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: "Varela Round", ui-sans-serif, system-ui, sans-serif;
-  --font-heading: "Nunito", sans-serif;
+  --font-heading: "Loyola Pro", "Nunito", sans-serif;
   
   --color-surface: #fcfcfd;
   --color-on-surface: #1a1c1e;

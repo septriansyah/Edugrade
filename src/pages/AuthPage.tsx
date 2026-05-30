@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { signInWithGoogle, ensureUserProfile, auth } from "@/src/lib/firebase";
 import type { UserRole } from "@/src/lib/firebase";
 import Logo from "@/src/img/Logo.svg";
+import BgAuth from "@/src/img/BG_AUTH.png";
 
 const PENDING_ROLE_KEY = "edugrade:pending-login-role";
 
@@ -85,7 +86,13 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 relative overflow-hidden z-0">
+      {/* Background Image */}
+      <img 
+        src={BgAuth} 
+        alt="" 
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-10" 
+      />
       {/* Back button */}
       <div className="absolute top-6 left-6 md:top-10 md:left-10 z-20">
         <Link 

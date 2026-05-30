@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
 import Layout from "@/src/components/Layout";
+import BgAuth from "@/src/img/BG_AUTH.png";
 import { cn } from "@/src/lib/utils";
 import { db, auth, handleFirestoreError, OperationType } from "@/src/lib/firebase";
 import { collection, query, where, getDocs, doc, updateDoc, arrayUnion, onSnapshot } from "firebase/firestore";
@@ -236,7 +237,14 @@ export default function StudentDashboard() {
 
   return (
     <Layout userType="student">
-      <div className="p-8 lg:p-12 max-w-7xl mx-auto space-y-12">
+      <div className="relative z-0 min-h-[calc(100vh-6rem)]">
+        {/* Background Image */}
+        <img 
+          src={BgAuth} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-10" 
+        />
+        <div className="p-8 lg:p-12 max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
@@ -490,6 +498,7 @@ export default function StudentDashboard() {
            </div>
         </div>
       </div>
+    </div>
     </Layout>
   );
 }

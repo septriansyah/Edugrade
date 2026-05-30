@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 
 import Logo from "@/src/img/Logo.svg";
+import BgAuth from "@/src/img/BG_AUTH.png";
 import Asset1 from "@/src/img/Asset 1.png";
 import Asset2 from "@/src/img/Asset 2.png";
 import Asset3 from "@/src/img/Asset 3.png";
@@ -107,7 +108,13 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-surface flex flex-col relative overflow-hidden z-0">
+      {/* Background Image */}
+      <img 
+        src={BgAuth} 
+        alt="" 
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-10" 
+      />
       {/* Decorative background blur & Assets */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -mr-64 -mt-64 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[120px] -ml-64 -mb-64 pointer-events-none" />

@@ -9,6 +9,7 @@ import Asset3 from "/src/img/Asset 3.png";
 import Asset4 from "/src/img/Asset 4.png";
 import Asset5 from "/src/img/Asset 5.png";
 import Asset6 from "/src/img/Asset 6.png";
+import BgHero from "../img/BG_HERO.png";
 
 export default function AiFeaturesPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -122,7 +123,13 @@ export default function AiFeaturesPage() {
       </AnimatePresence>
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-16 md:pt-32 md:pb-24 overflow-hidden flex items-center">
+      <section className="relative min-h-[calc(100vh-6rem)] py-16 overflow-hidden flex items-center z-0">
+        {/* Background Image */}
+        <img 
+          src={BgHero} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-10" 
+        />
         <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12 relative z-10 text-center space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -361,7 +368,13 @@ export default function AiFeaturesPage() {
       </section>
 
       {/* Summary of Advantages Section */}
-      <section className="py-20 bg-surface relative overflow-hidden">
+      <section className="py-20 bg-surface relative overflow-hidden z-0">
+        {/* Background Image */}
+        <img 
+          src={BgHero} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-10" 
+        />
         <motion.img src={Asset3} animate={{ y: [0, -10, 0] }} transition={{ duration: 5, repeat: Infinity }} className="absolute top-1/3 left-0 lg:left-10 w-24 lg:w-32 h-24 lg:h-32 object-contain opacity-40 z-0 pointer-events-none hidden md:block" />
         <motion.img src={Asset4} animate={{ y: [0, 15, 0] }} transition={{ duration: 6, repeat: Infinity, delay: 0.5 }} className="absolute top-2/3 right-0 lg:right-10 w-28 lg:w-36 h-28 lg:h-36 object-contain opacity-40 z-0 pointer-events-none hidden md:block" />
         
